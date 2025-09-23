@@ -1,0 +1,104 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Customer;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
+
+class CustomerController extends Controller
+{
+    public function index(Request $request)
+    {
+        $query = Customer::query();
+
+        // Search by customer name
+        if ($request->filled('search')) {
+            $query->where('name', 'like', '%' . $request->search . '%');
+        }
+
+        // Filter by status
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        // Filter by staff
+        if ($request->filled('assigned_staff')) {
+            $query->where('assigned_staff', 'like', '%' . $request->assigned_staff . '%');
+        }
+
+        $customers = $query->orderBy('last_followup_date', 'asc')->paginate(10);
+
+        $summary = [
+            'total_customers' => Customer::count(),
+            'by_status' => Customer::select('status', DB::raw('COUNT(*) as total'))
+                            ->groupBy('status')
+                            ->pluck('total','status'),
+            'revenue_by_status' => Customer::select('status', DB::raw('SUM(potential_revenue) as revenue'))
+                            ->groupBy('status')
+                            ->pluck('revenue','status'),
+            'by_staff' => Customer::select('assigned_staff', DB::raw('COUNT(*) as total'))
+                            ->groupBy('assigned_staff')
+                            ->pluck('total','assigned_staff'),
+            'upcoming_followups' => Customer::whereDate('next_followup_date', '>=', now())
+                                            ->whereDate('next_followup_date', '<=', now()->addDays(7))
+                                            ->count(),
+            'overdue_followups' => Customer::whereDate('next_followup_date', '<', now())->count(),
+        ];
+
+        $reminders = [
+            'overdue' => Customer::whereDate('next_followup_date', '<', now())->count(),
+            'today' => Customer::whereDate('next_followup_date', now())->count(),
+            'upcoming' => Customer::whereBetween('next_followup_date', [now(), now()->addDays(7)])->count(),
+        ];
+
+        return view('customers.index', compact('customers', 'summary', 'reminders'));
+    }
+
+    public function create()
+    {
+        return view('customers.create');
+    }
+
+    public function store(Request $request)
+    {
+        Customer::create($request->all());
+        $request->validate([
+            'name' => 'required',
+            'assigned_staff' => 'required',
+            'potential_revenue' => 'numeric|nullable',
+            'currency' => 'string|max:10'
+        ]);
+
+        Customer::create($request->all()); 
+
+        return redirect()->route('customers.index');
+    }
+
+    public function edit(Customer $customer)
+    {
+        return view('customers.edit', compact('customer'));
+    }
+
+    public function update(Request $request, Customer $customer)
+    {
+        $customer->update($request->all());
+        $request->validate([
+            'name' => 'required',
+            'assigned_staff' => 'required',
+            'potential_revenue' => 'numeric|nullable',
+            'currency' => 'string|max:10'
+        ]);
+
+        $customer->update($request->all());
+        
+        return redirect()->route('customers.index');
+    }
+
+    public function destroy(Customer $customer)
+    {
+        $customer->delete();
+        return redirect()->route('customers.index');
+    }
+}
