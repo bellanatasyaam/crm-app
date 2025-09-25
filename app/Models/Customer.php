@@ -19,4 +19,9 @@ class Customer extends Model
         'currency',
         'notes',
     ];
+
+    public function staff()
+    {
+        return $this->belongsTo(User::class, 'assigned_staff_id');
+    }
 }

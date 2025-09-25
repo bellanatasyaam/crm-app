@@ -5,15 +5,15 @@ namespace App\Http\Controllers;
 use App\Models\Customer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class CustomerController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Customer::query();
+         $query = Customer::query();
 
-        // Search by customer name
+        // Search by name
         if ($request->filled('search')) {
             $query->where('name', 'like', '%' . $request->search . '%');
         }
@@ -23,30 +23,33 @@ class CustomerController extends Controller
             $query->where('status', $request->status);
         }
 
-        // Filter by staff
-        if ($request->filled('assigned_staff')) {
+        // Filter by assigned staff (khusus admin)
+        if ($request->filled('assigned_staff') && auth()->user()->isAdmin()) {
             $query->where('assigned_staff', 'like', '%' . $request->assigned_staff . '%');
         }
 
+        // ⚡ Semua staff bisa lihat semua progress, jadi tidak ada filter di sini
         $customers = $query->orderBy('last_followup_date', 'asc')->paginate(10);
 
+        // Ringkasan data (summary)
         $summary = [
             'total_customers' => Customer::count(),
             'by_status' => Customer::select('status', DB::raw('COUNT(*) as total'))
-                            ->groupBy('status')
-                            ->pluck('total','status'),
+                ->groupBy('status')
+                ->pluck('total','status'),
             'revenue_by_status' => Customer::select('status', DB::raw('SUM(potential_revenue) as revenue'))
-                            ->groupBy('status')
-                            ->pluck('revenue','status'),
+                ->groupBy('status')
+                ->pluck('revenue','status'),
             'by_staff' => Customer::select('assigned_staff', DB::raw('COUNT(*) as total'))
-                            ->groupBy('assigned_staff')
-                            ->pluck('total','assigned_staff'),
+                ->groupBy('assigned_staff')
+                ->pluck('total','assigned_staff'),
             'upcoming_followups' => Customer::whereDate('next_followup_date', '>=', now())
-                                            ->whereDate('next_followup_date', '<=', now()->addDays(7))
-                                            ->count(),
+                ->whereDate('next_followup_date', '<=', now()->addDays(7))
+                ->count(),
             'overdue_followups' => Customer::whereDate('next_followup_date', '<', now())->count(),
         ];
 
+        // Reminder follow-up
         $reminders = [
             'overdue' => Customer::whereDate('next_followup_date', '<', now())->count(),
             'today' => Customer::whereDate('next_followup_date', now())->count(),
@@ -63,7 +66,6 @@ class CustomerController extends Controller
 
     public function store(Request $request)
     {
-        Customer::create($request->all());
         $request->validate([
             'name' => 'required',
             'assigned_staff' => 'required',
@@ -71,19 +73,21 @@ class CustomerController extends Controller
             'currency' => 'string|max:10'
         ]);
 
-        Customer::create($request->all()); 
+        Customer::create($request->all());
 
-        return redirect()->route('customers.index');
+        return redirect()->route('customers.index')->with('success', 'Customer created successfully.');
     }
 
     public function edit(Customer $customer)
     {
+        $this->authorize('update', $customer);
         return view('customers.edit', compact('customer'));
     }
 
     public function update(Request $request, Customer $customer)
     {
-        $customer->update($request->all());
+        $this->authorize('update', $customer);
+
         $request->validate([
             'name' => 'required',
             'assigned_staff' => 'required',
@@ -92,13 +96,42 @@ class CustomerController extends Controller
         ]);
 
         $customer->update($request->all());
-        
-        return redirect()->route('customers.index');
+
+        return redirect()->route('customers.index')->with('success', 'Customer updated successfully.');
     }
 
     public function destroy(Customer $customer)
     {
+        $this->authorize('delete', $customer);
         $customer->delete();
-        return redirect()->route('customers.index');
+
+        return redirect()->route('customers.index')->with('success', 'Customer deleted successfully.');
     }
+
+    public function show($id)
+    {
+        $customer = Customer::findOrFail($id);
+        return view('customers.show', compact('customer'));
+    }
+
+    public function print()
+    {
+        $customers = \App\Models\Customer::all();
+
+        $pdf = Pdf::loadView('customers.print', compact('customers'))
+                ->setPaper('A4', 'landscape');
+
+        return $pdf->stream('customers.pdf');
+    }
+
+    public function printSingle($id)
+    {
+        $customer = \App\Models\Customer::findOrFail($id);
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('customers.print_single', compact('customer'))
+                ->setPaper('A4', 'portrait');
+
+        return $pdf->stream('customer-'.$customer->name.'.pdf');
+    }
+
 }
