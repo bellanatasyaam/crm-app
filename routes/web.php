@@ -25,6 +25,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/', [ProfileController::class, 'edit'])->name('profile.edit');
         Route::patch('/', [ProfileController::class, 'update'])->name('profile.update');
         Route::delete('/', [ProfileController::class, 'destroy'])->name('profile.destroy');
+        
+        // ✅ Update password
+        Route::get('/password', [ProfileController::class, 'editPassword'])->name('password.edit');
+        Route::post('/password', [ProfileController::class, 'updatePassword'])->name('password.update');
     });
 
     // Customer routes
