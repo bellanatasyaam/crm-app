@@ -11,23 +11,23 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('customers', function (Blueprint $table) {
+        Schema::create('description_logs', function (Blueprint $table) {
             $table->id();
-            $table->string('name');            // Nama perusahaan
-            $table->string('contact')->nullable();
-            $table->string('email')->nullable();
-            $table->string('phone')->nullable();
-            $table->string('address')->nullable();
+            $table->foreignId('vessel_id')->constrained()->onDelete('cascade');
+            $table->foreignId('changed_by')->nullable()->constrained('users')->nullOnDelete();
+
+            $table->text('old_description')->nullable();
+            $table->text('new_description')->nullable();
+
             $table->timestamps();
         });
     }
-
 
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
-        Schema::dropIfExists('customers');
+        Schema::dropIfExists('description_logs');
     }
 };

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Customer;
+use App\Models\Vessel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -61,7 +62,10 @@ class CustomerController extends Controller
 
     public function create()
     {
-        return view('customers.create');
+        $customers = Customer::all(); // ambil semua customer
+        $vessels   = Vessel::all();   // ambil semua kapal
+
+        return view('customers.create', compact('customers', 'vessels'));
     }
 
     public function store(Request $request)
@@ -78,10 +82,12 @@ class CustomerController extends Controller
         return redirect()->route('customers.index')->with('success', 'Customer created successfully.');
     }
 
-    public function edit(Customer $customer)
+    public function edit($id)
     {
-        $this->authorize('update', $customer);
-        return view('customers.edit', compact('customer'));
+        $customer = Customer::with('vessels')->findOrFail($id);
+        $vessels = Vessel::all(); // ambil semua kapal
+
+        return view('customers.edit', compact('customer', 'vessels'));
     }
 
     public function update(Request $request, Customer $customer)

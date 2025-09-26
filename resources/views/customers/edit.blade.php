@@ -21,6 +21,17 @@
 
         <div class="row g-3 mt-2">
             <div class="col-md-6">
+                <label class="form-label">Email</label>
+                <input type="email" name="email" class="form-control" value="{{ $customer->email }}" required>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Phone</label>
+                <input type="text" name="phone" class="form-control" value="{{ $customer->phone }}" required>
+            </div>
+        </div>
+
+        <div class="row g-3 mt-2">
+            <div class="col-md-6">
                 <label class="form-label">Last Contact Date</label>
                 <input type="date" name="last_followup_date" class="form-control" value="{{ $customer->last_followup_date }}">
             </div>
@@ -34,8 +45,19 @@
             <div class="col-md-6">
                 <label class="form-label">Status</label>
                 <select name="status" class="form-select">
-                    @foreach(['Lead','Quotation Sent','Negotiation','On Going Vessel Call','Pending Payment','Closing'] as $status)
-                        <option value="{{ $status }}" {{ $customer->status == $status ? 'selected' : '' }}>{{ $status }}</option>
+                    @foreach([
+                        'Follow up',
+                        'On progress',
+                        'Request',
+                        'Waiting approval',
+                        'Approve',
+                        'On going',
+                        'Quotation send',
+                        'Done / Closing'
+                    ] as $status)
+                        <option value="{{ $status }}" {{ $customer->status == $status ? 'selected' : '' }}>
+                            {{ $status }}
+                        </option>
                     @endforeach
                 </select>
             </div>
@@ -45,11 +67,27 @@
                     <input type="number" name="potential_revenue" class="form-control" value="{{ $customer->potential_revenue }}" required>
                     <select name="currency" class="form-select" style="max-width:120px;">
                         @foreach(['USD','IDR','SGD','EUR'] as $currency)
-                            <option value="{{ $currency }}" {{ $customer->currency == $currency ? 'selected' : '' }}>{{ $currency }}</option>
+                            <option value="{{ $currency }}" {{ $customer->currency == $currency ? 'selected' : '' }}>
+                                {{ $currency }}
+                            </option>
                         @endforeach
                     </select>
                 </div>
             </div>
+        </div>
+
+        <!-- Vessels (multi select) -->
+        <div class="mt-3">
+            <label class="form-label">Assign Vessels</label>
+            <select name="vessels[]" class="form-select" multiple>
+                @foreach($vessels as $v)
+                    <option value="{{ $v->id }}" 
+                        {{ in_array($v->id, $customer->vessels->pluck('id')->toArray()) ? 'selected' : '' }}>
+                        {{ $v->name }}
+                    </option>
+                @endforeach
+            </select>
+            <small class="text-muted">*Hold CTRL (Windows) / CMD (Mac) untuk pilih lebih dari satu vessel</small>
         </div>
 
         <div class="mt-3">

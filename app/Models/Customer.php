@@ -9,19 +9,29 @@ class Customer extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'name',
-        'assigned_staff',
-        'contact',
-        'last_followup_date',
-        'next_followup_date',
-        'status',
-        'potential_revenue',
-        'currency',
-        'notes',
-    ];
+    'name',
+    'contact',
+    'email',
+    'phone',
+    'address',
+    'assigned_staff',   // <-- ini penting
+    'status',
+    'currency',
+    'potential_revenue',
+    'last_followup_date',
+    'next_followup_date',
+    'notes',
+];
+
 
     public function staff()
     {
         return $this->belongsTo(User::class, 'assigned_staff_id');
     }
+
+     public function vessels()
+    {
+        return $this->hasMany(Vessel::class);
+    }
+
 }

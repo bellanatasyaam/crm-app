@@ -3,83 +3,66 @@
 @section('content')
 <div class="container py-4">
 
-    <div class="d-flex justify-content-between mb-4">
-        <h2 class="mb-0">Customer Dashboard</h2>
+    <style>
+        /* Style tabel biar lebih kecil dan rapi */
+        table.custom-table {
+            font-size: 13px; /* lebih kecil */
+            border-collapse: collapse;
+            width: 100%;
+        }
+        table.custom-table th,
+        table.custom-table td {
+            padding: 5px 6px; /* kecilin padding */
+            text-align: center; /* semua rata tengah */
+            vertical-align: middle;
+            border: 1px solid #dee2e6;
+            white-space: nowrap; /* biar lurus, ga turun */
+        }
+        table.custom-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+        }
+        table.custom-table td {
+            background: #fff;
+        }
+        .table-actions {
+            display: flex;
+            gap: 3px;
+            justify-content: center;
+        }
+        .table-actions .btn {
+            font-size: 11px;
+            padding: 2px 5px;
+        }
+    </style>
+
+    <div class="d-flex justify-content-between mb-3">
+        <h2 class="mb-0" style="font-size:18px;">Customer Dashboard</h2>
         <div class="d-flex gap-2">
-            <a href="{{ route('customers.print') }}" class="btn btn-success" target="_blank">
+            <a href="{{ route('customers.print') }}" class="btn btn-success btn-sm" target="_blank">
                 <i class="fa fa-print"></i> Print Report
             </a>
-            <a href="{{ route('customers.create') }}" class="btn btn-primary">
+            <a href="{{ route('customers.create') }}" class="btn btn-primary btn-sm">
                 + Add Customer
             </a>
         </div>
     </div>
 
-    <!-- Filter Form -->
-    <form action="{{ route('customers.index') }}" method="GET" class="row g-2 mb-4">
-        <div class="col-md-4">
-            <input type="text" name="search" class="form-control" placeholder="Search customer..." value="{{ request('search') }}">
-        </div>
-        <div class="col-md-3">
-            <select name="status" class="form-select">
-                <option value="">-- Filter by Status --</option>
-                @foreach(['Lead','Quotation Sent','Negotiation','On Going Vessel Call','Pending Payment','Closing'] as $status)
-                    <option value="{{ $status }}" {{ request('status') == $status ? 'selected' : '' }}>{{ $status }}</option>
-                @endforeach
-            </select>
-        </div>
-        <div class="col-md-3">
-            <input type="text" name="assigned_staff" class="form-control" placeholder="Filter by Staff" value="{{ request('assigned_staff') }}">
-        </div>
-        <div class="col-md-2">
-            <button type="submit" class="btn btn-primary w-100">Filter</button>
-        </div>
-    </form>
-
-    <!-- Summary Table -->
-    <div class="mb-4">
-        <table class="table table-sm table-bordered text-center align-middle">
-            <thead class="table-light">
-                <tr>
-                    <th>Total Customers</th>
-                    <th>Leads</th>
-                    <th>Quotation Sent</th>
-                    <th>Negotiation</th>
-                    <th>On Going Vessel</th>
-                    <th>Pending Payment</th>
-                    <th>Closing</th>
-                    <th class="text-danger">Overdue</th>
-                    <th class="text-warning">Due Today</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>{{ $summary['total_customers'] ?? 0 }}</td>
-                    <td>{{ $summary['by_status']['Lead'] ?? 0 }}</td>
-                    <td>{{ $summary['by_status']['Quotation Sent'] ?? 0 }}</td>
-                    <td>{{ $summary['by_status']['Negotiation'] ?? 0 }}</td>
-                    <td>{{ $summary['by_status']['On Going Vessel Call'] ?? 0 }}</td>
-                    <td>{{ $summary['by_status']['Pending Payment'] ?? 0 }}</td>
-                    <td>{{ $summary['by_status']['Closing'] ?? 0 }}</td>
-                    <td>{{ $reminders['overdue'] ?? 0 }}</td>
-                    <td>{{ $reminders['today'] ?? 0 }}</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-
     <!-- Customer Table -->
     <div class="table-responsive">
-        <table class="table table-hover table-bordered align-middle">
-            <thead class="table-light">
+        <table class="custom-table">
+            <thead>
                 <tr>
                     <th>Name</th>
-                    <th>Assigned Staff</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Staff</th>
                     <th>Last Contact</th>
-                    <th>Next Follow-Up</th>
+                    <th>Next FU</th>
                     <th>Status</th>
                     <th>Revenue</th>
                     <th>Notes</th>
+                    <th>Vessels</th>
                     <th>Action</th>
                 </tr>
             </thead>
@@ -87,18 +70,22 @@
                 @foreach($customers as $c)
                     <tr>
                         <td>{{ $c->name }}</td>
+                        <td>{{ $c->email ?? '-' }}</td>
+                        <td>{{ $c->phone ?? '-' }}</td>
                         <td>{{ $c->assigned_staff }}</td>
                         <td>{{ $c->last_followup_date ?? '-' }}</td>
                         <td>{{ $c->next_followup_date ?? '-' }}</td>
                         <td>
                             @php
                                 $statusColors = [
-                                    'Lead' => 'badge bg-primary',
-                                    'Quotation Sent' => 'badge bg-info text-dark',
-                                    'Negotiation' => 'badge bg-warning text-dark',
-                                    'On Going Vessel Call' => 'badge bg-secondary',
-                                    'Pending Payment' => 'badge bg-danger',
-                                    'Closing' => 'badge bg-success'
+                                    'Follow up'        => 'badge bg-primary',
+                                    'On progress'      => 'badge bg-info text-dark',
+                                    'Request'          => 'badge bg-warning text-dark',
+                                    'Waiting approval' => 'badge bg-secondary',
+                                    'Approve'          => 'badge bg-success',
+                                    'On going'         => 'badge bg-dark',
+                                    'Quotation send'   => 'badge bg-primary',
+                                    'Done / Closing'   => 'badge bg-success'
                                 ];
                             @endphp
                             <span class="{{ $statusColors[$c->status] ?? 'badge bg-light text-dark' }}">
@@ -107,22 +94,31 @@
                         </td>
                         <td>{{ $c->currency }} {{ number_format($c->potential_revenue, 0) }}</td>
                         <td>{{ $c->notes ?? '-' }}</td>
-                        <td class="d-flex gap-1">
-                            @can('update', $c)
-                            <a href="{{ route('customers.edit', $c->id) }}" class="btn btn-warning btn-sm">Edit</a>
-                            @endcan
-                            
-                            @can('delete', $c)
-                            <form action="{{ route('customers.destroy', $c->id) }}" method="POST" style="display:inline;">
-                                @csrf
-                                @method('DELETE')
-                                <button class="btn btn-danger btn-sm">Delete</button>
-                            </form>
-                            @endcan
+                        <td>
+                            @forelse($c->vessels as $v)
+                                <span class="badge bg-info text-dark">{{ $v->name }}</span>
+                            @empty
+                                -
+                            @endforelse
+                        </td>
+                        <td>
+                            <div class="table-actions">
+                                @can('update', $c)
+                                    <a href="{{ route('customers.edit', $c->id) }}" class="btn btn-warning btn-sm">Edit</a>
+                                @endcan
 
-                            <a href="{{ route('customers.print_single', $c->id) }}" target="_blank" class="btn btn-secondary btn-sm">
-                                🖨 Print
-                            </a>
+                                @can('delete', $c)
+                                    <form action="{{ route('customers.destroy', $c->id) }}" method="POST" style="display:inline;">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button class="btn btn-danger btn-sm">Del</button>
+                                    </form>
+                                @endcan
+
+                                <a href="{{ route('customers.print_single', $c->id) }}" target="_blank" class="btn btn-secondary btn-sm">
+                                    🖨
+                                </a>
+                            </div>
                         </td>
                     </tr>
                 @endforeach

@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\VesselController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -25,8 +26,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/', [ProfileController::class, 'edit'])->name('profile.edit');
         Route::patch('/', [ProfileController::class, 'update'])->name('profile.update');
         Route::delete('/', [ProfileController::class, 'destroy'])->name('profile.destroy');
-        
-        // ✅ Update password
+
+        // Update password
         Route::get('/password', [ProfileController::class, 'editPassword'])->name('password.edit');
         Route::post('/password', [ProfileController::class, 'updatePassword'])->name('password.update');
     });
@@ -37,16 +38,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Print satu customer
     Route::get('/customers/{id}/print', [CustomerController::class, 'printSingle'])
-    ->name('customers.print_single');
+        ->name('customers.print_single');
 
-    // Optional: staff dashboard alias
+    // Staff dashboard (alias)
     Route::get('/staff/dashboard', [CustomerController::class, 'index'])->name('staff.dashboard');
 
     // User management hanya untuk admin
     Route::middleware('can:isAdmin')->group(function () {
         Route::resource('users', UserController::class);
     });
+
+    // Vessel routes (nested ke customer)
+    Route::prefix('customers/{customer}')->group(function () {
+        Route::resource('vessels', VesselController::class);
+    });
 });
 
 // Auth routes (login, register, password reset, dll)
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
