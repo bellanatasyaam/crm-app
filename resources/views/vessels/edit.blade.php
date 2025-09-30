@@ -81,7 +81,7 @@
         </div>
 
         <button type="submit" class="btn btn-success">Update Vessel</button>
-        <a href="{{ route('customers.vessels.index', $vessel->customer_id) }}" class="btn btn-secondary">Cancel</a>
+        <a href="{{ route('vessels.index') }}" class="btn btn-secondary">Cancel</a>
     </form>
 </div>
 @endsection

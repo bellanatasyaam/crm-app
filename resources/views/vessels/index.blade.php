@@ -4,7 +4,6 @@
 <div class="container py-4">
 
     <style>
-        /* Style tabel biar kecil & rapi */
         table.custom-table {
             font-size: 13px;
             border-collapse: collapse;
@@ -22,9 +21,6 @@
             background: #f8f9fa;
             font-weight: 600;
         }
-        table.custom-table td {
-            background: #fff;
-        }
         .table-actions {
             display: flex;
             gap: 3px;
@@ -37,19 +33,35 @@
     </style>
 
     <div class="d-flex justify-content-between mb-3">
-        <h2 class="mb-0" style="font-size:18px;">Vessels for {{ $customer->name }}</h2>
+        <h2 class="mb-0" style="font-size:18px;">
+            @if($customer)
+                Vessels for {{ $customer->name }}
+            @else
+                All Vessels
+            @endif
+        </h2>
+
         <div class="d-flex gap-2">
-            <a href="{{ route('customers.vessels.create', $customer->id) }}" class="btn btn-primary btn-sm">
-                + Add Vessel
-            </a>
-            <a href="{{ route('customers.index') }}" class="btn btn-secondary btn-sm">
-                Back to Customers
-            </a>
+            @if($customer)
+                <a href="{{ route('customers.vessels.create', $customer->id) }}" class="btn btn-primary btn-sm">
+                    + Add Vessel
+                </a>
+                <a href="{{ route('customers.index') }}" class="btn btn-secondary btn-sm">
+                    Back to Customers
+                </a>
+            @else
+                <a href="{{ route('vessels.create') }}" class="btn btn-primary btn-sm">
+                    + Add Vessel
+                </a>
+                <a href="{{ route('dashboard') }}" class="btn btn-secondary btn-sm">
+                    Back to Master Menu
+                </a>
+            @endif
         </div>
     </div>
 
     @if($vessels->isEmpty())
-        <div class="alert alert-info">No vessels found for this customer.</div>
+        <div class="alert alert-info">No vessels found.</div>
     @else
         <div class="table-responsive">
             <table class="custom-table">
@@ -65,6 +77,9 @@
                         <th>Last Contact</th>
                         <th>Next FU</th>
                         <th>Staff</th>
+                        @unless($customer)
+                            <th>Customer</th>
+                        @endunless
                         <th>Action</th>
                     </tr>
                 </thead>
@@ -97,15 +112,28 @@
                             <td>{{ $vessel->last_contact ?? '-' }}</td>
                             <td>{{ $vessel->next_follow_up ?? '-' }}</td>
                             <td>{{ $vessel->assignedStaff?->name ?? '-' }}</td>
+                            @unless($customer)
+                                <td>{{ $vessel->customer?->name ?? '-' }}</td>
+                            @endunless
                             <td>
                                 <div class="table-actions">
-                                    <a href="{{ route('customers.vessels.edit', [$customer->id, $vessel->id]) }}" class="btn btn-warning btn-sm">Edit</a>
-                                    <form action="{{ route('customers.vessels.destroy', [$customer->id, $vessel->id]) }}" method="POST" style="display:inline;">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button class="btn btn-danger btn-sm">Del</button>
-                                    </form>
-                                    <a href="{{ route('customers.vessels.show', [$customer->id, $vessel->id]) }}" class="btn btn-info btn-sm">Detail</a>
+                                    @if($customer)
+                                        <a href="{{ route('customers.vessels.edit', [$customer->id, $vessel->id]) }}" class="btn btn-warning btn-sm">Edit</a>
+                                        <form action="{{ route('customers.vessels.destroy', [$customer->id, $vessel->id]) }}" method="POST" style="display:inline;">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button class="btn btn-danger btn-sm">Del</button>
+                                        </form>
+                                        <a href="{{ route('customers.vessels.show', [$customer->id, $vessel->id]) }}" class="btn btn-info btn-sm">Detail</a>
+                                    @else
+                                        <a href="{{ route('vessels.edit', $vessel->id) }}" class="btn btn-warning btn-sm">Edit</a>
+                                        <form action="{{ route('vessels.destroy', $vessel->id) }}" method="POST" style="display:inline;">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button class="btn btn-danger btn-sm">Del</button>
+                                        </form>
+                                        <a href="{{ route('vessels.show', $vessel->id) }}" class="btn btn-info btn-sm">Detail</a>
+                                    @endif
                                 </div>
                             </td>
                         </tr>

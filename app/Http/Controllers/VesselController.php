@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Customer;
 use App\Models\Vessel;
-use App\Models\User; // tambahin ini
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class VesselController extends Controller
@@ -12,19 +12,38 @@ class VesselController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Customer $customer)
+    public function index(Customer $customer = null)
     {
-        $vessels = $customer->vessels()->with('assignedStaff')->get();
-        return view('vessels.index', compact('customer','vessels'));
-    }
+        if ($customer) {
+            // Nested: vessel untuk 1 customer
+            $vessels = $customer->vessels()->with('assignedStaff')->get();
 
+            return view('vessels.index', [
+                'vessels'  => $vessels,
+                'customer' => $customer,
+            ]);
+        } else {
+            // Global: semua vessel
+            $vessels = Vessel::with(['customer', 'assignedStaff'])->get();
+
+            return view('vessels.index', [
+                'vessels'  => $vessels,
+                'customer' => null, // bedain dari sini
+            ]);
+        }
+    }
     /**
      * Show the form for creating a new resource.
      */
-    public function create(Customer $customer)
+    public function create()
     {
+        // Ambil semua customer untuk dropdown
+        $customers = Customer::all();
+
+        // Ambil semua staff selain super_admin (kalau mau assign staff)
         $staffs = User::where('role', '!=', 'super_admin')->get();
-        return view('vessels.create', compact('customer', 'staffs'));
+
+        return view('vessels.create', compact('customers', 'staffs'));
     }
 
     /**
@@ -71,19 +90,9 @@ class VesselController extends Controller
             'vessel_name' => 'required|string',
         ]);
 
-        // log perubahan deskripsi kalau ada
-        if ($vessel->description !== $request->description) {
-            DescriptionLog::create([
-                'vessel_id' => $vessel->id,
-                'changed_by' => auth()->id(),
-                'old_description' => $vessel->description,
-                'new_description' => $request->description,
-            ]);
-        }
-
         $vessel->update($request->all());
 
-        return redirect()->route('customers.vessels.index', $customer->id)
+        return redirect()->route('vessels.index')
                          ->with('success', 'Vessel updated successfully.');
     }
 
@@ -93,7 +102,8 @@ class VesselController extends Controller
     public function destroy(Customer $customer, Vessel $vessel)
     {
         $vessel->delete();
-        return redirect()->route('customers.vessels.index', $customer->id)
+
+        return redirect()->route('vessels.index')
                          ->with('success', 'Vessel deleted successfully.');
     }
 }

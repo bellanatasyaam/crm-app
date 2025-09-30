@@ -64,8 +64,8 @@ class CustomerController extends Controller
 
     public function create()
     {
-        $customers = Customer::all(); // ambil semua customer
-        $vessels   = Vessel::all();   // ambil semua kapal
+        $customers = Customer::with('vessels')->get(); // ✅ include vessels
+        $vessels   = Vessel::all();   
 
         return view('customers.create', compact('customers', 'vessels'));
     }
@@ -161,6 +161,12 @@ class CustomerController extends Controller
                 ->setPaper('A4', 'portrait');
 
         return $pdf->stream('customer-'.$customer->name.'.pdf');
+    }
+
+    public function getVessels($id)
+    {
+        $vessels = Vessel::where('customer_id', $id)->get();
+        return response()->json($vessels);
     }
 
 }

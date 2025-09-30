@@ -7,6 +7,7 @@
     <form action="{{ route('customers.store') }}" method="POST">
         @csrf
 
+        {{-- Filter Customer --}}
         <div class="mb-3">
             <label for="customer_id" class="form-label">Filter by Customer</label>
             <select id="customer_id" name="customer_id" class="form-control">
@@ -17,6 +18,7 @@
             </select>
         </div>
 
+        {{-- Vessels --}}
         <div class="mb-3">
             <label for="vessels" class="form-label">Selected Vessels</label>
             <select id="vessels" name="vessels[]" class="form-control" multiple>
@@ -25,6 +27,7 @@
             <small class="text-muted">*Hold CTRL (Windows) / CMD (Mac) untuk pilih lebih dari satu vessel</small>
         </div>
 
+        {{-- Script dropdown dinamis --}}
         <script>
             const customers = @json($customers);
 
@@ -35,19 +38,21 @@
                 vesselsSelect.innerHTML = "";
 
                 if (customerId) {
-                    let customer = customers.find(c => c.id == customerId);
-                    if (customer && customer.vessels && customer.vessels.length > 0) {
-                        customer.vessels.forEach(v => {
-                            let opt = document.createElement('option');
-                            opt.value = v.id;
-                            opt.textContent = v.name;
-                            vesselsSelect.appendChild(opt);
+                    fetch(`/customers/${customerId}/vessels`)
+                        .then(res => res.json())
+                        .then(data => {
+                            data.forEach(v => {
+                                let opt = document.createElement('option');
+                                opt.value = v.id;
+                                opt.textContent = v.vessel_name; // sesuaikan kolom
+                                vesselsSelect.appendChild(opt);
+                            });
                         });
-                    }
                 }
             });
         </script>
 
+        {{-- Field lain --}}
         <div class="row g-3">
             <div class="col-md-6">
                 <label class="form-label">Customer Name</label>
@@ -113,8 +118,8 @@
         </div>
 
         <div class="mt-3">
-                <label class="form-label">Description</label>
-                <textarea name="description" class="form-control" rows="3"></textarea>
+            <label class="form-label">Description</label>
+            <textarea name="description" class="form-control" rows="3"></textarea>
         </div>
 
         <div class="mb-3">
@@ -128,10 +133,10 @@
             >{{ old('remark', $customer->remark ?? '') }}</textarea>
         </div>
 
-            <div class="mt-4 d-flex gap-2">
-                <button type="submit" class="btn btn-success">Save</button>
-                <a href="{{ route('customers.index') }}" class="btn btn-secondary">Back</a>
-            </div>
-        </form>
-    </div>
+        <div class="mt-4 d-flex gap-2">
+            <button type="submit" class="btn btn-success">Save</button>
+            <a href="{{ route('customers.index') }}" class="btn btn-secondary">Back</a>
+        </div>
+    </form>
+</div>
 @endsection

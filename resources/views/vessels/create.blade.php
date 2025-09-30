@@ -2,11 +2,21 @@
 
 @section('content')
 <div class="container py-4">
-    <h2 class="mb-4">Add Vessel for {{ $customer->name }}</h2>
+    <h2 class="mb-4">Add Vessel</h2>
 
-    <form action="{{ route('customers.vessels.store', $customer->id) }}" method="POST">
+    <form action="{{ route('vessels.store') }}" method="POST">
         @csrf
-        <input type="hidden" name="customer_id" value="{{ $customer->id }}">
+
+        <!-- Customer optional -->
+        <div class="mb-3">
+            <label class="form-label">Customer (optional)</label>
+            <select name="customer_id" class="form-select">
+                <option value="">-- No Customer --</option>
+                @foreach($customers as $cust)
+                    <option value="{{ $cust->id }}">{{ $cust->name }}</option>
+                @endforeach
+            </select>
+        </div>
 
         <div class="mb-3">
             <label class="form-label">Vessel Name</label>
@@ -41,10 +51,7 @@
             <label class="form-label">Currency</label>
             <select name="currency" class="form-control">
                 @foreach(['USD','IDR','SGD','EUR','MYR'] as $currency)
-                    <option value="{{ $currency }}" 
-                        {{ (isset($customer) && $customer->currency == $currency) ? 'selected' : '' }}>
-                        {{ $currency }}
-                    </option>
+                    <option value="{{ $currency }}">{{ $currency }}</option>
                 @endforeach
             </select>
         </div>
@@ -77,12 +84,12 @@
                     @if($staff->name !== 'Super Admin')
                         <option value="{{ $staff->name }}">{{ $staff->name }}</option>
                     @endif
-            @endforeach
-        </select>
+                @endforeach
+            </select>
         </div>
 
         <button type="submit" class="btn btn-success">Save Vessel</button>
-        <a href="{{ route('customers.vessels.index', $customer->id) }}" class="btn btn-secondary">Cancel</a>
+        <a href="{{ route('vessels.index') }}" class="btn btn-secondary">Cancel</a>
     </form>
 </div>
 @endsection
