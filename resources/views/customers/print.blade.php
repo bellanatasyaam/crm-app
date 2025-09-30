@@ -27,7 +27,7 @@
                 <th>Potential Revenue</th>
                 <th>Last Follow Up</th>
                 <th>Next Follow Up</th>
-                <th>Notes</th>
+                <th>Description</th>
             </tr>
         </thead>
         <tbody>
@@ -40,7 +40,7 @@
                     <td>{{ $c->currency }} {{ number_format($c->potential_revenue, 0) }}</td>
                     <td>{{ $c->last_followup_date ?? '-' }}</td>
                     <td>{{ $c->next_followup_date ?? '-' }}</td>
-                    <td>{{ $c->notes ?? '-' }}</td>
+                    <td>{{ $c->description ?? '-' }}</td>
                 </tr>
             @endforeach
         </tbody>

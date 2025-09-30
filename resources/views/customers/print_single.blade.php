@@ -35,8 +35,8 @@
             <td>{{ $customer->currency }} {{ number_format($customer->potential_revenue, 0) }}</td>
         </tr>
         <tr>
-            <th>Notes</th>
-            <td>{{ $customer->notes ?? '-' }}</td>
+            <th>Description</th>
+            <td>{{ $customer->description ?? '-' }}</td>
         </tr>
     </table>
 </body>

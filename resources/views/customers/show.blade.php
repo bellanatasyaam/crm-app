@@ -1,34 +1,45 @@
 @extends('layouts.app')
 @section('content')
 <div class="container py-4">
-    <h2 class="mb-4">Add New Customer</h2>
+    <h2 class="mb-4">Customer Detail</h2>
 
-    <form action="{{ route('customers.store') }}" method="POST">
-        @csrf
+    <div class="card mb-4">
+        <div class="card-body">
+            <p><strong>Name:</strong> {{ $customer->name }}</p>
+            <p><strong>Assigned Staff:</strong> {{ $customer->assigned_staff }}</p>
+            <p><strong>Last Contact Date:</strong> {{ $customer->last_followup_date }}</p>
+            <p><strong>Next Follow-Up:</strong> {{ $customer->next_followup_date }}</p>
+        </div>
+    </div>
 
-        <div class="row g-3">
-            <div class="col-md-6">
-                <label class="form-label">Customer Name</label>
-                <input type="text" name="name" class="form-control" required>
-            </div>
-            <div class="col-md-6">
-                <label class="form-label">Assigned Staff</label>
-                <input type="text" name="assigned_staff" class="form-control" required>
-            </div>
-        </div>
-        <div class="mb-3">
-            <button type="submit" class="btn btn-primary">Add Customer</button>
-        </div>
-    </form>
+    <h4 class="mb-3">Vessels</h4>
+    <a href="{{ route('customers.vessels.create', $customer->id) }}" class="btn btn-primary mb-3">+ Add Vessel</a>
+
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Vessel Name</th>
+                <th>Status</th>
+                <th>Potential Revenue</th>
+                <th>Next Follow-Up</th>
+            </tr>
+        </thead>
+        <tbody>
+            @forelse($customer->vessels as $vessel)
+                <tr>
+                    <td>{{ $vessel->vessel_name }}</td>
+                    <td>{{ $vessel->status }}</td>
+                    <td>{{ $vessel->currency }} {{ number_format($vessel->potential_revenue, 0) }}</td>
+                    <td>{{ $vessel->next_followup_date }}</td>
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="4">No vessels found.</td>
+                </tr>
+            @endforelse
+        </tbody>
+    </table>
+
+    <a href="{{ route('customers.index') }}" class="btn btn-secondary">Back</a>
 </div>
 @endsection
-
-        <div class="row g-3 mt-2">
-            <div class="col-md-6">
-                <label class="form-label">Last Contact Date</label>
-                <input type="date" name="last_followup_date" class="form-control" required>
-            </div>
-            <div class="col-md-6">
-                <label class="form-label">Next Follow-Up</label>
-                <input type="date" name="next_followup_date" class="form-control" required>
-            </div> 

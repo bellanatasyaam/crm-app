@@ -20,7 +20,8 @@ class Customer extends Model
     'potential_revenue',
     'last_followup_date',
     'next_followup_date',
-    'notes',
+    'description',
+    'remark',
 ];
 
 
@@ -29,7 +30,7 @@ class Customer extends Model
         return $this->belongsTo(User::class, 'assigned_staff_id');
     }
 
-     public function vessels()
+    public function vessels()
     {
         return $this->hasMany(Vessel::class);
     }

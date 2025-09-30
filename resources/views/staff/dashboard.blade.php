@@ -79,7 +79,7 @@
                         <th class="p-3 border">Next Follow-Up</th>
                         <th class="p-3 border">Status</th>
                         <th class="p-3 border">Revenue</th>
-                        <th class="p-3 border">Notes</th>
+                        <th class="p-3 border">Description</th>
                         <th class="p-3 border">Action</th>
                     </tr>
                 </thead>
@@ -105,7 +105,7 @@
                                 </span>
                             </td>
                             <td class="p-3 border">{{ $c->currency }} {{ number_format($c->potential_revenue, 0) }}</td>
-                            <td class="p-3 border">{{ $c->notes ?? '-' }}</td>
+                            <td class="p-3 border">{{ $c->description ?? '-' }}</td>
                             <td class="p-3 border flex gap-2">
                                 <a href="{{ route('customers.edit', $c->id) }}" class="bg-yellow-400 px-2 py-1 rounded text-xs">Edit</a>
                                 <form action="{{ route('customers.destroy', $c->id) }}" method="POST">

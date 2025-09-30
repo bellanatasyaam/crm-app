@@ -28,8 +28,8 @@ return new class extends Migration
             if (!Schema::hasColumn('customers', 'next_followup_date')) {
                 $table->date('next_followup_date')->nullable();
             }
-            if (!Schema::hasColumn('customers', 'notes')) {
-                $table->text('notes')->nullable();
+            if (!Schema::hasColumn('customers', 'description')) {
+                $table->text('description')->nullable();
             }
         });
     }
@@ -44,7 +44,7 @@ return new class extends Migration
                 'potential_revenue',
                 'last_followup_date',
                 'next_followup_date',
-                'notes'
+                'description',
             ]);
         });
     }

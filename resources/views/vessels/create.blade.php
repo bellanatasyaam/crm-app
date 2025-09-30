@@ -4,7 +4,7 @@
 <div class="container py-4">
     <h2 class="mb-4">Add Vessel for {{ $customer->name }}</h2>
 
-    <form action="{{ route('vessels.store') }}" method="POST">
+    <form action="{{ route('customers.vessels.store', $customer->id) }}" method="POST">
         @csrf
         <input type="hidden" name="customer_id" value="{{ $customer->id }}">
 
@@ -39,7 +39,14 @@
 
         <div class="mb-3">
             <label class="form-label">Currency</label>
-            <input type="text" name="currency" value="USD" class="form-control">
+            <select name="currency" class="form-control">
+                @foreach(['USD','IDR','SGD','EUR','MYR'] as $currency)
+                    <option value="{{ $currency }}" 
+                        {{ (isset($customer) && $customer->currency == $currency) ? 'selected' : '' }}>
+                        {{ $currency }}
+                    </option>
+                @endforeach
+            </select>
         </div>
 
         <div class="mb-3">
@@ -64,16 +71,18 @@
 
         <div class="mb-3">
             <label class="form-label">Assigned Staff</label>
-            <select name="assigned_staff_id" class="form-select">
+            <select name="assigned_staff" class="form-select" required>
                 <option value="">-- Select Staff --</option>
-                @foreach($staff as $user)
-                    <option value="{{ $user->id }}">{{ $user->name }}</option>
-                @endforeach
-            </select>
+                @foreach($staffs as $staff)
+                    @if($staff->name !== 'Super Admin')
+                        <option value="{{ $staff->name }}">{{ $staff->name }}</option>
+                    @endif
+            @endforeach
+        </select>
         </div>
 
         <button type="submit" class="btn btn-success">Save Vessel</button>
-        <a href="{{ route('vessels.index', $customer->id) }}" class="btn btn-secondary">Cancel</a>
+        <a href="{{ route('customers.vessels.index', $customer->id) }}" class="btn btn-secondary">Cancel</a>
     </form>
 </div>
 @endsection

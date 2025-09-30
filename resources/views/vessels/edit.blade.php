@@ -4,7 +4,7 @@
 <div class="container py-4">
     <h2 class="mb-4">Edit Vessel: {{ $vessel->vessel_name }}</h2>
 
-    <form action="{{ route('vessels.update', $vessel->id) }}" method="POST">
+    <form action="{{ route('customers.vessels.update', [$vessel->customer_id, $vessel->id]) }}" method="POST">
         @csrf
         @method('PUT')
 
@@ -81,7 +81,7 @@
         </div>
 
         <button type="submit" class="btn btn-success">Update Vessel</button>
-        <a href="{{ route('vessels.index', $vessel->customer_id) }}" class="btn btn-secondary">Cancel</a>
+        <a href="{{ route('customers.vessels.index', $vessel->customer_id) }}" class="btn btn-secondary">Cancel</a>
     </form>
 </div>
 @endsection

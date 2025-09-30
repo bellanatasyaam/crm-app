@@ -1,61 +1,48 @@
-<x-guest-layout>
-    <div class="min-h-screen flex items-center justify-center bg-gray-100">
-        <div class="w-full max-w-md bg-white rounded-2xl shadow-lg p-8">
-            <!-- Logo -->
-            <div class="flex justify-center mb-6">
-                <img src="{{ asset('images/logo.png') }}" alt="Logo" class="w-20 h-20">
-                {{-- kalau masih pakai bawaan Breeze:
-                <x-authentication-card-logo class="w-20 h-20" />
-                --}}
+@extends('layouts.app')
+
+@section('content')
+<div class="container d-flex justify-content-center align-items-center" style="min-height: 80vh;">
+    <div class="card shadow-lg p-4" style="max-width: 400px; width: 100%;">
+        <div class="text-center mb-4">
+            <img src="{{ asset('logo.png') }}" alt="Logo" style="width: 80px;">
+            <h4 class="mt-2 fw-bold">Login</h4>
+        </div>
+
+        <form method="POST" action="{{ route('login') }}">
+            @csrf
+
+            <div class="mb-3">
+                <label class="form-label">Email</label>
+                <input id="email" type="email" name="email"
+                       class="form-control @error('email') is-invalid @enderror"
+                       value="{{ old('email') }}" required autofocus>
+                @error('email')
+                    <span class="text-danger small">{{ $message }}</span>
+                @enderror
             </div>
 
-            <!-- Session Status -->
-            <x-auth-session-status class="mb-4" :status="session('status')" />
+            <div class="mb-3">
+                <label class="form-label">Password</label>
+                <input id="password" type="password" name="password"
+                       class="form-control @error('password') is-invalid @enderror"
+                       required>
+                @error('password')
+                    <span class="text-danger small">{{ $message }}</span>
+                @enderror
+            </div>
 
-            <!-- Form -->
-            <form method="POST" action="{{ route('login') }}">
-                @csrf
+            <div class="mb-3 form-check">
+                <input type="checkbox" class="form-check-input" name="remember" id="remember">
+                <label class="form-check-label" for="remember">Remember me</label>
+            </div>
 
-                <!-- Email Address -->
-                <div>
-                    <x-input-label for="email" :value="__('Email')" />
-                    <x-text-input id="email" class="block mt-1 w-full" type="email" name="email"
-                        :value="old('email')" required autofocus autocomplete="username" />
-                    <x-input-error :messages="$errors->get('email')" class="mt-2" />
-                </div>
+            <button type="submit" class="btn btn-primary w-100">Login</button>
 
-                <!-- Password -->
-                <div class="mt-4">
-                    <x-input-label for="password" :value="__('Password')" />
-                    <x-text-input id="password" class="block mt-1 w-full"
-                        type="password" name="password" required autocomplete="current-password" />
-                    <x-input-error :messages="$errors->get('password')" class="mt-2" />
-                </div>
-
-                <!-- Remember Me -->
-                <div class="block mt-4">
-                    <label for="remember_me" class="inline-flex items-center">
-                        <input id="remember_me" type="checkbox"
-                            class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
-                            name="remember">
-                        <span class="ms-2 text-sm text-gray-600">{{ __('Remember me') }}</span>
-                    </label>
-                </div>
-
-                <!-- Actions -->
-                <div class="flex items-center justify-between mt-6">
-                    @if (Route::has('password.request'))
-                        <a class="underline text-sm text-gray-600 hover:text-gray-900"
-                            href="{{ route('password.request') }}">
-                            {{ __('Forgot your password?') }}
-                        </a>
-                    @endif
-
-                    <x-primary-button>
-                        {{ __('Log in') }}
-                    </x-primary-button>
-                </div>
-            </form>
-        </div>
+            <div class="d-flex justify-content-between mt-3">
+                <a href="{{ route('password.request') }}">Forgot Password?</a>
+                <a href="{{ route('register') }}">Register</a>
+            </div>
+        </form>
     </div>
-</x-guest-layout>
+</div>
+@endsection

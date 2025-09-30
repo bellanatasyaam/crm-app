@@ -4,6 +4,11 @@
 <div class="container py-4">
 
     <style>
+        /* Container full width biar tabel ga kepotong */
+        .container {
+            max-width: 100% !important;
+        }
+
         /* Style tabel biar lebih kecil dan rapi */
         table.custom-table {
             font-size: 13px; /* lebih kecil */
@@ -16,7 +21,7 @@
             text-align: center; /* semua rata tengah */
             vertical-align: middle;
             border: 1px solid #dee2e6;
-            white-space: nowrap; /* biar lurus, ga turun */
+            white-space: nowrap; /* default: ga turun */
         }
         table.custom-table th {
             background: #f8f9fa;
@@ -25,6 +30,14 @@
         table.custom-table td {
             background: #fff;
         }
+
+        /* Kolom panjang boleh turun biar ga bikin scroll */
+        table.custom-table td:nth-child(9),   /* Description */
+        table.custom-table td:nth-child(11) { /* Remark */
+            white-space: normal !important;
+            word-break: break-word;
+        }
+
         .table-actions {
             display: flex;
             gap: 3px;
@@ -33,6 +46,11 @@
         .table-actions .btn {
             font-size: 11px;
             padding: 2px 5px;
+        }
+        .table td {
+            max-width: 200px;       /* batas lebar kolom */
+            overflow: hidden;       /* sembunyikan kelebihan teks */
+            text-overflow: ellipsis; /* kasih ... di ujung */
         }
     </style>
 
@@ -61,8 +79,9 @@
                     <th>Next FU</th>
                     <th>Status</th>
                     <th>Revenue</th>
-                    <th>Notes</th>
+                    <th>Description</th>
                     <th>Vessels</th>
+                    <th>Remark</th>
                     <th>Action</th>
                 </tr>
             </thead>
@@ -93,18 +112,24 @@
                             </span>
                         </td>
                         <td>{{ $c->currency }} {{ number_format($c->potential_revenue, 0) }}</td>
-                        <td>{{ $c->notes ?? '-' }}</td>
+                        <td title="{{ $c->description }}">
+                            {{ \Illuminate\Support\Str::limit($c->description, 20) ?? '-' }}
+                        </td>
                         <td>
                             @forelse($c->vessels as $v)
-                                <span class="badge bg-info text-dark">{{ $v->name }}</span>
+                                <span class="badge bg-info text-dark">{{ $v->vessel_name }}</span>
                             @empty
                                 -
                             @endforelse
+                        </td>
+                        <td title="{{ $c->remark }}">
+                            {{ \Illuminate\Support\Str::limit($c->remark, 20) }}
                         </td>
                         <td>
                             <div class="table-actions">
                                 @can('update', $c)
                                     <a href="{{ route('customers.edit', $c->id) }}" class="btn btn-warning btn-sm">Edit</a>
+                                    <a href="{{ route('customers.show', $c->id) }}" class="btn btn-info btn-sm">Detail</a>
                                 @endcan
 
                                 @can('delete', $c)

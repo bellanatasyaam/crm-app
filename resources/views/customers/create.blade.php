@@ -104,7 +104,7 @@
                 <div class="input-group">
                     <input type="number" name="potential_revenue" class="form-control" required>
                     <select name="currency" class="form-select" style="max-width:120px;">
-                        @foreach(['USD','IDR','SGD','EUR'] as $currency)
+                        @foreach(['USD','IDR','SGD','EUR', 'MYR'] as $currency)
                             <option value="{{ $currency }}">{{ $currency }}</option>
                         @endforeach
                     </select>
@@ -113,14 +113,25 @@
         </div>
 
         <div class="mt-3">
-            <label class="form-label">Notes</label>
-            <textarea name="notes" class="form-control" rows="3"></textarea>
+                <label class="form-label">Description</label>
+                <textarea name="description" class="form-control" rows="3"></textarea>
         </div>
 
-        <div class="mt-4 d-flex gap-2">
-            <button type="submit" class="btn btn-success">Save</button>
-            <a href="{{ route('customers.index') }}" class="btn btn-secondary">Back</a>
+        <div class="mb-3">
+            <label for="remark" class="form-label">Remark</label>
+            <textarea 
+                name="remark" 
+                id="remark" 
+                class="form-control" 
+                rows="3"
+                placeholder="Tambahkan catatan opsional (boleh kosong)"
+            >{{ old('remark', $customer->remark ?? '') }}</textarea>
         </div>
-    </form>
-</div>
+
+            <div class="mt-4 d-flex gap-2">
+                <button type="submit" class="btn btn-success">Save</button>
+                <a href="{{ route('customers.index') }}" class="btn btn-secondary">Back</a>
+            </div>
+        </form>
+    </div>
 @endsection

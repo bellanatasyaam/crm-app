@@ -30,7 +30,9 @@ class CustomerController extends Controller
         }
 
         // ⚡ Semua staff bisa lihat semua progress, jadi tidak ada filter di sini
-        $customers = $query->orderBy('last_followup_date', 'asc')->paginate(10);
+        $customers = $query->with('vessels') // ambil juga data kapal
+                   ->orderBy('last_followup_date', 'asc')
+                   ->paginate(10);
 
         // Ringkasan data (summary)
         $summary = [
@@ -71,10 +73,11 @@ class CustomerController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required',
-            'assigned_staff' => 'required',
-            'potential_revenue' => 'numeric|nullable',
-            'currency' => 'string|max:10'
+            'name'              => 'required|string|max:255',
+            'assigned_staff'    => 'required|string|max:255',
+            'potential_revenue' => 'nullable|numeric',
+            'currency'          => 'nullable|string|max:10',
+            'remark'            => 'nullable|string|max:1000', // opsional
         ]);
 
         Customer::create($request->all());
@@ -85,7 +88,7 @@ class CustomerController extends Controller
     public function edit($id)
     {
         $customer = Customer::with('vessels')->findOrFail($id);
-        $vessels = Vessel::all(); // ambil semua kapal
+        $vessels = Vessel::all(); 
 
         return view('customers.edit', compact('customer', 'vessels'));
     }
@@ -95,13 +98,33 @@ class CustomerController extends Controller
         $this->authorize('update', $customer);
 
         $request->validate([
-            'name' => 'required',
-            'assigned_staff' => 'required',
-            'potential_revenue' => 'numeric|nullable',
-            'currency' => 'string|max:10'
+            'name' => 'required|string|max:255',
+            'email' => 'nullable|email',
+            'phone' => 'nullable|string|max:20',
+            'assigned_staff' => 'nullable|string|max:255',
+            'last_followup_date' => 'nullable|date',
+            'next_followup_date' => 'nullable|date',
+            'status' => 'nullable|string',
+            'potential_revenue' => 'nullable|numeric',
+            'currency' => 'nullable|string|max:10',
+            'description' => 'nullable|string', 
+            'remark' => 'nullable|string'
         ]);
 
-        $customer->update($request->all());
+        // langsung update semua field kecuali vessels
+        $data = $request->except('vessels');
+        $customer->update($data);
+
+        if ($request->has('vessels')) {
+            $newVessels = $request->vessels;
+
+            Vessel::where('customer_id', $customer->id)
+                ->whereNotIn('id', $newVessels)
+                ->update(['customer_id' => 0]);
+
+            Vessel::whereIn('id', $newVessels)
+                ->update(['customer_id' => $customer->id]);
+        }
 
         return redirect()->route('customers.index')->with('success', 'Customer updated successfully.');
     }
@@ -114,9 +137,9 @@ class CustomerController extends Controller
         return redirect()->route('customers.index')->with('success', 'Customer deleted successfully.');
     }
 
-    public function show($id)
+    public function show(Customer $customer)
     {
-        $customer = Customer::findOrFail($id);
+        $customer->load('vessels'); // biar bisa langsung akses vessel
         return view('customers.show', compact('customer'));
     }
 

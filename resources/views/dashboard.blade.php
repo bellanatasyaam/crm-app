@@ -1,17 +1,25 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Dashboard') }}
-        </h2>
-    </x-slot>
+@extends('layouts.app')
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
-                    {{ __("You're logged in!") }}
+@section('content')
+<div class="container py-5">
+    <h2 class="mb-4">Master Data Menu</h2>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h4>Customer Dashboard</h4>
+                    <a href="{{ route('customers.index') }}" class="btn btn-primary mt-3">Go to Customers</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h4>Marketing Dashboard</h4>
+                    <a href="{{ route('marketing.index') }}" class="btn btn-success mt-3">Go to Marketing</a>
                 </div>
             </div>
         </div>
     </div>
-</x-app-layout>
+</div>
+@endsection

@@ -66,7 +66,7 @@
                 <div class="input-group">
                     <input type="number" name="potential_revenue" class="form-control" value="{{ $customer->potential_revenue }}" required>
                     <select name="currency" class="form-select" style="max-width:120px;">
-                        @foreach(['USD','IDR','SGD','EUR'] as $currency)
+                        @foreach(['USD','IDR','SGD','EUR', 'MYR'] as $currency)
                             <option value="{{ $currency }}" {{ $customer->currency == $currency ? 'selected' : '' }}>
                                 {{ $currency }}
                             </option>
@@ -79,26 +79,36 @@
         <!-- Vessels (multi select) -->
         <div class="mt-3">
             <label class="form-label">Assign Vessels</label>
-            <select name="vessels[]" class="form-select" multiple>
-                @foreach($vessels as $v)
-                    <option value="{{ $v->id }}" 
-                        {{ in_array($v->id, $customer->vessels->pluck('id')->toArray()) ? 'selected' : '' }}>
-                        {{ $v->name }}
+            <select name="vessels[]" multiple class="form-control">
+                @foreach($vessels as $vessel)
+                    <option value="{{ $vessel->id }}" {{ $vessel->customer_id == $customer->id ? 'selected' : '' }}>
+                        {{ $vessel->vessel_name }}
                     </option>
                 @endforeach
             </select>
             <small class="text-muted">*Hold CTRL (Windows) / CMD (Mac) untuk pilih lebih dari satu vessel</small>
         </div>
 
-        <div class="mt-3">
-            <label class="form-label">Notes</label>
-            <textarea name="notes" class="form-control" rows="3">{{ $customer->notes }}</textarea>
+        <!-- Description -->
+       <div class="form-group">
+            <label>Description</label>
+            <textarea name="description" class="form-control">{{ old('description', $customer->description) }}</textarea>
+        </div>
+
+        <!-- Remark -->
+        <div class="mb-3">
+            <label for="remark" class="form-label">Remark</label>
+            <textarea name="remark" id="remark" class="form-control" rows="3" placeholder="Tambahkan catatan opsional (boleh kosong)">{{ old('remark', $customer->remark ?? '') }}</textarea>
         </div>
 
         <div class="mt-4 d-flex gap-2">
             <button type="submit" class="btn btn-success">Update</button>
             <a href="{{ route('customers.index') }}" class="btn btn-secondary">Back</a>
+            <a href="{{ route('customers.vessels.index', $customer->id) }}" class="btn btn-info">
+                View Vessels
+            </a>
         </div>
+        
     </form>
 </div>
 @endsection
