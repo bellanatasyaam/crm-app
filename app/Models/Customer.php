@@ -35,4 +35,10 @@ class Customer extends Model
         return $this->hasMany(Vessel::class);
     }
 
+    public function assignedStaff()
+    {
+        return $this->belongsTo(User::class, 'assigned_staff_id');
+    }
+
+
 }

@@ -12,7 +12,7 @@ class CustomerController extends Controller
 {
     public function index(Request $request)
     {
-         $query = Customer::query();
+        $query = Customer::query();
 
         // Search by name
         if ($request->filled('search')) {
@@ -29,10 +29,10 @@ class CustomerController extends Controller
             $query->where('assigned_staff', 'like', '%' . $request->assigned_staff . '%');
         }
 
-        // ⚡ Semua staff bisa lihat semua progress, jadi tidak ada filter di sini
-        $customers = $query->with('vessels') // ambil juga data kapal
-                   ->orderBy('last_followup_date', 'asc')
-                   ->paginate(10);
+        // ⚡ Semua staff bisa lihat semua progress
+        $customers = $query->with('vessels')
+            ->orderBy('last_followup_date', 'asc')
+            ->paginate(10);
 
         // Ringkasan data (summary)
         $summary = [
@@ -64,7 +64,9 @@ class CustomerController extends Controller
 
     public function create()
     {
-        $customers = Customer::with('vessels')->get(); // ✅ include vessels
+        $this->authorize('create', Customer::class);
+
+        $customers = Customer::with('vessels')->get();
         $vessels   = Vessel::all();   
 
         return view('customers.create', compact('customers', 'vessels'));
@@ -72,12 +74,14 @@ class CustomerController extends Controller
 
     public function store(Request $request)
     {
+        $this->authorize('create', Customer::class);
+
         $request->validate([
             'name'              => 'required|string|max:255',
             'assigned_staff'    => 'required|string|max:255',
             'potential_revenue' => 'nullable|numeric',
             'currency'          => 'nullable|string|max:10',
-            'remark'            => 'nullable|string|max:1000', // opsional
+            'remark'            => 'nullable|string|max:1000',
         ]);
 
         Customer::create($request->all());
@@ -85,11 +89,11 @@ class CustomerController extends Controller
         return redirect()->route('customers.index')->with('success', 'Customer created successfully.');
     }
 
-    public function edit($id)
+    public function edit(Customer $customer)
     {
-        $customer = Customer::with('vessels')->findOrFail($id);
-        $vessels = Vessel::all(); 
+        $this->authorize('update', $customer);
 
+        $vessels = Vessel::all(); 
         return view('customers.edit', compact('customer', 'vessels'));
     }
 
@@ -98,20 +102,19 @@ class CustomerController extends Controller
         $this->authorize('update', $customer);
 
         $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'nullable|email',
-            'phone' => 'nullable|string|max:20',
-            'assigned_staff' => 'nullable|string|max:255',
-            'last_followup_date' => 'nullable|date',
-            'next_followup_date' => 'nullable|date',
-            'status' => 'nullable|string',
+            'name'              => 'required|string|max:255',
+            'email'             => 'nullable|email',
+            'phone'             => 'nullable|string|max:20',
+            'assigned_staff'    => 'nullable|string|max:255',
+            'last_followup_date'=> 'nullable|date',
+            'next_followup_date'=> 'nullable|date',
+            'status'            => 'nullable|string',
             'potential_revenue' => 'nullable|numeric',
-            'currency' => 'nullable|string|max:10',
-            'description' => 'nullable|string', 
-            'remark' => 'nullable|string'
+            'currency'          => 'nullable|string|max:10',
+            'description'       => 'nullable|string', 
+            'remark'            => 'nullable|string'
         ]);
 
-        // langsung update semua field kecuali vessels
         $data = $request->except('vessels');
         $customer->update($data);
 
@@ -132,41 +135,55 @@ class CustomerController extends Controller
     public function destroy(Customer $customer)
     {
         $this->authorize('delete', $customer);
-        $customer->delete();
 
+        $customer->delete();
         return redirect()->route('customers.index')->with('success', 'Customer deleted successfully.');
     }
 
     public function show(Customer $customer)
     {
-        $customer->load('vessels'); // biar bisa langsung akses vessel
+        $this->authorize('view', $customer);
+
+        $customer->load('vessels');
         return view('customers.show', compact('customer'));
     }
 
     public function print()
     {
-        $customers = \App\Models\Customer::all();
+        $user = auth()->user();
+
+        if ($user->role == 'super_admin') {
+            // Super admin bisa lihat semua
+            $customers = Customer::with('assignedStaff')->get();
+        } else {
+            // Staff cuma bisa lihat customer yg assigned ke dia
+            $customers = Customer::with('assignedStaff')
+                ->where('assigned_staff_id', $user->id)
+                ->get();
+        }
 
         $pdf = Pdf::loadView('customers.print', compact('customers'))
-                ->setPaper('A4', 'landscape');
+            ->setPaper('A4', 'landscape');
 
         return $pdf->stream('customers.pdf');
     }
 
-    public function printSingle($id)
+    public function printSingle(Customer $customer)
     {
-        $customer = \App\Models\Customer::findOrFail($id);
+        $this->authorize('view', $customer);
 
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('customers.print_single', compact('customer'))
-                ->setPaper('A4', 'portrait');
+        $pdf = Pdf::loadView('customers.print_single', compact('customer'))
+            ->setPaper('A4', 'portrait');
 
         return $pdf->stream('customer-'.$customer->name.'.pdf');
     }
 
     public function getVessels($id)
     {
+        $customer = Customer::findOrFail($id);
+        $this->authorize('view', $customer);
+
         $vessels = Vessel::where('customer_id', $id)->get();
         return response()->json($vessels);
     }
-
 }

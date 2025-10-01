@@ -52,6 +52,9 @@
     <div class="d-flex justify-content-between mb-3">
         <h2 class="mb-0" style="font-size:18px;">Customer + Vessels Dashboard</h2>
         <div class="d-flex gap-2">
+            <a href="{{ route('customers_vessels.create') }}" class="btn btn-primary btn-sm">
+                + New Customer
+            </a>
             <a href="{{ route('dashboard') }}" class="btn btn-secondary btn-sm">
                 Back to Master Menu
             </a>

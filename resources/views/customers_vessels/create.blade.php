@@ -7,6 +7,9 @@
     <form action="{{ route('customers.vessels.store', $customer->id) }}" method="POST">
         @csrf
 
+        {{-- Hidden input untuk customer_id --}}
+        <input type="hidden" name="customer_id" value="{{ $customer->id }}">
+
         <div class="mb-3">
             <label class="form-label">Vessel Name</label>
             <input type="text" name="name" class="form-control" required>
@@ -28,7 +31,7 @@
         </div>
 
         <button type="submit" class="btn btn-success">Save</button>
-        <a href="{{ route('customers.show', $customer->id) }}" class="btn btn-secondary">Cancel</a>
+        <a href="{{ route('customers_vessels.index') }}" class="btn btn-secondary">Cancel</a>
     </form>
 </div>
 @endsection

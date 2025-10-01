@@ -3,7 +3,6 @@
 namespace App\Providers;
 
 use Illuminate\Support\Facades\Gate;
-// use Illuminate\Support\Facades\Gate;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 
 class AuthServiceProvider extends ServiceProvider
@@ -15,6 +14,7 @@ class AuthServiceProvider extends ServiceProvider
      */
     protected $policies = [
         \App\Models\Customer::class => \App\Policies\CustomerPolicy::class,
+        \App\Models\Vessel::class => \App\Policies\VesselPolicy::class,
     ];
 
     /**
@@ -24,10 +24,10 @@ class AuthServiceProvider extends ServiceProvider
     {
         $this->registerPolicies();
 
-        // Gate global untuk super admin
+        // Super admin boleh semua
         Gate::before(function ($user, $ability) {
             if ($user->role === 'super_admin') {
-                return true; 
+                return true;
             }
         });
     }

@@ -10,6 +10,27 @@
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th, td { border: 1px solid #000; padding: 6px; text-align: left; font-size: 11px; }
         th { background: #f2f2f2; }
+
+        .signatures {
+            display: table;
+            width: 100%;
+            margin-top: 80px;
+            text-align: center;
+            font-size: 12px;
+        }
+
+        .sign-box {
+            display: table-cell;
+            width: 20%; /* 5 kolom = 20% */
+            vertical-align: top;
+        }
+        .sign-line {
+            margin: 50px auto 5px auto; /* kasih auto biar ke tengah */
+            border-top: 1px solid #000;
+            display: block;
+            width: 120px; /* atur panjang garis sesuai mau */
+        }
+
     </style>
 </head>
 <body>
@@ -45,5 +66,35 @@
             @endforeach
         </tbody>
     </table>
+
+    <!-- tanda tangan -->
+        <div class="signatures">
+            <div class="sign-box">
+                <p>Prepared by:</p>
+                <div class="sign-line"></div>
+                <p>Admin</p>
+            </div>
+            <div class="sign-box">
+                <p>Reviewed by:</p>
+                <div class="sign-line"></div>
+                <p>Marketing</p>
+            </div>
+            <div class="sign-box">
+                <p>Reviewed by:</p>
+                <div class="sign-line"></div>
+                <p>Finance</p>
+            </div>
+            <div class="sign-box">
+                <p>Acknowledged by:</p>
+                <div class="sign-line"></div>
+                <p>Manager</p>
+            </div>
+            <div class="sign-box">
+                <p>Approved by:</p>
+                <div class="sign-line"></div>
+                <p>Director</p>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

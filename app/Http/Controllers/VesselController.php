@@ -14,6 +14,8 @@ class VesselController extends Controller
      */
     public function index(Customer $customer = null)
     {
+        $this->authorize('viewAny', Vessel::class);
+
         if ($customer) {
             // Nested: vessel untuk 1 customer
             $vessels = $customer->vessels()->with('assignedStaff')->get();
@@ -28,20 +30,20 @@ class VesselController extends Controller
 
             return view('vessels.index', [
                 'vessels'  => $vessels,
-                'customer' => null, // bedain dari sini
+                'customer' => null,
             ]);
         }
     }
+
     /**
      * Show the form for creating a new resource.
      */
     public function create()
     {
-        // Ambil semua customer untuk dropdown
-        $customers = Customer::all();
+        $this->authorize('create', Vessel::class);
 
-        // Ambil semua staff selain super_admin (kalau mau assign staff)
-        $staffs = User::where('role', '!=', 'super_admin')->get();
+        $customers = Customer::all();
+        $staffs    = User::where('role', '!=', 'super_admin')->get();
 
         return view('vessels.create', compact('customers', 'staffs'));
     }
@@ -51,6 +53,8 @@ class VesselController extends Controller
      */
     public function store(Request $request, Customer $customer)
     {
+        $this->authorize('create', Vessel::class);
+
         $request->validate([
             'vessel_name' => 'required|string',
         ]);
@@ -69,6 +73,8 @@ class VesselController extends Controller
      */
     public function show(Customer $customer, Vessel $vessel)
     {
+        $this->authorize('view', $vessel);
+
         return view('vessels.show', compact('customer', 'vessel'));
     }
 
@@ -77,6 +83,8 @@ class VesselController extends Controller
      */
     public function edit(Customer $customer, Vessel $vessel)
     {
+        $this->authorize('update', $vessel);
+
         $staff = User::all();
         return view('vessels.edit', compact('customer', 'vessel', 'staff'));
     }
@@ -86,6 +94,8 @@ class VesselController extends Controller
      */
     public function update(Request $request, Customer $customer, Vessel $vessel)
     {
+        $this->authorize('update', $vessel);
+
         $request->validate([
             'vessel_name' => 'required|string',
         ]);
@@ -101,6 +111,8 @@ class VesselController extends Controller
      */
     public function destroy(Customer $customer, Vessel $vessel)
     {
+        $this->authorize('delete', $vessel);
+
         $vessel->delete();
 
         return redirect()->route('vessels.index')

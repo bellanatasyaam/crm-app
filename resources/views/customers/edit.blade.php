@@ -11,33 +11,33 @@
         <div class="row g-3">
             <div class="col-md-6">
                 <label class="form-label">Customer Name</label>
-                <input type="text" name="name" class="form-control" value="{{ $customer->name }}" required>
+                <input type="text" name="name" class="form-control" value="{{ old('name', $customer->name) }}" required>
             </div>
             <div class="col-md-6">
                 <label class="form-label">Assigned Staff</label>
-                <input type="text" name="assigned_staff" class="form-control" value="{{ $customer->assigned_staff }}" required>
+                <input type="text" name="assigned_staff" class="form-control" value="{{ old('assigned_staff', $customer->assigned_staff) }}" required>
             </div>
         </div>
 
         <div class="row g-3 mt-2">
             <div class="col-md-6">
                 <label class="form-label">Email</label>
-                <input type="email" name="email" class="form-control" value="{{ $customer->email }}" required>
+                <input type="email" name="email" class="form-control" value="{{ old('email', $customer->email) }}" required>
             </div>
             <div class="col-md-6">
                 <label class="form-label">Phone</label>
-                <input type="text" name="phone" class="form-control" value="{{ $customer->phone }}" required>
+                <input type="text" name="phone" class="form-control" value="{{ old('phone', $customer->phone) }}" required>
             </div>
         </div>
 
         <div class="row g-3 mt-2">
             <div class="col-md-6">
                 <label class="form-label">Last Contact Date</label>
-                <input type="date" name="last_followup_date" class="form-control" value="{{ $customer->last_followup_date }}">
+                <input type="date" name="last_followup_date" class="form-control" value="{{ old('last_followup_date', $customer->last_followup_date) }}">
             </div>
             <div class="col-md-6">
                 <label class="form-label">Next Follow-Up</label>
-                <input type="date" name="next_followup_date" class="form-control" value="{{ $customer->next_followup_date }}">
+                <input type="date" name="next_followup_date" class="form-control" value="{{ old('next_followup_date', $customer->next_followup_date) }}">
             </div>
         </div>
 
@@ -55,7 +55,7 @@
                         'Quotation send',
                         'Done / Closing'
                     ] as $status)
-                        <option value="{{ $status }}" {{ $customer->status == $status ? 'selected' : '' }}>
+                        <option value="{{ $status }}" {{ old('status', $customer->status) == $status ? 'selected' : '' }}>
                             {{ $status }}
                         </option>
                     @endforeach
@@ -64,10 +64,10 @@
             <div class="col-md-6">
                 <label class="form-label">Potential Revenue</label>
                 <div class="input-group">
-                    <input type="number" name="potential_revenue" class="form-control" value="{{ $customer->potential_revenue }}" required>
+                    <input type="number" name="potential_revenue" class="form-control" value="{{ old('potential_revenue', $customer->potential_revenue) }}" required>
                     <select name="currency" class="form-select" style="max-width:120px;">
                         @foreach(['USD','IDR','SGD','EUR', 'MYR'] as $currency)
-                            <option value="{{ $currency }}" {{ $customer->currency == $currency ? 'selected' : '' }}>
+                            <option value="{{ $currency }}" {{ old('currency', $customer->currency) == $currency ? 'selected' : '' }}>
                                 {{ $currency }}
                             </option>
                         @endforeach
@@ -76,12 +76,13 @@
             </div>
         </div>
 
-        <!-- Vessels (multi select) -->
+        <!-- Vessels -->
         <div class="mt-3">
             <label class="form-label">Assign Vessels</label>
             <select name="vessels[]" multiple class="form-control">
                 @foreach($vessels as $vessel)
-                    <option value="{{ $vessel->id }}" {{ $vessel->customer_id == $customer->id ? 'selected' : '' }}>
+                    <option value="{{ $vessel->id }}" 
+                        {{ in_array($vessel->id, old('vessels', $customer->vessels->pluck('id')->toArray())) ? 'selected' : '' }}>
                         {{ $vessel->vessel_name }}
                     </option>
                 @endforeach
@@ -90,25 +91,25 @@
         </div>
 
         <!-- Description -->
-       <div class="form-group">
+        <div class="form-group mt-3">
             <label>Description</label>
             <textarea name="description" class="form-control">{{ old('description', $customer->description) }}</textarea>
         </div>
 
         <!-- Remark -->
-        <div class="mb-3">
+        <div class="mb-3 mt-2">
             <label for="remark" class="form-label">Remark</label>
-            <textarea name="remark" id="remark" class="form-control" rows="3" placeholder="Tambahkan catatan opsional (boleh kosong)">{{ old('remark', $customer->remark ?? '') }}</textarea>
+            <textarea name="remark" id="remark" class="form-control" rows="3" placeholder="Tambahkan catatan opsional (boleh kosong)">{{ old('remark', $customer->remark) }}</textarea>
         </div>
 
         <div class="mt-4 d-flex gap-2">
             <button type="submit" class="btn btn-success">Update</button>
             <a href="{{ route('customers.index') }}" class="btn btn-secondary">Back</a>
-            <a href="{{ route('customers.vessels.index', $customer->id) }}" class="btn btn-info">
+            <a href="{{ route('customers_vessels.index', $customer->id) }}" class="btn btn-info">
                 View Vessels
             </a>
         </div>
-        
+
     </form>
 </div>
 @endsection

@@ -7,13 +7,31 @@
         <div class="card-body">
             <p><strong>Name:</strong> {{ $customer->name }}</p>
             <p><strong>Assigned Staff:</strong> {{ $customer->assigned_staff }}</p>
-            <p><strong>Last Contact Date:</strong> {{ $customer->last_followup_date }}</p>
-            <p><strong>Next Follow-Up:</strong> {{ $customer->next_followup_date }}</p>
+            <p><strong>Last Contact Date:</strong> {{ $customer->last_followup_date ?? '-' }}</p>
+            <p><strong>Next Follow-Up:</strong> {{ $customer->next_followup_date ?? '-' }}</p>
+            <p><strong>Description:</strong> 
+                @if($customer->description)
+                    <span class="truncate">{{ $customer->description }}</span>
+                    <span class="more-link" onclick="toggleDesc(this)">More</span>
+                    <span class="full-text d-none">{{ $customer->description }}</span>
+                @else
+                    -
+                @endif
+            </p>
+            <p><strong>Remark:</strong> 
+                @if($customer->remark)
+                    <span class="truncate">{{ $customer->remark }}</span>
+                    <span class="more-link" onclick="toggleDesc(this)">More</span>
+                    <span class="full-text d-none">{{ $customer->remark }}</span>
+                @else
+                    -
+                @endif
+            </p>
         </div>
     </div>
 
     <h4 class="mb-3">Vessels</h4>
-    <a href="{{ route('customers.vessels.create', $customer->id) }}" class="btn btn-primary mb-3">+ Add Vessel</a>
+    <a href="{{ route('customers_vessels.create', $customer->id) }}" class="btn btn-primary mb-3">+ Add Vessel</a>
 
     <table class="table table-bordered">
         <thead>
@@ -25,12 +43,28 @@
             </tr>
         </thead>
         <tbody>
+            @php
+                $statusColors = [
+                    'Follow up'        => 'badge bg-primary',
+                    'On progress'      => 'badge bg-info text-dark',
+                    'Request'          => 'badge bg-warning text-dark',
+                    'Waiting approval' => 'badge bg-secondary',
+                    'Approve'          => 'badge bg-success',
+                    'On going'         => 'badge bg-dark',
+                    'Quotation send'   => 'badge bg-primary',
+                    'Done / Closing'   => 'badge bg-success',
+                ];
+            @endphp
             @forelse($customer->vessels as $vessel)
                 <tr>
                     <td>{{ $vessel->vessel_name }}</td>
-                    <td>{{ $vessel->status }}</td>
+                    <td>
+                        <span class="{{ $statusColors[$vessel->status] ?? 'badge bg-light text-dark' }}">
+                            {{ $vessel->status }}
+                        </span>
+                    </td>
                     <td>{{ $vessel->currency }} {{ number_format($vessel->potential_revenue, 0) }}</td>
-                    <td>{{ $vessel->next_followup_date }}</td>
+                    <td>{{ $vessel->next_followup_date ?? '-' }}</td>
                 </tr>
             @empty
                 <tr>
@@ -42,4 +76,22 @@
 
     <a href="{{ route('customers.index') }}" class="btn btn-secondary">Back</a>
 </div>
+
+{{-- JS Expandable --}}
+<script>
+function toggleDesc(el) {
+    let parent = el.closest('p');
+    let trunc = parent.querySelector('.truncate');
+    let full = parent.querySelector('.full-text');
+    if (full.classList.contains('d-none')) {
+        trunc.style.display = 'none';
+        full.classList.remove('d-none');
+        el.innerText = "Less";
+    } else {
+        trunc.style.display = 'inline-block';
+        full.classList.add('d-none');
+        el.innerText = "More";
+    }
+}
+</script>
 @endsection

@@ -34,7 +34,7 @@ class User extends Authenticatable
     public function isAdmin()
     {
         $adminEmails = [
-            'admin@example.com', // email admin
+            'bellanatasyaam@gmail.com', // email admin
             // bisa ditambah email lain di sini
         ];
 

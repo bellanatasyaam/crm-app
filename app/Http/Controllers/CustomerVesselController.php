@@ -10,7 +10,7 @@ class CustomerVesselController extends Controller
 {
     public function index()
     {
-        $customers = \App\Models\Customer::with('vessels')->get();
+        $customers = Customer::with('vessels')->get();
         return view('customers_vessels.index', compact('customers'));
     }
 
@@ -23,33 +23,38 @@ class CustomerVesselController extends Controller
     }
 
     // Form tambah vessel khusus customer ini
-    public function create($customerId)
+    public function create(Customer $customer)
     {
-        $customer = Customer::findOrFail($customerId);
-        return view('customers.vessels.create', compact('customer'));
+        // $customer langsung dari route {customer}
+        return view('customers_vessels.create', compact('customer'));
     }
 
     // Simpan vessel baru ke customer
-    public function store(Request $request, $customerId)
+    public function store(Request $request, Customer $customer)
     {
-        $customer = Customer::findOrFail($customerId);
-
         $data = $request->validate([
-            'vessel_name'      => 'required|string|max:255',
-            'port_of_call'     => 'nullable|string|max:255',
-            'estimate_revenue' => 'nullable|numeric',
-            'currency'         => 'nullable|string|max:10',
-            'description'      => 'nullable|string',
-            'remark'           => 'nullable|string',
-            'status'           => 'nullable|string|max:50',
-            'last_contact'     => 'nullable|date',
-            'next_follow_up'   => 'nullable|date',
+            'name'              => 'required|string|max:255',
+            'imo_number'        => 'nullable|string|max:255',
+            'flag'              => 'nullable|string|max:255',
+            'type'              => 'nullable|string|max:255',
+            'port_of_call'      => 'nullable|string|max:255',
+            'estimate_revenue'  => 'nullable|numeric',
+            'currency'          => 'nullable|string|max:10',
+            'description'       => 'nullable|string',
+            'remark'            => 'nullable|string',
+            'status'            => 'nullable|string|max:50',
+            'last_contact'      => 'nullable|date',
+            'next_follow_up'    => 'nullable|date',
         ]);
+
+        // mapping name → vessel_name
+        $data['vessel_name'] = $data['name'];
+        unset($data['name']); // buang supaya tidak bentrok kolom
 
         $customer->vessels()->create($data);
 
-        return redirect()->route('customers.show', $customerId)
-                         ->with('success', 'Vessel added successfully.');
+        return redirect()->route('customers_vessels.index')
+            ->with('success', 'Vessel berhasil ditambahkan.');
     }
 
     public function edit($id)
@@ -73,5 +78,4 @@ class CustomerVesselController extends Controller
         $customer = Customer::with('vessels')->findOrFail($id);
         return view('customers.profile', compact('customer'));
     }
-
 }

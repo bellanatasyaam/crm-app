@@ -4,12 +4,8 @@
 <div class="container py-4">
 
     <style>
-        /* Container full width biar tabel ga kepotong */
-        .container {
-            max-width: 100% !important;
-        }
+        .container { max-width: 100% !important; }
 
-        /* Style tabel */
         table.custom-table {
             font-size: 13px;
             border-collapse: collapse;
@@ -27,18 +23,17 @@
             background: #f8f9fa;
             font-weight: 600;
         }
-        table.custom-table td {
-            background: #fff;
-        }
+        table.custom-table td { background: #fff; }
 
-        /* Kolom panjang boleh turun */
-        table.custom-table td:nth-child(9),   /* Description */
-        table.custom-table td:nth-child(11) { /* Remark */
+        /* Kolom panjang */
+        table.custom-table td.desc-col,
+        table.custom-table td.remark-col {
             white-space: normal !important;
             word-break: break-word;
+            max-width: 250px;
+            text-align: left;
         }
 
-        /* Tombol aksi */
         .table-actions {
             display: flex;
             gap: 3px;
@@ -49,23 +44,33 @@
             padding: 2px 5px;
         }
 
-        /* Batas teks kolom */
-        .table td {
+        /* Text ellipsis */
+        .truncate {
+            display: inline-block;
             max-width: 200px;
+            white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            vertical-align: bottom;
+        }
+
+        .more-link {
+            cursor: pointer;
+            color: #0d6efd;
+            font-size: 11px;
+            margin-left: 5px;
         }
     </style>
 
     <!-- Header -->
     <div class="d-flex justify-content-between mb-3">
-        <h2 class="mb-0" style="font-size:18px;">Customer Dashboard</h2>
+        <h2 class="mb-0" style="font-size:18px;">Marketing Dashboard</h2>
         <div class="d-flex gap-2">
             <a href="{{ route('customers.print') }}" class="btn btn-success btn-sm" target="_blank">
                 <i class="fa fa-print"></i> Print Report
             </a>
             <a href="{{ route('customers.create') }}" class="btn btn-primary btn-sm">
-                + Add Customer
+                + Add Activity
             </a>
             <a href="{{ route('dashboard') }}" class="btn btn-secondary btn-sm">
                 Back to Master Menu
@@ -78,6 +83,7 @@
         <table class="custom-table">
             <thead>
                 <tr>
+                    <th>Description</th>
                     <th>Name</th>
                     <th>Email</th>
                     <th>Phone</th>
@@ -86,7 +92,6 @@
                     <th>Next FU</th>
                     <th>Status</th>
                     <th>Revenue</th>
-                    <th>Description</th>
                     <th>Vessels</th>
                     <th>Remark</th>
                     <th>Action</th>
@@ -95,6 +100,17 @@
             <tbody>
                 @foreach($customers as $c)
                 <tr>
+                    {{-- Description paling depan --}}
+                    <td class="desc-col" title="{{ $c->description }}">
+                        @if($c->description)
+                            <span class="truncate">{{ $c->description }}</span>
+                            <span class="more-link" onclick="toggleDesc(this)">More</span>
+                            <span class="full-text d-none">{{ $c->description }}</span>
+                        @else
+                            -
+                        @endif
+                    </td>
+
                     <td>{{ $c->name }}</td>
                     <td>{{ $c->email ?? '-' }}</td>
                     <td>{{ $c->phone ?? '-' }}</td>
@@ -119,9 +135,6 @@
                         </span>
                     </td>
                     <td>{{ $c->currency }} {{ number_format($c->potential_revenue, 0) }}</td>
-                    <td title="{{ $c->description }}">
-                        {{ \Illuminate\Support\Str::limit($c->description, 20) ?? '-' }}
-                    </td>
                     <td>
                         @forelse($c->vessels as $v)
                             <span class="badge bg-info text-dark">{{ $v->vessel_name }}</span>
@@ -129,34 +142,27 @@
                             -
                         @endforelse
                     </td>
-                    <td title="{{ $c->remark }}">
+                    <td class="remark-col" title="{{ $c->remark }}">
                         {{ \Illuminate\Support\Str::limit($c->remark, 20) }}
                     </td>
                     <td>
                         <div class="table-actions">
                             @can('update', $c)
-                                @if(Route::has('customers.edit'))
-                                    <a href="{{ route('customers.edit', $c->id) }}" class="btn btn-warning btn-sm">Edit</a>
-                                @endif
+                                <a href="{{ route('marketing.edit', $c->id) }}" class="btn btn-warning btn-sm">Edit</a>
+                            @endcan
 
-                                @if(Route::has('customers.show'))
-                                    <a href="{{ route('customers.show', $c->id) }}" class="btn btn-info btn-sm">Detail</a>
-                                @endif
+                            @can('view', $c)
+                                <a href="{{ route('marketing.show', $c->id) }}" class="btn btn-info btn-sm">Detail</a>
                             @endcan
 
                             @can('delete', $c)
-                                @if(Route::has('customers.destroy'))
-                                    <form action="{{ route('customers.destroy', $c->id) }}" method="POST" style="display:inline;">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button class="btn btn-danger btn-sm">Del</button>
-                                    </form>
-                                @endif
+                                <form action="{{ route('marketing.destroy', $c->id) }}" method="POST" style="display:inline;">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button class="btn btn-danger btn-sm">Del</button>
+                                </form>
                             @endcan
-
-                            <a href="{{ route('customers.print_single', $c->id) }}" target="_blank" class="btn btn-secondary btn-sm">
-                                🖨
-                            </a>
+                            <a href="{{ route('customers.print_single', $c->id) }}" target="_blank" class="btn btn-secondary btn-sm">🖨</a>
                         </div>
                     </td>
                 </tr>
@@ -165,10 +171,27 @@
         </table>
     </div>
 
-    <!-- Pagination -->
     <div class="d-flex justify-content-center mt-3">
         {{ $customers->links() }}
     </div>
 
 </div>
+
+{{-- JS Expandable --}}
+<script>
+function toggleDesc(el) {
+    let row = el.closest('td');
+    let trunc = row.querySelector('.truncate');
+    let full = row.querySelector('.full-text');
+    if (full.classList.contains('d-none')) {
+        trunc.style.display = 'none';
+        full.classList.remove('d-none');
+        el.innerText = "Less";
+    } else {
+        trunc.style.display = 'inline-block';
+        full.classList.add('d-none');
+        el.innerText = "More";
+    }
+}
+</script>
 @endsection
