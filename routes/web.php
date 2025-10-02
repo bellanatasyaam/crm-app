@@ -1,4 +1,4 @@
-<?php
+<?php 
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CustomerController;
@@ -55,28 +55,33 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     /**
      * ======================
-     * CUSTOMERS + VESSELS (RELASI)
+     * CUSTOMERS + VESSELS (GLOBAL LIST)
      * ======================
      */
-    // Semua vessels (global view)
-    Route::get('/customers-vessels', [CustomerVesselController::class, 'index'])->name('customers_vessels.index');
+    Route::resource('customers-vessels', CustomerVesselController::class)
+        ->names([
+            'index'   => 'customers_vessels.index',
+            'create'  => 'customers_vessels.create',
+            'store'   => 'customers_vessels.store',
+            'show'    => 'customers_vessels.show',
+            'edit'    => 'customers_vessels.edit',
+            'update'  => 'customers_vessels.update',
+            'destroy' => 'customers_vessels.destroy',
+        ]);
 
-    // Create vessels global
-    Route::get('/customers-vessels/create', [CustomerVesselController::class, 'create'])->name('customers_vessels.create');
-    Route::post('/customers-vessels', [CustomerVesselController::class, 'store'])->name('customers_vessels.store');
-
-    // Update global
-    Route::put('/customers-vessels/{customer}', [CustomerVesselController::class, 'update'])->name('customers_vessels.update');
-
-    // Detail per customer
+    /**
+     * ======================
+     * CUSTOMERS + VESSELS (NESTED PER CUSTOMER)
+     * ======================
+     */
     Route::prefix('customers/{customer}')->group(function () {
-        Route::get('/edit', [CustomerVesselController::class, 'edit'])->name('customers_vessels.edit');
         Route::get('/profile', [CustomerVesselController::class, 'profile'])->name('customers.profile');
         Route::get('/detail', [CustomerVesselController::class, 'show'])->name('customers.detail');
 
-        // Vessel CRUD khusus Customer
+        // Vessel nested routes
         Route::get('/vessels/create', [CustomerVesselController::class, 'create'])->name('customers.vessels.create');
         Route::post('/vessels', [CustomerVesselController::class, 'store'])->name('customers.vessels.store');
+        Route::get('/vessels/{vessel}', [CustomerVesselController::class, 'show'])->name('customers.vessels.show');
         Route::get('/vessels/{vessel}/edit', [CustomerVesselController::class, 'edit'])->name('customers.vessels.edit');
         Route::put('/vessels/{vessel}', [CustomerVesselController::class, 'update'])->name('customers.vessels.update');
         Route::delete('/vessels/{vessel}', [CustomerVesselController::class, 'destroy'])->name('customers.vessels.destroy');

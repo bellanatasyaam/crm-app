@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="container py-4">
-    <h2 class="mb-4">Customer Detail</h2>
+    <h2 class="mb-4">Customer Profile</h2>
 
     <div class="card mb-4">
         <div class="card-body">
@@ -14,7 +14,7 @@
     </div>
 
     <h4>Vessels</h4>
-    <a href="{{ route('customers.vessels.create', $customer->id) }}" class="btn btn-primary mb-3">+ Add Vessel</a>
+    <a href="{{ route('customers_vessels.create', $customer->id) }}" class="btn btn-primary mb-3">+ Add Vessel</a>
 
     <table class="table table-bordered">
         <thead>

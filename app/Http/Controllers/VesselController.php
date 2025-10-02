@@ -51,56 +51,76 @@ class VesselController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request, Customer $customer)
+    public function store(Request $request, Customer $customer = null)
     {
         $this->authorize('create', Vessel::class);
 
-        $request->validate([
+        $data = $request->validate([
             'vessel_name' => 'required|string',
+            'customer_id' => 'nullable|exists:customers,id',
         ]);
 
-        $data = $request->all();
-        $data['customer_id'] = $customer->id;
+        if ($customer) {
+            $data['customer_id'] = $customer->id;
+        }
 
         Vessel::create($data);
 
-        return redirect()->route('customers.vessels.index', $customer->id)
+        return redirect()->route('vessels.index')
                          ->with('success', 'Vessel added successfully.');
     }
 
     /**
      * Show the specified resource.
      */
-    public function show(Customer $customer, Vessel $vessel)
+    /**
+ * Show the specified resource.
+ */
+    public function show(Vessel $vessel)
     {
         $this->authorize('view', $vessel);
 
-        return view('vessels.show', compact('customer', 'vessel'));
+        // Ambil customer lengkap dengan semua vessels (relasi assignedStaff)
+        $customer = Customer::with('vessels.assignedStaff')->findOrFail($vessel->customer_id);
+
+        return view('vessels.show', compact('customer'));
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Customer $customer, Vessel $vessel)
+    public function edit(Vessel $vessel)
     {
         $this->authorize('update', $vessel);
 
         $staff = User::all();
-        return view('vessels.edit', compact('customer', 'vessel', 'staff'));
+        $customers = Customer::all();
+
+        return view('vessels.edit', compact('vessel', 'staff', 'customers'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Customer $customer, Vessel $vessel)
+    public function update(Request $request, Vessel $vessel)
     {
         $this->authorize('update', $vessel);
 
-        $request->validate([
+        $data = $request->validate([
             'vessel_name' => 'required|string',
+            'port_of_call' => 'nullable|string',
+            'estimate_revenue' => 'nullable|numeric',
+            'currency' => 'nullable|string|max:10',
+            'description' => 'nullable|string',
+            'remark' => 'nullable|string',
+            'status' => 'nullable|string|max:50',
+            'last_contact' => 'nullable|date',
+            'next_follow_up' => 'nullable|date',
+            'assigned_staff_id' => 'nullable|exists:users,id',
+            'customer_id' => 'nullable|exists:customers,id',
         ]);
 
-        $vessel->update($request->all());
+        $vessel->update($data);
 
         return redirect()->route('vessels.index')
                          ->with('success', 'Vessel updated successfully.');
@@ -109,7 +129,7 @@ class VesselController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Customer $customer, Vessel $vessel)
+    public function destroy(Vessel $vessel)
     {
         $this->authorize('delete', $vessel);
 

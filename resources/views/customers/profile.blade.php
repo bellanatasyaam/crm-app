@@ -30,7 +30,6 @@
                     <th>Vessel Name</th>
                     <th>Port of Call</th>
                     <th>Status</th>
-                    <th>Revenue</th>
                     <th>Action</th>
                 </tr>
             </thead>
@@ -40,7 +39,6 @@
                         <td>{{ $vessel->vessel_name }}</td>
                         <td>{{ $vessel->port_of_call ?? '-' }}</td>
                         <td>{{ $vessel->status ?? '-' }}</td>
-                        <td>{{ $vessel->estimate_revenue ?? 0 }} {{ $vessel->currency ?? '' }}</td>
                         <td>
                             <a href="{{ route('customers.vessels.edit', [$customer->id, $vessel->id]) }}" class="btn btn-sm btn-warning">Edit</a>
                             <form action="{{ route('customers.vessels.destroy', [$customer->id, $vessel->id]) }}" method="POST" style="display:inline-block">

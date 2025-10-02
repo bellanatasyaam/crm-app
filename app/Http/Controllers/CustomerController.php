@@ -74,19 +74,24 @@ class CustomerController extends Controller
 
     public function store(Request $request)
     {
-        $this->authorize('create', Customer::class);
+        $customer = Customer::create($request->only([
+            'name','email','phone','address','assigned_staff','last_followup_date','next_followup_date','description','remark'
+        ]));
 
-        $request->validate([
-            'name'              => 'required|string|max:255',
-            'assigned_staff'    => 'required|string|max:255',
-            'potential_revenue' => 'nullable|numeric',
-            'currency'          => 'nullable|string|max:10',
-            'remark'            => 'nullable|string|max:1000',
-        ]);
+        if($request->filled('vessels')) {
+            foreach($request->vessels as $v) {
+                CustomerVessel::create([
+                    'customer_id' => $customer->id,
+                    'vessel_name' => $request->vessel_name ?? 'Unknown',
+                    'status' => $request->status ?? 'Follow up',
+                    'currency' => $request->currency ?? 'IDR',
+                    'potential_revenue' => $request->potential_revenue ?? 0,
+                    'next_followup_date' => $request->next_followup_date,
+                ]);
+            }
+        }
 
-        Customer::create($request->all());
-
-        return redirect()->route('customers.index')->with('success', 'Customer created successfully.');
+        return redirect()->route('customers.index')->with('success','Customer created!');
     }
 
     public function edit(Customer $customer)
@@ -144,8 +149,13 @@ class CustomerController extends Controller
     {
         $this->authorize('view', $customer);
 
+        // ambil vessels customer
         $customer->load('vessels');
-        return view('customers.show', compact('customer'));
+
+        // hitung total revenue (sum dari vessels)
+        $totalRevenue = $customer->vessels->sum('estimate_revenue');
+
+        return view('customers.show', compact('customer', 'totalRevenue'));
     }
 
     public function print()

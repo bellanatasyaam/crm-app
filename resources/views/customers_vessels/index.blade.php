@@ -4,14 +4,18 @@
 <div class="container py-4">
 
     <style>
+        /* Container full width */
         .container {
             max-width: 100% !important;
         }
+
+        /* Tabel custom */
         table.custom-table {
             font-size: 13px;
             border-collapse: collapse;
             width: 100%;
         }
+
         table.custom-table th,
         table.custom-table td {
             padding: 5px 6px;
@@ -20,28 +24,33 @@
             border: 1px solid #dee2e6;
             white-space: nowrap;
         }
+
         table.custom-table th {
             background: #f8f9fa;
             font-weight: 600;
         }
+
         table.custom-table td {
             background: #fff;
         }
-        table.custom-table td:nth-child(9),
-        table.custom-table td:nth-child(11) {
+
+        table.custom-table td:nth-child(5) {
             white-space: normal !important;
             word-break: break-word;
         }
+
         .table-actions {
             display: flex;
             gap: 3px;
             justify-content: center;
         }
+
         .table-actions .btn {
             font-size: 11px;
             padding: 2px 5px;
         }
-        .table td {
+
+        table td {
             max-width: 200px;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -53,7 +62,7 @@
         <h2 class="mb-0" style="font-size:18px;">Customer + Vessels Dashboard</h2>
         <div class="d-flex gap-2">
             <a href="{{ route('customers_vessels.create') }}" class="btn btn-primary btn-sm">
-                + New Customer
+                + New Customer Vessel
             </a>
             <a href="{{ route('dashboard') }}" class="btn btn-secondary btn-sm">
                 Back to Master Menu
@@ -90,8 +99,8 @@
                     </td>
                     <td>
                         <div class="table-actions">
-                            <a href="{{ route('customers_vessels.edit', $c->id) }}" class="btn btn-warning btn-sm">Edit</a>
-                            <a href="{{ route('customers.show', $c->id) }}" class="btn btn-info btn-sm">Detail</a>
+                            <a href="{{ route('customers.edit', $c->id) }}" class="btn btn-warning btn-sm">Edit</a>
+                            <a href="{{ route('customers.profile', $c->id) }}" class="btn btn-info btn-sm">Detail</a>
                             <a href="{{ route('customers.vessels.create', $c->id) }}" class="btn btn-primary btn-sm">+ Vessel</a>
                         </div>
                     </td>

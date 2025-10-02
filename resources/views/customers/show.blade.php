@@ -6,6 +6,23 @@
     <div class="card mb-4">
         <div class="card-body">
             <p><strong>Name:</strong> {{ $customer->name }}</p>
+            <p><strong>Email:</strong> {{ $customer->email }}</p>
+            <p><strong>Address:</strong><br>
+                @php
+                    $uniqueAddresses = $customer->vessels
+                        ->map(fn($v) => $v->port_of_call ?? $v->address)
+                        ->filter()
+                        ->unique();
+                @endphp
+
+                @if($uniqueAddresses->count() > 0)
+                    @foreach($uniqueAddresses as $addr)
+                        {{ $addr }} <br>
+                    @endforeach
+                @else
+                    -
+                @endif
+            </p>
             <p><strong>Assigned Staff:</strong> {{ $customer->assigned_staff }}</p>
             <p><strong>Last Contact Date:</strong> {{ $customer->last_followup_date ?? '-' }}</p>
             <p><strong>Next Follow-Up:</strong> {{ $customer->next_followup_date ?? '-' }}</p>
@@ -26,7 +43,45 @@
                 @else
                     -
                 @endif
-            </p>
+            <p><strong>Revenue:</strong> 
+                @php
+                    $revenues = [];
+                    $totalRevenueIDR = 0;
+
+                    // Kurs konversi ke IDR
+                    $exchangeRates = [
+                        'USD' => 15000,
+                        'EUR' => 16000,
+                        'IDR' => 1,
+                        // Tambah mata uang lain jika perlu
+                    ];
+
+                    foreach($customer->vessels as $vessel) {
+                        $curr = $vessel->currency ?? 'IDR';
+                        $amount = is_numeric($vessel->estimate_revenue ?? $vessel->potential_revenue) 
+                                    ? ($vessel->estimate_revenue ?? $vessel->potential_revenue) 
+                                    : 0;
+
+                        // Total per mata uang
+                        if(!isset($revenues[$curr])) $revenues[$curr] = 0;
+                        $revenues[$curr] += $amount;
+
+                        // Total konversi ke IDR
+                        $rate = $exchangeRates[$curr] ?? 1; // default 1 kalau mata uang belum ada
+                        $totalRevenueIDR += $amount * $rate;
+                    }
+                @endphp
+
+                @if(count($revenues) > 0)
+                    @foreach($revenues as $curr => $total)
+                        {{ $curr }} {{ number_format($total, 0) }}@if(!$loop->last), @endif
+                    @endforeach
+                    <br>
+                    <strong>Total in IDR:</strong> {{ number_format($totalRevenueIDR, 0) }}
+                @else
+                    -
+                @endif
+                </p>
         </div>
     </div>
 
@@ -63,7 +118,10 @@
                             {{ $vessel->status }}
                         </span>
                     </td>
-                    <td>{{ $vessel->currency }} {{ number_format($vessel->potential_revenue, 0) }}</td>
+                    <td>
+                        {{ $vessel->currency ?? 'IDR' }} 
+                        {{ number_format($vessel->estimate_revenue ?? $vessel->potential_revenue ?? 0, 0) }}
+                    </td>
                     <td>{{ $vessel->next_followup_date ?? '-' }}</td>
                 </tr>
             @empty
@@ -74,7 +132,9 @@
         </tbody>
     </table>
 
-    <a href="{{ route('customers.index') }}" class="btn btn-secondary">Back</a>
+    <a href="{{ route('customers_vessels.index') }}" class="btn btn-secondary">Back to Customer List</a>
+    <a href="{{ route('customers.index') }}" class="btn btn-secondary">Back to Marketing</a>
+    <a href="{{ route('vessels.index') }}" class="btn btn-secondary">Back to Vessels List</a>
 </div>
 
 {{-- JS Expandable --}}
