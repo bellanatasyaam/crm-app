@@ -4,9 +4,11 @@
 <div class="container py-4">
     <h2 class="mb-4">Add Vessel</h2>
 
-    <form action="{{ route('customers.vessels.store', $customer->id) }}" method="POST">
-    @csrf   
-
+    <form action="{{ $customer 
+        ? route('customers.vessels.store', $customer->id) 
+        : route('vessels.store') }}" method="POST">
+    @csrf
+    
         {{-- Assigned Staff --}}
         <div class="mb-3">
             <label class="form-label">Assigned Staff</label>

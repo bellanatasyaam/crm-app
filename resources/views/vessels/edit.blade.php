@@ -72,7 +72,7 @@
             <label class="form-label">Assigned Staff</label>
             <select name="assigned_staff_id" class="form-select">
                 <option value="">-- Select Staff --</option>
-                @foreach($staff as $user)
+                @foreach($staffs as $user)
                     <option value="{{ $user->id }}" {{ $vessel->assigned_staff_id == $user->id ? 'selected' : '' }}>
                         {{ $user->name }}
                     </option>

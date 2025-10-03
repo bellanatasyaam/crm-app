@@ -38,14 +38,18 @@ class VesselController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(Customer $customer = null)
     {
         $this->authorize('create', Vessel::class);
 
         $customers = Customer::all();
         $staffs    = User::where('role', '!=', 'super_admin')->get();
 
-        return view('vessels.create', compact('customers', 'staffs'));
+        return view('vessels.create', [
+            'customers' => $customers,
+            'staffs'    => $staffs,
+            'customer'  => $customer, // biar di blade ada kalau nested
+        ]);
     }
 
     /**
@@ -56,32 +60,47 @@ class VesselController extends Controller
         $this->authorize('create', Vessel::class);
 
         $data = $request->validate([
-            'vessel_name' => 'required|string',
-            'customer_id' => 'nullable|exists:customers,id',
+            'vessel_name'       => 'required|string',
+            'port_of_call'      => 'nullable|string',
+            'estimate_revenue'  => 'nullable|numeric',
+            'currency'          => 'nullable|string|max:10',
+            'description'       => 'nullable|string',
+            'remark'            => 'nullable|string',
+            'status'            => 'nullable|string|max:50',
+            'last_contact'      => 'nullable|date',
+            'next_follow_up'    => 'nullable|date',
+            'assigned_staff_id' => 'nullable|exists:users,id',
+            'customer_id'       => 'nullable|exists:customers,id',
         ]);
 
         if ($customer) {
+            // kalau nested, customer_id selalu ikut dari URL
             $data['customer_id'] = $customer->id;
         }
 
         Vessel::create($data);
 
-        return redirect()->route('vessels.index')
-                         ->with('success', 'Vessel added successfully.');
+        if ($customer) {
+            return redirect()
+                ->route('customers.vessels.index', $customer->id)
+                ->with('success', 'Vessel added successfully.');
+        }
+
+        return redirect()
+            ->route('vessels.index')
+            ->with('success', 'Vessel added successfully.');
     }
 
     /**
      * Show the specified resource.
      */
-    /**
- * Show the specified resource.
- */
     public function show(Vessel $vessel)
     {
         $this->authorize('view', $vessel);
 
         // Ambil customer lengkap dengan semua vessels (relasi assignedStaff)
-        $customer = Customer::with('vessels.assignedStaff')->findOrFail($vessel->customer_id);
+        $customer = Customer::with('vessels.assignedStaff')
+            ->findOrFail($vessel->customer_id);
 
         return view('vessels.show', compact('customer'));
     }
@@ -93,10 +112,14 @@ class VesselController extends Controller
     {
         $this->authorize('update', $vessel);
 
-        $staff = User::all();
+        $staffs    = User::where('role', '!=', 'super_admin')->get();
         $customers = Customer::all();
 
-        return view('vessels.edit', compact('vessel', 'staff', 'customers'));
+        return view('vessels.edit', [
+            'vessel'    => $vessel,
+            'staffs'    => $staffs,
+            'customers' => $customers,
+        ]);
     }
 
     /**
@@ -107,23 +130,24 @@ class VesselController extends Controller
         $this->authorize('update', $vessel);
 
         $data = $request->validate([
-            'vessel_name' => 'required|string',
-            'port_of_call' => 'nullable|string',
-            'estimate_revenue' => 'nullable|numeric',
-            'currency' => 'nullable|string|max:10',
-            'description' => 'nullable|string',
-            'remark' => 'nullable|string',
-            'status' => 'nullable|string|max:50',
-            'last_contact' => 'nullable|date',
-            'next_follow_up' => 'nullable|date',
+            'vessel_name'       => 'required|string',
+            'port_of_call'      => 'nullable|string',
+            'estimate_revenue'  => 'nullable|numeric',
+            'currency'          => 'nullable|string|max:10',
+            'description'       => 'nullable|string',
+            'remark'            => 'nullable|string',
+            'status'            => 'nullable|string|max:50',
+            'last_contact'      => 'nullable|date',
+            'next_follow_up'    => 'nullable|date',
             'assigned_staff_id' => 'nullable|exists:users,id',
-            'customer_id' => 'nullable|exists:customers,id',
+            'customer_id'       => 'nullable|exists:customers,id',
         ]);
 
         $vessel->update($data);
 
-        return redirect()->route('vessels.index')
-                         ->with('success', 'Vessel updated successfully.');
+        return redirect()
+            ->route('vessels.index')
+            ->with('success', 'Vessel updated successfully.');
     }
 
     /**
@@ -135,7 +159,8 @@ class VesselController extends Controller
 
         $vessel->delete();
 
-        return redirect()->route('vessels.index')
-                         ->with('success', 'Vessel deleted successfully.');
+        return redirect()
+            ->route('vessels.index')
+            ->with('success', 'Vessel deleted successfully.');
     }
 }

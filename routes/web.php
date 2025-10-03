@@ -57,6 +57,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
      * ======================
      * CUSTOMERS + VESSELS (GLOBAL LIST)
      * ======================
+     * contoh: /customers-vessels/create
+     * ini PAKAI route name customers_vessels.store
      */
     Route::resource('customers-vessels', CustomerVesselController::class)
         ->names([
@@ -73,6 +75,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
      * ======================
      * CUSTOMERS + VESSELS (NESTED PER CUSTOMER)
      * ======================
+     * contoh: /customers/{customer}/vessels/create
+     * ini PAKAI route name customers.vessels.store
      */
     Route::prefix('customers/{customer}')->group(function () {
         Route::get('/profile', [CustomerVesselController::class, 'profile'])->name('customers.profile');

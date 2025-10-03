@@ -15,7 +15,7 @@ class Customer extends Model
         'email',
         'phone',
         'address',
-        'assigned_staff',   // <-- ini penting
+        'assigned_staff',
         'status',
         'currency',
         'potential_revenue',

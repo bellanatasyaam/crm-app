@@ -2,13 +2,32 @@
 
 @section('content')
 <div class="container py-4">
-    <h2>Add Vessel for {{ $customer->name }}</h2>
 
-    <form action="{{ route('customers.vessels.store', $customer->id) }}" method="POST">
+    <h2>
+        @if(isset($customer) && $customer)
+            Add Vessel for {{ $customer->name }}
+        @else
+            Add Vessel (Select Customer)
+        @endif
+    </h2>
+
+    <form action="{{ route('customers_vessels.store') }}" method="POST">
         @csrf
 
-        {{-- Hidden customer_id --}}
-        <input type="hidden" name="customer_id" value="{{ $customer->id }}">
+        @if(isset($customer) && $customer)
+            <input type="hidden" name="customer_id" value="{{ $customer->id }}">
+        @else
+            {{-- Kalau global: dropdown --}}
+            <div class="mb-3">
+                <label class="form-label">Select Customer</label>
+                <select name="customer_id" class="form-select" required>
+                    <option value="">-- Select Customer --</option>
+                    @foreach($customers as $cust)
+                        <option value="{{ $cust->id }}">{{ $cust->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+        @endif
 
         {{-- Assigned Staff --}}
         <div class="mb-3">
@@ -92,7 +111,7 @@
         </div>
 
         <button type="submit" class="btn btn-success">Save</button>
-        <a href="{{ route('customers.show', $customer->id) }}" class="btn btn-secondary">Cancel</a>
+        <a href="{{ route('customers_vessels.index') }}" class="btn btn-secondary">Cancel</a>
     </form>
 </div>
 @endsection

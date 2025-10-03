@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Vessel extends Model
 {
     protected $fillable = [
-        'customer_id','assigned_staff_id','vessel_name','port_of_call',
+        'name', 'email', 'address', 'phone', 'customer_id','assigned_staff_id','vessel_name','port_of_call',
         'estimate_revenue','currency','description','remark','status',
         'last_contact','next_follow_up'
     ];
