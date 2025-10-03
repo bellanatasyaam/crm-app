@@ -54,5 +54,37 @@
         </table>
     @endif
 
+    {{-- Bagian Log Activity --}}
+    <div class="mt-5">
+        <h4>Log Activity</h4>
+        @if($customer->logs->isEmpty())
+            <div class="alert alert-info">No log activity available.</div>
+        @else
+            <table class="table table-bordered detail-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Activity</th>
+                        <th>User</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($customer->logs as $log)
+                        <tr>
+                            <td>{{ $log->created_at->format('d M Y H:i') }}</td>
+                            <td>{{ $log->activity }}</td>
+                            <td>{{ $log->user->name ?? '-' }}</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        @endif
+    </div>
+
+    {{-- Tombol Kembali --}}
+    <a href="{{ route('customers_vessels.index') }}" class="btn btn-secondary">Back to Customer List</a>
+    <a href="{{ route('customers.index') }}" class="btn btn-secondary">Back to Marketing</a>
+    <a href="{{ route('vessels.index') }}" class="btn btn-secondary">Back to Vessels List</a>
+
 </div>
 @endsection

@@ -39,4 +39,11 @@ class Customer extends Model
     {
         return $this->belongsTo(User::class, 'assigned_staff_id');
     }
+    
+    // App\Models\Customer.php
+    public function logs()
+    {
+        return $this->hasMany(Log::class, 'customer_id');
+    }
+
 }

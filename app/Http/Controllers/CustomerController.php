@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Customer;
 use App\Models\Vessel;
+use App\Models\Log; // ✅ Tambahin ini
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -78,6 +79,13 @@ class CustomerController extends Controller
             'name','email','phone','address','assigned_staff','last_followup_date','next_followup_date','description','remark'
         ]));
 
+        // ✅ Tambah log
+        Log::create([
+            'customer_id' => $customer->id,
+            'user_id'     => auth()->id(),
+            'activity'    => 'Created customer: ' . $customer->name,
+        ]);
+
         if($request->filled('vessels')) {
             foreach($request->vessels as $v) {
                 CustomerVessel::create([
@@ -123,6 +131,13 @@ class CustomerController extends Controller
         $data = $request->except('vessels');
         $customer->update($data);
 
+        // ✅ Tambah log
+        Log::create([
+            'customer_id' => $customer->id,
+            'user_id'     => auth()->id(),
+            'activity'    => 'Updated customer: ' . $customer->name,
+        ]);
+
         if ($request->has('vessels')) {
             $newVessels = $request->vessels;
 
@@ -141,7 +156,18 @@ class CustomerController extends Controller
     {
         $this->authorize('delete', $customer);
 
+        $customerName = $customer->name;
+        $customerId   = $customer->id;
+
         $customer->delete();
+
+        // ✅ Tambah log
+        Log::create([
+            'customer_id' => $customerId,
+            'user_id'     => auth()->id(),
+            'activity'    => 'Deleted customer: ' . $customerName,
+        ]);
+
         return redirect()->route('customers.index')->with('success', 'Customer deleted successfully.');
     }
 
@@ -172,6 +198,13 @@ class CustomerController extends Controller
                 ->get();
         }
 
+        // ✅ Tambah log
+        Log::create([
+            'customer_id' => null,
+            'user_id'     => auth()->id(),
+            'activity'    => 'Printed all customers list',
+        ]);
+
         $pdf = Pdf::loadView('customers.print', compact('customers'))
             ->setPaper('A4', 'landscape');
 
@@ -181,6 +214,13 @@ class CustomerController extends Controller
     public function printSingle(Customer $customer)
     {
         $this->authorize('view', $customer);
+
+        // ✅ Tambah log
+        Log::create([
+            'customer_id' => $customer->id,
+            'user_id'     => auth()->id(),
+            'activity'    => 'Printed profile for customer: ' . $customer->name,
+        ]);
 
         $pdf = Pdf::loadView('customers.print_single', compact('customer'))
             ->setPaper('A4', 'portrait');

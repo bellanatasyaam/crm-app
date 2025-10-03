@@ -115,8 +115,8 @@ class CustomerVesselController extends Controller
                          ->with('success', 'Vessel berhasil diupdate.');
     }
 
-    // Profile customer
-    public function profile(Customer $customer)
+    // Profile customer (by model binding)
+    public function showProfile(Customer $customer)
     {
         $customer->load('vessels.assignedStaff');
         return view('customers.profile', compact('customer'));
@@ -134,4 +134,11 @@ class CustomerVesselController extends Controller
         return redirect()->route('customers.detail', $customer->id)
                          ->with('success', 'Vessel berhasil dihapus.');
     }
+
+    public function profile($id)
+    {
+        $customer = Customer::with('logs')->findOrFail($id);
+        return view('customers.profile', compact('customer'));
+    }
+
 }

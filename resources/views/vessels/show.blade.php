@@ -4,48 +4,51 @@
 <div class="container py-4">
 
     <style>
-        table.custom-table {
+        .custom-table {
             font-size: 13px;
             border-collapse: collapse;
             width: 100%;
         }
-        table.custom-table th,
-        table.custom-table td {
-            padding: 5px 6px;
+        .custom-table th,
+        .custom-table td {
+            padding: 6px 8px;
             text-align: center;
             vertical-align: middle;
             border: 1px solid #dee2e6;
             white-space: nowrap;
         }
-        table.custom-table th {
+        .custom-table th {
             background: #f8f9fa;
             font-weight: 600;
         }
         .table-actions {
             display: flex;
-            gap: 3px;
+            gap: 5px;
             justify-content: center;
         }
         .table-actions .btn {
             font-size: 11px;
-            padding: 2px 5px;
+            padding: 2px 6px;
         }
     </style>
 
+    {{-- Customer Profile --}}
     <h2 class="mb-4">Customer Profile</h2>
-
     <div class="card mb-4">
         <div class="card-body">
-            <h4>{{ $customer->name }}</h4>
+            <h4 class="mb-3">{{ $customer->name }}</h4>
             <p><strong>Email:</strong> {{ $customer->email ?? '-' }}</p>
             <p><strong>Phone:</strong> {{ $customer->phone ?? '-' }}</p>
             <p><strong>Address:</strong> {{ $customer->address ?? '-' }}</p>
         </div>
     </div>
 
+    {{-- Vessels List --}}
     <div class="d-flex justify-content-between mb-3">
         <h4 class="mb-0">Vessels</h4>
-        <a href="{{ route('customers.vessels.create', $customer->id) }}" class="btn btn-primary btn-sm">+ Add Vessel</a>
+        <a href="{{ route('customers.vessels.create', $customer->id) }}" class="btn btn-primary btn-sm">
+            + Add Vessel
+        </a>
     </div>
 
     @if($customer->vessels->isEmpty())
@@ -84,7 +87,7 @@
                                         'Approve'          => 'badge bg-success',
                                         'On going'         => 'badge bg-dark',
                                         'Quotation send'   => 'badge bg-primary',
-                                        'Done / Closing'   => 'badge bg-success'
+                                        'Done / Closing'   => 'badge bg-success',
                                     ];
                                 @endphp
                                 <span class="{{ $statusColors[$v->status] ?? 'badge bg-light text-dark' }}">
@@ -101,13 +104,18 @@
                             <td>{{ $v->customer?->name ?? '-' }}</td>
                             <td>
                                 <div class="table-actions">
-                                    <a href="{{ route('customers.vessels.edit', [$customer->id, $v->id]) }}" class="btn btn-warning btn-sm">Edit</a>
-                                    <form action="{{ route('customers.vessels.destroy', [$customer->id, $v->id]) }}" method="POST" style="display:inline;">
+                                    <a href="{{ route('customers.vessels.edit', [$customer->id, $v->id]) }}" 
+                                       class="btn btn-warning btn-sm">Edit</a>
+                                    <form action="{{ route('customers.vessels.destroy', [$customer->id, $v->id]) }}" 
+                                          method="POST" 
+                                          onsubmit="return confirm('Delete this vessel?')" 
+                                          style="display:inline;">
                                         @csrf
                                         @method('DELETE')
-                                        <button class="btn btn-danger btn-sm" onclick="return confirm('Delete this vessel?')">Del</button>
+                                        <button class="btn btn-danger btn-sm">Del</button>
                                     </form>
-                                    <a href="{{ route('vessels.show', $v->id) }}" class="btn btn-info btn-sm">Detail</a>
+                                    <a href="{{ route('vessels.show', $v->id) }}" 
+                                       class="btn btn-info btn-sm">Detail</a>
                                 </div>
                             </td>
                         </tr>
@@ -116,6 +124,13 @@
             </table>
         </div>
     @endif
+
+    {{-- Navigation --}}
+    <div class="mt-4 d-flex gap-2">
+        <a href="{{ route('customers_vessels.index') }}" class="btn btn-secondary">Back to Customer List</a>
+        <a href="{{ route('customers.index') }}" class="btn btn-secondary">Back to Marketing</a>
+        <a href="{{ route('vessels.index') }}" class="btn btn-secondary">Back to Vessels List</a>
+    </div>
 
 </div>
 @endsection

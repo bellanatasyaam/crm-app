@@ -47,5 +47,8 @@
             @endforelse
         </tbody>
     </table>
+    <a href="{{ route('customers_vessels.index') }}" class="btn btn-secondary">Back to Customer List</a>
+    <a href="{{ route('customers.index') }}" class="btn btn-secondary">Back to Marketing</a>
+    <a href="{{ route('vessels.index') }}" class="btn btn-secondary">Back to Vessels List</a>
 </div>
 @endsection
