@@ -69,9 +69,13 @@
             <a href="{{ route('customers.print') }}" class="btn btn-success btn-sm" target="_blank">
                 <i class="fa fa-print"></i> Print Report
             </a>
-            <a href="{{ route('customers.create') }}" class="btn btn-primary btn-sm">
-                + Add Activity
-            </a>
+
+            @can('create', App\Models\Customer::class)
+                <a href="{{ route('customers.create') }}" class="btn btn-primary btn-sm">
+                    + Add Customer
+                </a>
+            @endcan
+
             <a href="{{ route('dashboard') }}" class="btn btn-secondary btn-sm">
                 Back to Master Menu
             </a>

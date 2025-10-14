@@ -20,7 +20,7 @@ class CustomerPolicy
     public function create(User $user)
     {
         // hanya admin & super_admin boleh create
-        return $user->role === 'admin' || $user->role === 'super_admin';
+        return in_array($user->role, ['staff', 'admin', 'super_admin']);
     }
 
     public function update(User $user, Customer $customer)

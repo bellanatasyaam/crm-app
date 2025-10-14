@@ -38,7 +38,7 @@
                 vesselsSelect.innerHTML = "";
 
                 if (customerId) {
-                    fetch(`/customers/${customerId}/vessels`)
+                    fetch(`/customers/${customerId}/vessels-json`)
                         .then(res => res.json())
                         .then(data => {
                             data.forEach(v => {

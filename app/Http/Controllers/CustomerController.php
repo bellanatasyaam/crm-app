@@ -68,9 +68,8 @@ class CustomerController extends Controller
     {
         $this->authorize('create', Customer::class);
 
-        $customers = Customer::with('vessels')->get();
-        $vessels   = Vessel::all();   
-
+        $customers = Customer::all();
+        $vessels = \App\Models\Vessel::all();
         return view('customers.create', compact('customers', 'vessels'));
     }
 
