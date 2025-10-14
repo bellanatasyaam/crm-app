@@ -65,6 +65,8 @@
                     <tr>
                         <th>Date</th>
                         <th>Activity</th>
+                        <th>Type</th>
+                        <th>Detail</th>
                         <th>User</th>
                     </tr>
                 </thead>
@@ -73,6 +75,8 @@
                         <tr>
                             <td>{{ $log->created_at->format('d M Y H:i') }}</td>
                             <td>{{ $log->activity }}</td>
+                            <td>{{ $log->activity_type ?? '-' }}</td>
+                            <td>{{ $log->activity_detail ?? '-' }}</td>
                             <td>{{ $log->user->name ?? '-' }}</td>
                         </tr>
                     @endforeach

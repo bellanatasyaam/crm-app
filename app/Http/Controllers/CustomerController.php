@@ -4,7 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Customer;
 use App\Models\Vessel;
-use App\Models\Log; // ✅ Tambahin ini
+use App\Models\Log;
+use App\Helpers\LogHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -79,12 +80,13 @@ class CustomerController extends Controller
             'name','email','phone','address','assigned_staff','last_followup_date','next_followup_date','description','remark'
         ]));
 
-        // ✅ Tambah log
         Log::create([
-            'customer_id' => $customer->id,
-            'user_id'     => auth()->id(),
-            'activity'    => 'Created customer: ' . $customer->name,
-        ]);
+        'customer_id'    => $customer->id,
+        'user_id'        => auth()->id(),
+        'activity'       => 'Created customer: ' . $customer->name,
+        'activity_type'  => 'create',
+        'activity_detail'=> 'Customer created with email ' . ($customer->email ?? '-'),
+    ]);
 
         if($request->filled('vessels')) {
             foreach($request->vessels as $v) {
@@ -114,7 +116,7 @@ class CustomerController extends Controller
     {
         $this->authorize('update', $customer);
 
-        $request->validate([
+        $validated = $request->validate([
             'name'              => 'required|string|max:255',
             'email'             => 'nullable|email',
             'phone'             => 'nullable|string|max:20',
@@ -124,20 +126,43 @@ class CustomerController extends Controller
             'status'            => 'nullable|string',
             'potential_revenue' => 'nullable|numeric',
             'currency'          => 'nullable|string|max:10',
-            'description'       => 'nullable|string', 
-            'remark'            => 'nullable|string'
+            'description'       => 'nullable|string',
+            'remark'            => 'nullable|string',
+            'address'           => 'nullable|string',
         ]);
 
-        $data = $request->except('vessels');
-        $customer->update($data);
+        // Ambil data dari request, kecuali _token dan _method
+        $fillable = (new Customer)->getFillable();
+        $data = $request->except(['_token', '_method']);
 
-        // ✅ Tambah log
-        Log::create([
-            'customer_id' => $customer->id,
-            'user_id'     => auth()->id(),
-            'activity'    => 'Updated customer: ' . $customer->name,
-        ]);
+        // Pastikan hanya ambil yang termasuk fillable
+        $data = array_intersect_key($data, array_flip($fillable));
 
+        // 🔎 cek perbedaan dulu (sebelum update)
+        $changes = [];
+        foreach ($data as $field => $newValue) {
+            $oldValue = $customer->getOriginal($field);
+
+            if ($oldValue != $newValue) {
+                $changes[] = ucfirst($field)." from '".($oldValue ?? '-')."' to '".($newValue ?? '-')."'";
+            }
+        }
+
+        // baru update data customer
+        $customer->update($request->all());
+
+        // bikin log hanya jika ada perubahan beneran
+        if (!empty($changes)) {
+            Log::create([
+                'customer_id'     => $customer->id,
+                'user_id'         => auth()->id(),
+                'activity'        => 'Updated customer: '.$customer->name,
+                'activity_type'   => 'update',
+                'activity_detail' => implode(', ', $changes),
+            ]);
+        }
+
+        // update vessels kalau ada
         if ($request->has('vessels')) {
             $newVessels = $request->vessels;
 
@@ -161,11 +186,12 @@ class CustomerController extends Controller
 
         $customer->delete();
 
-        // ✅ Tambah log
         Log::create([
-            'customer_id' => $customerId,
-            'user_id'     => auth()->id(),
-            'activity'    => 'Deleted customer: ' . $customerName,
+            'customer_id'    => $customerId,
+            'user_id'        => auth()->id(),
+            'activity'       => 'Deleted customer: ' . $customerName,
+            'activity_type'  => 'delete',
+            'activity_detail'=> 'Customer was deleted permanently',
         ]);
 
         return redirect()->route('customers.index')->with('success', 'Customer deleted successfully.');
@@ -198,11 +224,12 @@ class CustomerController extends Controller
                 ->get();
         }
 
-        // ✅ Tambah log
         Log::create([
-            'customer_id' => null,
-            'user_id'     => auth()->id(),
-            'activity'    => 'Printed all customers list',
+            'customer_id'    => null,
+            'user_id'        => auth()->id(),
+            'activity'       => 'Printed all customers list',
+            'activity_type'  => 'print',
+            'activity_detail'=> 'Exported customers list to PDF',
         ]);
 
         $pdf = Pdf::loadView('customers.print', compact('customers'))
@@ -215,11 +242,12 @@ class CustomerController extends Controller
     {
         $this->authorize('view', $customer);
 
-        // ✅ Tambah log
         Log::create([
-            'customer_id' => $customer->id,
-            'user_id'     => auth()->id(),
-            'activity'    => 'Printed profile for customer: ' . $customer->name,
+            'customer_id'    => $customer->id,
+            'user_id'        => auth()->id(),
+            'activity'       => 'Printed profile for customer: ' . $customer->name,
+            'activity_type'  => 'print',
+            'activity_detail'=> 'Exported customer profile to PDF',
         ]);
 
         $pdf = Pdf::loadView('customers.print_single', compact('customer'))

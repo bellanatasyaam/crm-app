@@ -30,8 +30,8 @@ class CustomerPolicy
             return true;
         }
 
-        // staff cuma bisa update customer yg assigned ke dia
-        return strtolower(trim($user->name)) === strtolower(trim($customer->assigned_staff));
+        // staff cuma bisa update customer yang assigned ke dia (berdasarkan ID)
+        return $user->id === $customer->assigned_staff_id;
     }
 
     public function delete(User $user, Customer $customer)
@@ -40,7 +40,7 @@ class CustomerPolicy
             return true;
         }
 
-        return strtolower(trim($user->name)) === strtolower(trim($customer->assigned_staff));
+        return $user->id === $customer->assigned_staff_id;
     }
 
 }

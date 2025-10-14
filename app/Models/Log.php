@@ -13,8 +13,10 @@ class Log extends Model
         'customer_id',
         'user_id',
         'activity',
+        'activity_type',
+        'activity_detail',
     ];
-
+    
     public function customer()
     {
         return $this->belongsTo(Customer::class);

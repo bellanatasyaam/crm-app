@@ -69,6 +69,6 @@ class UserController extends Controller
 
     public function isAdmin()
     {
-        return $this->email === 'admin@example.com';
+        return $this->email === 'bellanatasyaam@gmail.com';
     }
 }
