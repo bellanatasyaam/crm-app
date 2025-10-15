@@ -4,7 +4,10 @@
 <div class="container py-4">
     <h2 class="mb-4">Edit Vessel: {{ $vessel->vessel_name }}</h2>
 
-    <form action="{{ route('customers.vessels.update', [$vessel->customer_id, $vessel->id]) }}" method="POST">
+    <form action="{{ $vessel->customer_id 
+        ? route('customers.vessels.update', [$vessel->customer_id, $vessel->id]) 
+        : route('vessels.update', $vessel->id) }}" 
+        method="POST">
         @csrf
         @method('PUT')
 

@@ -167,22 +167,26 @@
                         @endunless
                         <td>
                             <div class="table-actions">
-                                @if($customer)
-                                    <a href="{{ route('customers.vessels.edit', [$customer->id, $vessel->id]) }}" class="btn btn-warning btn-sm">Edit</a>
-                                    <a href="{{ route('customers.vessels.show', [$customer->id, $vessel->id]) }}" class="btn btn-info btn-sm">Detail</a>
-                                    <form action="{{ route('customers.vessels.destroy', [$customer->id, $vessel->id]) }}" method="POST" style="display:inline;">
+                                @if($vessel->assigned_staff_id == auth()->id())
+                                    {{-- Staff yang login sesuai, bisa edit --}}
+                                    @if($customer)
+                                        <a href="{{ route('customers.vessels.edit', [$customer->id, $vessel->id]) }}" class="btn btn-warning btn-sm">Edit</a>
+                                        <a href="{{ route('customers.vessels.show', [$customer->id, $vessel->id]) }}" class="btn btn-info btn-sm">Detail</a>
+                                    @else
+                                        <a href="{{ route('vessels.edit', $vessel->id) }}" class="btn btn-warning btn-sm">Edit</a>
+                                        <a href="{{ route('vessels.show', $vessel->id) }}" class="btn btn-info btn-sm">Detail</a>
+                                    @endif
+
+                                    <form action="{{ $customer ? route('customers.vessels.destroy', [$customer->id, $vessel->id]) : route('vessels.destroy', $vessel->id) }}"
+                                        method="POST" style="display:inline;">
                                         @csrf
                                         @method('DELETE')
                                         <button class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">Del</button>
                                     </form>
                                 @else
-                                    <a href="{{ route('vessels.edit', $vessel->id) }}" class="btn btn-warning btn-sm">Edit</a>
-                                    <a href="{{ route('vessels.show', $vessel->id) }}" class="btn btn-info btn-sm">Detail</a>
-                                    <form action="{{ route('vessels.destroy', $vessel->id) }}" method="POST" style="display:inline;">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">Del</button>
-                                    </form>
+                                    {{-- Kalau bukan staff yang assigned --}}
+                                    <a href="{{ $customer ? route('customers.vessels.show', [$customer->id, $vessel->id]) : route('vessels.show', $vessel->id) }}" 
+                                    class="btn btn-info btn-sm">Detail</a>
                                 @endif
                             </div>
                         </td>

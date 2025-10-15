@@ -2,34 +2,55 @@
 
 @section('content')
 <div class="container py-4">
-    <h2>Edit Customer</h2>
+    <h2>Customer + Vessels Dashboard</h2>
 
-    <form action="{{ route('customers_vessels.update', $customer->id) }}" method="POST">
-        @csrf
-        @method('PUT')
-
-        <div class="mb-3">
-            <label class="form-label">Name</label>
-            <input type="text" name="name" class="form-control" value="{{ $customer->name }}" required>
+    <div class="d-flex justify-content-between mb-3">
+        <h5></h5>
+        <div>
+            <a href="{{ route('customers_vessels.create') }}" class="btn btn-primary">+ New Customer Vessel</a>
+            <a href="{{ route('master.menu') }}" class="btn btn-secondary">Back to Master Menu</a>
         </div>
+    </div>
 
-        <div class="mb-3">
-            <label class="form-label">Email</label>
-            <input type="email" name="email" class="form-control" value="{{ $customer->email }}">
-        </div>
+    <table class="table table-bordered table-striped align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Address</th>
+                <th>Vessels</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach ($customers as $customer)
+            <tr>
+                <td>{{ $customer->name }}</td>
+                <td>{{ $customer->email }}</td>
+                <td>{{ $customer->phone }}</td>
+                <td>{{ $customer->address }}</td>
+                <td>
+                    @if ($customer->vessels->count() > 0)
+                        @foreach ($customer->vessels as $vessel)
+                            <span class="badge bg-info text-dark">{{ $vessel->name }}</span>
+                        @endforeach
+                    @else
+                        <em>No vessels</em>
+                    @endif
+                </td>
+                <td>
+                    {{-- Hanya tampilkan tombol Edit kalau data ini dibuat oleh user yang login --}}
+                    @if ($customer->assigned_staff_id == Auth::id())
+                        <a href="{{ route('customers_vessels.edit', $customer->id) }}" class="btn btn-warning btn-sm">Edit</a>
+                    @endif
 
-        <div class="mb-3">
-            <label class="form-label">Phone</label>
-            <input type="text" name="phone" class="form-control" value="{{ $customer->phone }}">
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">Address</label>
-            <textarea name="address" class="form-control">{{ $customer->address }}</textarea>
-        </div>
-
-        <button type="submit" class="btn btn-primary">Update</button>
-        <a href="{{ route('customers_vessels.index') }}" class="btn btn-secondary">Cancel</a>
-    </form>
+                    <a href="{{ route('customers_vessels.show', $customer->id) }}" class="btn btn-info btn-sm">Detail</a>
+                    <a href="{{ route('customers_vessels.create', ['customer_id' => $customer->id]) }}" class="btn btn-primary btn-sm">+ Vessel</a>
+                </td>
+            </tr>
+            @endforeach
+        </tbody>
+    </table>
 </div>
 @endsection

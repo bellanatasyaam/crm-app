@@ -75,20 +75,36 @@ class CustomerController extends Controller
 
     public function store(Request $request)
     {
-        $customer = Customer::create($request->only([
-            'name','email','phone','address','assigned_staff','last_followup_date','next_followup_date','description','remark'
-        ]));
+        $data = $request->only([
+            'name',
+            'email',
+            'phone',
+            'address',
+            'assigned_staff',
+            'last_followup_date',
+            'next_followup_date',
+            'description',
+            'remark'
+        ]);
 
+        // 🟢 Tambahkan data staff login ke kolom terkait
+        $data['assigned_staff_id'] = auth()->id();
+        $data['assigned_staff'] = auth()->user()->name;
+        $data['assigned_staff_email'] = auth()->user()->email;
+
+        $customer = Customer::create($data);
+
+        // Simpan log
         Log::create([
-        'customer_id'    => $customer->id,
-        'user_id'        => auth()->id(),
-        'activity'       => 'Created customer: ' . $customer->name,
-        'activity_type'  => 'create',
-        'activity_detail'=> 'Customer created with email ' . ($customer->email ?? '-'),
-    ]);
+            'customer_id'    => $customer->id,
+            'user_id'        => auth()->id(),
+            'activity'       => 'Created customer: ' . $customer->name,
+            'activity_type'  => 'create',
+            'activity_detail'=> 'Customer created with email ' . ($customer->email ?? '-'),
+        ]);
 
-        if($request->filled('vessels')) {
-            foreach($request->vessels as $v) {
+        if ($request->filled('vessels')) {
+            foreach ($request->vessels as $v) {
                 CustomerVessel::create([
                     'customer_id' => $customer->id,
                     'vessel_name' => $request->vessel_name ?? 'Unknown',
@@ -100,7 +116,7 @@ class CustomerController extends Controller
             }
         }
 
-        return redirect()->route('customers.index')->with('success','Customer created!');
+        return redirect()->route('customers.index')->with('success', 'Customer created!');
     }
 
     public function edit(Customer $customer)
@@ -190,7 +206,7 @@ class CustomerController extends Controller
             'activity_type'  => 'delete',
             'activity_detail'=> 'Customer was deleted permanently',
         ]);
-        
+
         $customer->delete();
 
         return redirect()->route('customers.index')->with('success', 'Customer deleted successfully.');

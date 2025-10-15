@@ -99,7 +99,14 @@
                     </td>
                     <td>
                         <div class="table-actions">
-                            <a href="{{ route('customers.edit', $c->id) }}" class="btn btn-warning btn-sm">Edit</a>
+                            {{-- Tombol Edit hanya muncul kalau staff yang login = assigned_staff_id --}}
+                            @if($c->assigned_staff_id == auth()->id())
+                                <a href="{{ route('customers.edit', $c->id) }}" class="btn btn-warning btn-sm">Edit</a>
+                            @else
+                                <small class="text-muted" style="font-size:11px;">
+                                    Assigned to: {{ $c->assignedStaff->name ?? 'Unassigned' }}
+                                </small>
+                            @endif
                             <a href="{{ route('customers.profile', $c->id) }}" class="btn btn-info btn-sm">Detail</a>
                             <a href="{{ route('customers.vessels.create', $c->id) }}" class="btn btn-primary btn-sm">+ Vessel</a>
                         </div>
