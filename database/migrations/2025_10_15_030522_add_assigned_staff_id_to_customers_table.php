@@ -9,13 +9,11 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
+    public function up()
     {
-        if (!Schema::hasColumn('users', 'role')) {
-            Schema::table('users', function (Blueprint $table) {
-                $table->string('role')->default('marketing');
-            });
-        }
+        Schema::table('customers', function (Blueprint $table) {
+            $table->unsignedBigInteger('assigned_staff_id')->nullable()->after('assigned_staff');
+        });
     }
 
     /**
@@ -23,7 +21,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('users', function (Blueprint $table) {
+        Schema::table('customers', function (Blueprint $table) {
             //
         });
     }

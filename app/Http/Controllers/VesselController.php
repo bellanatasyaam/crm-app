@@ -16,17 +16,24 @@ class VesselController extends Controller
     {
         $this->authorize('viewAny', Vessel::class);
 
+        $perPage = 10; // jumlah vessel per halaman, bisa diubah
+
         if ($customer) {
-            // Nested: vessel untuk 1 customer
-            $vessels = $customer->vessels()->with('assignedStaff')->get();
+            // Nested: vessel untuk 1 customer, pakai paginate()
+            $vessels = $customer->vessels()
+                ->with('assignedStaff')
+                ->orderBy('id', 'desc')
+                ->paginate($perPage);
 
             return view('vessels.index', [
                 'vessels'  => $vessels,
                 'customer' => $customer,
             ]);
         } else {
-            // Global: semua vessel
-            $vessels = Vessel::with(['customer', 'assignedStaff'])->get();
+            // Global: semua vessel, pakai paginate()
+            $vessels = Vessel::with(['customer', 'assignedStaff'])
+                ->orderBy('id', 'desc')
+                ->paginate($perPage);
 
             return view('vessels.index', [
                 'vessels'  => $vessels,

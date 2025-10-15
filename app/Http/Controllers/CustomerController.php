@@ -167,7 +167,7 @@ class CustomerController extends Controller
 
             Vessel::where('customer_id', $customer->id)
                 ->whereNotIn('id', $newVessels)
-                ->update(['customer_id' => 0]);
+                ->update(['customer_id' => null]);
 
             Vessel::whereIn('id', $newVessels)
                 ->update(['customer_id' => $customer->id]);
@@ -183,8 +183,6 @@ class CustomerController extends Controller
         $customerName = $customer->name;
         $customerId   = $customer->id;
 
-        $customer->delete();
-
         Log::create([
             'customer_id'    => $customerId,
             'user_id'        => auth()->id(),
@@ -192,6 +190,8 @@ class CustomerController extends Controller
             'activity_type'  => 'delete',
             'activity_detail'=> 'Customer was deleted permanently',
         ]);
+        
+        $customer->delete();
 
         return redirect()->route('customers.index')->with('success', 'Customer deleted successfully.');
     }

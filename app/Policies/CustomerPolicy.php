@@ -25,18 +25,16 @@ class CustomerPolicy
 
     public function update(User $user, Customer $customer)
     {
-        // admin/super_admin bebas
-        if ($user->role === 'admin' || $user->role === 'super_admin') {
+        if (in_array($user->role, ['admin', 'super_admin'])) {
             return true;
         }
 
-        // staff cuma bisa update customer yang assigned ke dia (berdasarkan ID)
         return $user->id === $customer->assigned_staff_id;
     }
 
     public function delete(User $user, Customer $customer)
     {
-        if ($user->role === 'admin' || $user->role === 'super_admin') {
+        if (in_array($user->role, ['admin', 'super_admin'])) {
             return true;
         }
 

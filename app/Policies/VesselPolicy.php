@@ -17,19 +17,21 @@ class VesselPolicy
 
     public function update(User $user, Vessel $vessel)
     {
-        if ($user->role === 'admin' || $user->role === 'super_admin') {
+        if (in_array($user->role, ['admin', 'super_admin'])) {
             return true;
         }
 
-        return $user->name === $vessel->assigned_staff;
+        // staff hanya bisa edit vessel yg assigned ke dia
+        return $user->id === $vessel->assigned_staff_id;
     }
 
     public function delete(User $user, Vessel $vessel)
     {
-        if ($user->role === 'admin' || $user->role === 'super_admin') {
+        if (in_array($user->role, ['admin', 'super_admin'])) {
             return true;
         }
 
-        return $user->name === $vessel->assigned_staff;
+        // staff hanya bisa hapus vessel yg assigned ke dia
+        return $user->id === $vessel->assigned_staff_id;
     }
 }

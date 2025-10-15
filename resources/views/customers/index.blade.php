@@ -82,6 +82,13 @@
         </div>
     </div>
 
+    @if (session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
     <!-- Customer Table -->
     <div class="table-responsive">
         <table class="custom-table">
@@ -163,7 +170,7 @@
                                 <form action="{{ route('marketing.destroy', $c->id) }}" method="POST" style="display:inline;">
                                     @csrf
                                     @method('DELETE')
-                                    <button class="btn btn-danger btn-sm">Del</button>
+                                    <button class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this customer?')">Del</button>
                                 </form>
                             @endcan
                             <a href="{{ route('customers.print_single', $c->id) }}" target="_blank" class="btn btn-secondary btn-sm">🖨</a>
