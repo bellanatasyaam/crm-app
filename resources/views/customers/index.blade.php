@@ -6,6 +6,29 @@
     <style>
         .container { max-width: 100% !important; }
 
+        /* === HEADER === */
+        .dashboard-header {
+            background: linear-gradient(90deg, #007bff 0%, #00b4d8 100%);
+            color: #fff;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .dashboard-header h2 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        /* === BUTTONS === */
+        .btn {
+            border-radius: 8px;
+            transition: 0.2s ease-in-out;
+        }
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        }
+
         table.custom-table {
             font-size: 13px;
             border-collapse: collapse;
@@ -25,7 +48,6 @@
         }
         table.custom-table td { background: #fff; }
 
-        /* Kolom panjang */
         table.custom-table td.desc-col,
         table.custom-table td.remark-col {
             white-space: normal !important;
@@ -44,7 +66,6 @@
             padding: 2px 5px;
         }
 
-        /* Text ellipsis */
         .truncate {
             display: inline-block;
             max-width: 200px;
@@ -53,30 +74,86 @@
             text-overflow: ellipsis;
             vertical-align: bottom;
         }
-
         .more-link {
             cursor: pointer;
             color: #0d6efd;
             font-size: 11px;
             margin-left: 5px;
         }
+
+        /* === Tambahan Dashboard === */
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .summary-card {
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+            padding: 12px;
+            text-align: center;
+        }
+        .summary-card h4 {
+            font-size: 20px;
+            font-weight: bold;
+            margin: 0;
+        }
+        .summary-card span {
+            color: #6c757d;
+            font-size: 13px;
+        }
+
+        .chart-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        @media(max-width: 992px) {
+            .chart-section { grid-template-columns: 1fr; }
+        }
+
+        /* === Chart adjustment === */
+        .chart-section canvas {
+            max-height: 180px !important;
+        }
+        .chart-legend {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 8px;
+            font-size: 12px;
+        }
+        .chart-legend span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .chart-legend i {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+        }
     </style>
 
-    <!-- Header -->
-    <div class="d-flex justify-content-between mb-3">
-        <h2 class="mb-0" style="font-size:18px;">Marketing Dashboard</h2>
+    <!-- === HEADER === -->
+    <div class="dashboard-header d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0">📊 Marketing Dashboard</h2>
         <div class="d-flex gap-2">
-            <a href="{{ route('customers.print') }}" class="btn btn-success btn-sm" target="_blank">
+            <a href="{{ route('customers.print') }}" class="btn btn-light btn-sm text-success fw-semibold" target="_blank">
                 <i class="fa fa-print"></i> Print Report
             </a>
-
             @can('create', App\Models\Customer::class)
-                <a href="{{ route('customers.create') }}" class="btn btn-primary btn-sm">
+                <a href="{{ route('customers.create') }}" class="btn btn-light btn-sm text-primary fw-semibold">
                     + Add Customer
                 </a>
             @endcan
-
-            <a href="{{ route('dashboard') }}" class="btn btn-secondary btn-sm">
+            <a href="{{ route('dashboard') }}" class="btn btn-outline-light btn-sm">
                 Back to Master Menu
             </a>
         </div>
@@ -88,6 +165,40 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     @endif
+
+    {{-- === Dashboard Summary === --}}
+    <div class="summary-cards">
+        <div class="summary-card">
+            <h4>{{ $summary['total_customers'] ?? 0 }}</h4>
+            <span>Total Customers</span>
+        </div>
+        <div class="summary-card">
+            <h4>{{ $stats['quotation_sent'] ?? 0 }}</h4>
+            <span>Quotation Sent</span>
+        </div>
+        <div class="summary-card">
+            <h4>{{ $stats['follow_up'] ?? 0 }}</h4>
+            <span>Follow Up</span>
+        </div>
+        <div class="summary-card">
+            <h4>{{ $stats['on_progress'] ?? 0 }}</h4>
+            <span>On Progress</span>
+        </div>
+        <div class="summary-card">
+            <h4>{{ $stats['done'] ?? 0 }}</h4>
+            <span>Done / Closing</span>
+        </div>
+    </div>
+
+    {{-- === Chart Section === --}}
+    <div class="chart-section">
+        <div class="card p-3">
+            <canvas id="statusChart" height="180"></canvas>
+        </div>
+        <div class="card p-3">
+            <canvas id="staffChart" height="180"></canvas>
+        </div>
+    </div>
 
     <!-- Customer Table -->
     <div class="table-responsive">
@@ -111,7 +222,6 @@
             <tbody>
                 @foreach($customers as $c)
                 <tr>
-                    {{-- Description paling depan --}}
                     <td class="desc-col" title="{{ $c->description }}">
                         @if($c->description)
                             <span class="truncate">{{ $c->description }}</span>
@@ -121,7 +231,6 @@
                             -
                         @endif
                     </td>
-
                     <td>{{ $c->name }}</td>
                     <td>{{ $c->email ?? '-' }}</td>
                     <td>{{ $c->phone ?? '-' }}</td>
@@ -161,16 +270,14 @@
                             @can('update', $c)
                                 <a href="{{ route('marketing.edit', $c->id) }}" class="btn btn-warning btn-sm">Edit</a>
                             @endcan
-
                             @can('view', $c)
                                 <a href="{{ route('marketing.show', $c->id) }}" class="btn btn-info btn-sm">Detail</a>
                             @endcan
-
                             @can('delete', $c)
                                 <form action="{{ route('marketing.destroy', $c->id) }}" method="POST" style="display:inline;">
                                     @csrf
                                     @method('DELETE')
-                                    <button class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this customer?')">Del</button>
+                                    <button class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">Del</button>
                                 </form>
                             @endcan
                             <a href="{{ route('customers.print_single', $c->id) }}" target="_blank" class="btn btn-secondary btn-sm">🖨</a>
@@ -188,21 +295,84 @@
 
 </div>
 
-{{-- JS Expandable --}}
+{{-- Chart.js --}}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-function toggleDesc(el) {
-    let row = el.closest('td');
-    let trunc = row.querySelector('.truncate');
-    let full = row.querySelector('.full-text');
-    if (full.classList.contains('d-none')) {
-        trunc.style.display = 'none';
-        full.classList.remove('d-none');
-        el.innerText = "Less";
-    } else {
-        trunc.style.display = 'inline-block';
-        full.classList.add('d-none');
-        el.innerText = "More";
+    // === Status Chart ===
+    const ctx1 = document.getElementById('statusChart');
+    const statusChart = new Chart(ctx1, {
+        type: 'pie',
+        data: {
+            labels: [
+                'Follow up', 'On progress', 'Request', 'Waiting approval',
+                'Approve', 'On going', 'Quotation send', 'Done / Closing'
+            ],
+            datasets: [{
+                data: [
+                    {{ $stats['follow_up'] ?? 0 }},
+                    {{ $stats['on_progress'] ?? 0 }},
+                    {{ $stats['request'] ?? 0 }},
+                    {{ $stats['waiting_approval'] ?? 0 }},
+                    {{ $stats['approve'] ?? 0 }},
+                    {{ $stats['on_going'] ?? 0 }},
+                    {{ $stats['quotation_sent'] ?? 0 }},
+                    {{ $stats['done'] ?? 0 }}
+                ],
+                backgroundColor: [
+                    '#60a5fa', '#34d399', '#fbbf24', '#9ca3af',
+                    '#22c55e', '#111827', '#3b82f6', '#ef4444'
+                ]
+            }]
+        },
+        options: {
+            plugins: { legend: { display: false } },
+            maintainAspectRatio: false
+        }
+    });
+
+    // Legend manual horizontal
+    const legendContainer = document.createElement('div');
+    legendContainer.classList.add('chart-legend');
+    const colors = ['#60a5fa','#34d399','#fbbf24','#9ca3af','#22c55e','#111827','#3b82f6','#ef4444'];
+    statusChart.data.labels.forEach((label, i) => {
+        const item = document.createElement('span');
+        item.innerHTML = `<i style="background:${colors[i]}"></i>${label}`;
+        legendContainer.appendChild(item);
+    });
+    ctx1.parentNode.appendChild(legendContainer);
+
+    // === Staff Chart ===
+    const ctx2 = document.getElementById('staffChart');
+    new Chart(ctx2, {
+        type: 'bar',
+        data: {
+            labels: ['Wika', 'Aulia', 'Leni'],
+            datasets: [{
+                label: 'Customers',
+                data: [10, 6, 8],
+                backgroundColor: '#3b82f6'
+            }]
+        },
+        options: {
+            scales: { y: { beginAtZero: true } },
+            maintainAspectRatio: false
+        }
+    });
+
+    // === Toggle More/Less ===
+    function toggleDesc(el) {
+        let row = el.closest('td');
+        let trunc = row.querySelector('.truncate');
+        let full = row.querySelector('.full-text');
+        if (full.classList.contains('d-none')) {
+            trunc.style.display = 'none';
+            full.classList.remove('d-none');
+            el.innerText = "Less";
+        } else {
+            trunc.style.display = 'inline-block';
+            full.classList.add('d-none');
+            el.innerText = "More";
+        }
     }
-}
 </script>
 @endsection

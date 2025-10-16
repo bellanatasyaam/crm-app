@@ -9,6 +9,7 @@ use App\Helpers\LogHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Models\CustomerVessel;
 
 class CustomerController extends Controller
 {
@@ -45,7 +46,7 @@ class CustomerController extends Controller
             'revenue_by_status' => Customer::select('status', DB::raw('SUM(potential_revenue) as revenue'))
                 ->groupBy('status')
                 ->pluck('revenue','status'),
-            'by_staff' => Customer::select('assigned_staff', DB::raw('COUNT(*) as total'))
+            'by_staff' => Customer::select('assigned_staff', DB::raw('COUNT(DISTINCT id) as total'))
                 ->groupBy('assigned_staff')
                 ->pluck('total','assigned_staff'),
             'upcoming_followups' => Customer::whereDate('next_followup_date', '>=', now())
@@ -61,7 +62,19 @@ class CustomerController extends Controller
             'upcoming' => Customer::whereBetween('next_followup_date', [now(), now()->addDays(7)])->count(),
         ];
 
-        return view('customers.index', compact('customers', 'summary', 'reminders'));
+        // Statistik jumlah pelanggan per status (untuk chart di dashboard)
+        $stats = [
+            'follow_up'        => Customer::where('status', 'Follow up')->count(),
+            'on_progress'      => Customer::where('status', 'On progress')->count(),
+            'request'          => Customer::where('status', 'Request')->count(),
+            'waiting_approval' => Customer::where('status', 'Waiting approval')->count(),
+            'approve'          => Customer::where('status', 'Approve')->count(),
+            'on_going'         => Customer::where('status', 'On going')->count(),
+            'quotation_sent'   => Customer::where('status', 'Quotation send')->count(),
+            'done'             => Customer::where('status', 'Done / Closing')->count(),
+        ];
+
+        return view('customers.index', compact('customers', 'summary', 'reminders', 'stats'));
     }
 
     public function create()
@@ -86,8 +99,7 @@ class CustomerController extends Controller
             'description',
             'remark'
         ]);
-
-        // 🟢 Tambahkan data staff login ke kolom terkait
+        
         $data['assigned_staff_id'] = auth()->id();
         $data['assigned_staff'] = auth()->user()->name;
         $data['assigned_staff_email'] = auth()->user()->email;
