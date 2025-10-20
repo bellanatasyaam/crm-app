@@ -21,14 +21,14 @@
 
         .sign-box {
             display: table-cell;
-            width: 20%; /* 5 kolom = 20% */
+            width: 20%; 
             vertical-align: top;
         }
         .sign-line {
-            margin: 50px auto 5px auto; /* kasih auto biar ke tengah */
+            margin: 50px auto 5px auto; 
             border-top: 1px solid #000;
             display: block;
-            width: 120px; /* atur panjang garis sesuai mau */
+            width: 120px; 
         }
 
     </style>
@@ -67,7 +67,6 @@
         </tbody>
     </table>
 
-    <!-- tanda tangan -->
         <div class="signatures">
             <div class="sign-box">
                 <p>Prepared by:</p>

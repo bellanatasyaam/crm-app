@@ -298,7 +298,6 @@
 {{-- Chart.js --}}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    // === Status Chart ===
     const ctx1 = document.getElementById('statusChart');
     const statusChart = new Chart(ctx1, {
         type: 'pie',
@@ -330,7 +329,6 @@
         }
     });
 
-    // Legend manual horizontal
     const legendContainer = document.createElement('div');
     legendContainer.classList.add('chart-legend');
     const colors = ['#60a5fa','#34d399','#fbbf24','#9ca3af','#22c55e','#111827','#3b82f6','#ef4444'];
@@ -341,7 +339,6 @@
     });
     ctx1.parentNode.appendChild(legendContainer);
 
-    // === Staff Chart ===
     const ctx2 = document.getElementById('staffChart');
     new Chart(ctx2, {
         type: 'bar',
@@ -359,7 +356,6 @@
         }
     });
 
-    // === Toggle More/Less ===
     function toggleDesc(el) {
         let row = el.closest('td');
         let trunc = row.querySelector('.truncate');

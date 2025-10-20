@@ -46,4 +46,10 @@ class Customer extends Model
         return $this->hasMany(Log::class, 'customer_id');
     }
 
+    public function customerVessels()
+    {
+        return $this->hasMany(CustomerVessel::class, 'customer_id');
+    }
+
+
 }

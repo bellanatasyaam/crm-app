@@ -44,7 +44,7 @@
                             data.forEach(v => {
                                 let opt = document.createElement('option');
                                 opt.value = v.id;
-                                opt.textContent = v.vessel_name; // sesuaikan kolom
+                                opt.textContent = v.vessel_name;
                                 vesselsSelect.appendChild(opt);
                             });
                         });

@@ -4,21 +4,7 @@
 <div class="container py-4">
 
     <style>
-        /* --- Global --- */
-        .container {
-            max-width: 100% !important;
-        }
-
-        body {
-            background: #f5f6fa;
-        }
-
-        h2 {
-            font-weight: 600;
-            color: #2c3e50;
-        }
-
-        /* --- Header --- */
+        .container { max-width: 100% !important; }
         .dashboard-header {
             background: linear-gradient(90deg, #007bff 0%, #00b4d8 100%);
             color: #fff;
@@ -26,101 +12,44 @@
             border-radius: 10px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
+        .dashboard-header h2 { font-size: 18px; font-weight: 600; }
 
-        .dashboard-header h2 {
-            font-size: 18px;
-            font-weight: 600;
-        }
+        .btn { border-radius: 8px; transition: 0.2s ease-in-out; }
+        .btn:hover { transform: translateY(-1px); box-shadow: 0 2px 6px rgba(0,0,0,0.15); }
 
-        /* --- Button group --- */
-        .btn {
-            border-radius: 8px;
-            transition: 0.2s ease-in-out;
-        }
-        .btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-        }
+        table.custom-table { font-size: 13px; border-collapse: collapse; width: 100%; }
+        table.custom-table th, table.custom-table td { padding: 6px 8px; text-align: center; vertical-align: middle; border: 1px solid #dee2e6; }
+        table.custom-table th { background: #f8f9fa; font-weight: 600; }
+        table.custom-table td { background: #fff; }
+        table.custom-table td.vessel-col { white-space: normal; text-align: left; }
 
-        /* --- Table container --- */
-        .table-wrapper {
-            background: #fff;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            padding: 15px;
-            margin-top: 20px;
-        }
+        .badge { font-size: 11px; margin: 1px; }
 
-        /* --- Custom Table --- */
-        table.custom-table {
-            font-size: 13px;
-            border-collapse: collapse;
-            width: 100%;
-        }
+        .table-actions { display: flex; gap: 4px; flex-wrap: wrap; }
+        .table-actions .btn { font-size: 11px; padding: 3px 6px; }
 
-        table.custom-table th {
-            background: #f1f3f5;
-            font-weight: 600;
-            color: #495057;
-            padding: 10px;
-            text-align: center;
-            border-bottom: 2px solid #dee2e6;
-        }
-
-        table.custom-table td {
-            padding: 8px;
-            text-align: center;
-            vertical-align: middle;
-            border-bottom: 1px solid #eee;
-            background: #fff;
-        }
-
-        table.custom-table tr:hover {
-            background-color: #f8f9fa;
-        }
-
-        /* --- Vessels badge --- */
-        .badge {
-            font-size: 11px;
-            border-radius: 6px;
-            padding: 4px 7px;
-        }
-
-        /* --- Table actions --- */
-        .table-actions {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 4px;
-            justify-content: center;
-        }
-
-        .table-actions .btn {
-            font-size: 11px;
-            padding: 3px 6px;
-        }
-
-        /* --- Assigned text --- */
-        .assigned-text {
-            font-size: 11px;
-            color: #6c757d;
-        }
+        .alert { border-radius: 8px; }
     </style>
 
-    <!-- Header -->
+    {{-- HEADER --}}
     <div class="dashboard-header d-flex justify-content-between align-items-center mb-3">
-        <h2 class="mb-0">🚢 Customer + Vessels Dashboard</h2>
+        <h2 class="mb-0">🚢 Customer & Vessel Dashboard</h2>
         <div class="d-flex gap-2">
-            <a href="{{ route('customers_vessels.create') }}" class="btn btn-light btn-sm text-primary fw-semibold">
-                + New Customer Vessel
-            </a>
-            <a href="{{ route('dashboard') }}" class="btn btn-outline-light btn-sm">
-                Back to Master Menu
-            </a>
+            <a href="{{ route('customers_vessels.create') }}" class="btn btn-light btn-sm text-primary fw-semibold">+ New Customer Vessel</a>
+            <a href="{{ route('dashboard') }}" class="btn btn-outline-light btn-sm">Back to Master Menu</a>
         </div>
     </div>
 
-    <!-- Customer Table -->
-    <div class="table-wrapper table-responsive">
+    {{-- ALERT MESSAGE --}}
+    @if (session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
+    {{-- TABLE --}}
+    <div class="table-responsive">
         <table class="custom-table">
             <thead>
                 <tr>
@@ -133,36 +62,43 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach($customers as $c)
-                <tr>
-                    <td><strong>{{ $c->name }}</strong></td>
-                    <td>{{ $c->email ?? '-' }}</td>
-                    <td>{{ $c->phone ?? '-' }}</td>
-                    <td>{{ $c->address ?? '-' }}</td>
-                    <td>
-                        @forelse($c->vessels as $v)
-                            <span class="badge bg-info text-dark">{{ $v->vessel_name }}</span>
-                        @empty
-                            <em>No vessels</em>
-                        @endforelse
-                    </td>
-                    <td>
-                        <div class="table-actions">
-                            @can('update', $c)
-                                <a href="{{ route('customers.edit', $c->id) }}" class="btn btn-warning btn-sm">Edit</a>
-                            @else
-                                <small class="text-muted" style="font-size:11px;">
-                                    Assigned to: {{ $c->assignedStaff->name ?? 'Unassigned' }}
-                                </small>
-                            @endcan
-                            <a href="{{ route('customers.profile', $c->id) }}" class="btn btn-info btn-sm">Detail</a>
-                            <a href="{{ route('customers.vessels.create', $c->id) }}" class="btn btn-primary btn-sm">+ Vessel</a>
-                        </div>
-                    </td>
-                </tr>
-                @endforeach
+                @forelse ($customers as $customer)
+                    <tr>
+                        <td>{{ $customer->name }}</td>
+                        <td>{{ $customer->email ?? '-' }}</td>
+                        <td>{{ $customer->phone ?? '-' }}</td>
+                        <td>{{ $customer->address ?? '-' }}</td>
+                        {{-- VESSEL + EDIT --}}
+                        <td class="vessel-col">
+                            @forelse ($customer->customerVessels as $cv)
+                                @if($cv->vessel)
+                                    <div class="d-flex align-items-center mb-1">
+                                        <span class="badge bg-info text-dark me-2">{{ $cv->vessel->name }}</span>
+                                        <a href="{{ route('customers_vessels.edit', $cv->id) }}" class="btn btn-sm btn-primary">Edit</a>
+                                    </div>
+                                @endif
+                            @empty
+                                <em class="text-muted">No vessels</em>
+                            @endforelse
+                        </td>
+                        {{-- ACTION --}}
+                        <td class="table-actions">
+                            <a href="{{ route('customers_vessels.show', $customer->id) }}" class="btn btn-info btn-sm">Detail</a>
+                            <a href="{{ route('customers_vessels.create', ['customer_id' => $customer->id]) }}" class="btn btn-primary btn-sm">+ Vessel</a>
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="6" class="text-center text-muted">No customer data found.</td>
+                    </tr>
+                @endforelse
             </tbody>
         </table>
+    </div>
+
+    {{-- PAGINATION --}}
+    <div class="d-flex justify-content-center mt-3">
+        {{ $customers->links() }}
     </div>
 
 </div>

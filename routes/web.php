@@ -61,6 +61,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
      * ini PAKAI route name customers_vessels.store
      */
     Route::resource('customers-vessels', CustomerVesselController::class)
+        ->parameters(['customers-vessels' => 'id'])
         ->names([
             'index'   => 'customers_vessels.index',
             'create'  => 'customers_vessels.create',

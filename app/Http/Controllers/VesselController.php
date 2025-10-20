@@ -9,17 +9,13 @@ use Illuminate\Http\Request;
 
 class VesselController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index(Customer $customer = null)
     {
         $this->authorize('viewAny', Vessel::class);
 
-        $perPage = 10; // jumlah vessel per halaman, bisa diubah
+        $perPage = 10; 
 
         if ($customer) {
-            // Nested: vessel untuk 1 customer, pakai paginate()
             $vessels = $customer->vessels()
                 ->with('assignedStaff')
                 ->orderBy('id', 'desc')
@@ -30,7 +26,6 @@ class VesselController extends Controller
                 'customer' => $customer,
             ]);
         } else {
-            // Global: semua vessel, pakai paginate()
             $vessels = Vessel::with(['customer', 'assignedStaff'])
                 ->orderBy('id', 'desc')
                 ->paginate($perPage);
@@ -42,9 +37,6 @@ class VesselController extends Controller
         }
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create(Customer $customer = null)
     {
         $this->authorize('create', Vessel::class);
@@ -55,13 +47,10 @@ class VesselController extends Controller
         return view('vessels.create', [
             'customers' => $customers,
             'staffs'    => $staffs,
-            'customer'  => $customer, // biar di blade ada kalau nested
+            'customer'  => $customer,
         ]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request, Customer $customer = null)
     {
         $this->authorize('create', Vessel::class);
@@ -81,7 +70,6 @@ class VesselController extends Controller
         ]);
 
         if ($customer) {
-            // kalau nested, customer_id selalu ikut dari URL
             $data['customer_id'] = $customer->id;
         }
 
@@ -98,23 +86,16 @@ class VesselController extends Controller
             ->with('success', 'Vessel added successfully.');
     }
 
-    /**
-     * Show the specified resource.
-     */
     public function show(Vessel $vessel)
     {
         $this->authorize('view', $vessel);
 
-        // Ambil customer lengkap dengan semua vessels (relasi assignedStaff)
         $customer = Customer::with('vessels.assignedStaff')
             ->findOrFail($vessel->customer_id);
 
         return view('vessels.show', compact('customer'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(Vessel $vessel)
     {
         $this->authorize('update', $vessel);

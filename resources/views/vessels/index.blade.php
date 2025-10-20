@@ -222,23 +222,36 @@
                         @endunless
                         <td>
                             <div class="table-actions">
-                                @if($vessel->assigned_staff_id == auth()->id())
-                                    @if($customer)
-                                        <a href="{{ route('customers.vessels.edit', [$customer->id, $vessel->id]) }}" class="btn btn-warning btn-sm">Edit</a>
-                                        <a href="{{ route('customers.vessels.show', [$customer->id, $vessel->id]) }}" class="btn btn-info btn-sm">Detail</a>
+                                @php
+                                    $hasCustomer = isset($vessel->customer_id) && !empty($vessel->customer_id);
+                                @endphp
+
+                                {{-- Tombol untuk Staff yang Assigned atau Super Admin --}}
+                                @if($vessel->assigned_staff_id == auth()->id() || auth()->user()->role == 'super_admin')
+                                    @if($hasCustomer)
+                                        <a href="{{ route('customers_vessels.edit', [$vessel->customer_id, $vessel->id]) }}" class="btn btn-warning btn-sm">Edit</a>
+                                        <a href="{{ route('customers_vessels.show', [$vessel->customer_id, $vessel->id]) }}" class="btn btn-info btn-sm">Detail</a>
+                                        <form action="{{ route('customers.vessels.destroy', [$vessel->customer_id, $vessel->id]) }}" method="POST" style="display:inline;">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">Del</button>
+                                        </form>
                                     @else
                                         <a href="{{ route('vessels.edit', $vessel->id) }}" class="btn btn-warning btn-sm">Edit</a>
                                         <a href="{{ route('vessels.show', $vessel->id) }}" class="btn btn-info btn-sm">Detail</a>
+                                        <form action="{{ route('vessels.destroy', $vessel->id) }}" method="POST" style="display:inline;">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">Del</button>
+                                        </form>
                                     @endif
-                                    <form action="{{ $customer ? route('customers.vessels.destroy', [$customer->id, $vessel->id]) : route('vessels.destroy', $vessel->id) }}"
-                                        method="POST" style="display:inline;">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">Del</button>
-                                    </form>
                                 @else
-                                    <a href="{{ $customer ? route('customers.vessels.show', [$customer->id, $vessel->id]) : route('vessels.show', $vessel->id) }}" 
-                                    class="btn btn-info btn-sm">Detail</a>
+                                    {{-- Untuk staff lain (hanya bisa lihat Detail) --}}
+                                    @if($hasCustomer)
+                                        <a href="{{ route('customers.vessels.show', [$vessel->customer_id, $vessel->id]) }}" class="btn btn-info btn-sm">Detail</a>
+                                    @else
+                                        <a href="{{ route('vessels.show', $vessel->id) }}" class="btn btn-info btn-sm">Detail</a>
+                                    @endif
                                 @endif
                             </div>
                         </td>

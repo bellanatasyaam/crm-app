@@ -7,16 +7,14 @@ use Illuminate\Database\Eloquent\Model;
 
 class CustomerVessel extends Model
 {
-    use HasFactory;
+    public function vessel()
+    {
+        return $this->belongsTo(Vessel::class, 'vessel_id');
+    }
 
-    protected $table = 'customer_vessel';
-
-    protected $fillable = [
-        'customer_id',
-        'vessel_name',
-        'status',
-        'currency',
-        'potential_revenue',
-        'next_followup_date',
-    ];
+    public function customer()
+    {
+        return $this->belongsTo(Customer::class, 'customer_id');
+    }
 }
+

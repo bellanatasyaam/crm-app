@@ -2,55 +2,107 @@
 
 @section('content')
 <div class="container py-4">
-    <h2>Customer + Vessels Dashboard</h2>
+    <h2 class="mb-4">Edit Customer Vessel</h2>
 
-    <div class="d-flex justify-content-between mb-3">
-        <h5></h5>
-        <div>
-            <a href="{{ route('customers_vessels.create') }}" class="btn btn-primary">+ New Customer Vessel</a>
-            <a href="{{ route('master.menu') }}" class="btn btn-secondary">Back to Master Menu</a>
+    <form action="{{ route('customers_vessels.update', $customerVessel->id) }}" method="POST">
+        @csrf
+        @method('PUT')
+
+        <div class="row g-3">
+            <!-- Pilih Customer -->
+            <div class="col-md-6">
+                <label class="form-label">Customer</label>
+                <select name="customer_id" class="form-select" required>
+                    @foreach($customers as $customer)
+                        <option value="{{ $customer->id }}" {{ $customerVessel->customer_id == $customer->id ? 'selected' : '' }}>
+                            {{ $customer->name }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <!-- Pilih Vessel -->
+            <div class="col-md-6">
+                <label class="form-label">Vessel</label>
+                <select name="vessel_id" class="form-select" required>
+                    @foreach($vessels as $vessel)
+                        <option value="{{ $vessel->id }}" {{ $customerVessel->vessel_id == $vessel->id ? 'selected' : '' }}>
+                            {{ $vessel->vessel_name }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
         </div>
-    </div>
 
-    <table class="table table-bordered table-striped align-middle">
-        <thead class="table-light">
-            <tr>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>Address</th>
-                <th>Vessels</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach ($customers as $customer)
-            <tr>
-                <td>{{ $customer->name }}</td>
-                <td>{{ $customer->email }}</td>
-                <td>{{ $customer->phone }}</td>
-                <td>{{ $customer->address }}</td>
-                <td>
-                    @if ($customer->vessels->count() > 0)
-                        @foreach ($customer->vessels as $vessel)
-                            <span class="badge bg-info text-dark">{{ $vessel->name }}</span>
+        <div class="row g-3 mt-3">
+            <!-- Status -->
+            <div class="col-md-6">
+                <label class="form-label">Status</label>
+                <select name="status" class="form-select">
+                    @foreach([
+                        'Follow up',
+                        'On progress',
+                        'Request',
+                        'Waiting approval',
+                        'Approve',
+                        'On going',
+                        'Quotation send',
+                        'Done / Closing'
+                    ] as $status)
+                        <option value="{{ $status }}" {{ old('status', $customerVessel->status) == $status ? 'selected' : '' }}>
+                            {{ $status }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <!-- Potential Revenue -->
+            <div class="col-md-6">
+                <label class="form-label">Potential Revenue</label>
+                <div class="input-group">
+                    <input type="number" name="potential_revenue" class="form-control"
+                        value="{{ old('potential_revenue', $customerVessel->potential_revenue) }}" required>
+                    <select name="currency" class="form-select" style="max-width:120px;">
+                        @foreach(['USD','IDR','SGD','EUR','MYR'] as $currency)
+                            <option value="{{ $currency }}" {{ old('currency', $customerVessel->currency) == $currency ? 'selected' : '' }}>
+                                {{ $currency }}
+                            </option>
                         @endforeach
-                    @else
-                        <em>No vessels</em>
-                    @endif
-                </td>
-                <td>
-                    {{-- Hanya tampilkan tombol Edit kalau data ini dibuat oleh user yang login --}}
-                    @if ($customer->assigned_staff_id == Auth::id())
-                        <a href="{{ route('customers_vessels.edit', $customer->id) }}" class="btn btn-warning btn-sm">Edit</a>
-                    @endif
+                    </select>
+                </div>
+            </div>
+        </div>
 
-                    <a href="{{ route('customers_vessels.show', $customer->id) }}" class="btn btn-info btn-sm">Detail</a>
-                    <a href="{{ route('customers_vessels.create', ['customer_id' => $customer->id]) }}" class="btn btn-primary btn-sm">+ Vessel</a>
-                </td>
-            </tr>
-            @endforeach
-        </tbody>
-    </table>
+        <div class="row g-3 mt-3">
+            <!-- Tanggal Kontak -->
+            <div class="col-md-6">
+                <label class="form-label">Last Contact Date</label>
+                <input type="date" name="last_followup_date" class="form-control"
+                    value="{{ old('last_followup_date', $customerVessel->last_followup_date) }}">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Next Follow-Up</label>
+                <input type="date" name="next_followup_date" class="form-control"
+                    value="{{ old('next_followup_date', $customerVessel->next_followup_date) }}">
+            </div>
+        </div>
+
+        <!-- Description -->
+        <div class="form-group mt-3">
+            <label>Description</label>
+            <textarea name="description" class="form-control" rows="3">{{ old('description', $customerVessel->description) }}</textarea>
+        </div>
+
+        <!-- Remark -->
+        <div class="form-group mt-3">
+            <label>Remark</label>
+            <textarea name="remark" class="form-control" rows="3" placeholder="Tambahkan catatan opsional (boleh kosong)">{{ old('remark', $customerVessel->remark) }}</textarea>
+        </div>
+
+        <div class="mt-4 d-flex gap-2">
+            <button type="submit" class="btn btn-success">Update</button>
+            <a href="{{ route('customers_vessels.index') }}" class="btn btn-secondary">Back</a>
+        </div>
+    </form>
 </div>
 @endsection

@@ -17,27 +17,22 @@ class CustomerController extends Controller
     {
         $query = Customer::query();
 
-        // Search by name
         if ($request->filled('search')) {
             $query->where('name', 'like', '%' . $request->search . '%');
         }
 
-        // Filter by status
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
-        // Filter by assigned staff (khusus admin)
         if ($request->filled('assigned_staff') && auth()->user()->isAdmin()) {
             $query->where('assigned_staff', 'like', '%' . $request->assigned_staff . '%');
         }
 
-        // ⚡ Semua staff bisa lihat semua progress
         $customers = $query->with('vessels')
             ->orderBy('last_followup_date', 'asc')
             ->paginate(10);
 
-        // Ringkasan data (summary)
         $summary = [
             'total_customers' => Customer::count(),
             'by_status' => Customer::select('status', DB::raw('COUNT(*) as total'))
@@ -55,14 +50,12 @@ class CustomerController extends Controller
             'overdue_followups' => Customer::whereDate('next_followup_date', '<', now())->count(),
         ];
 
-        // Reminder follow-up
         $reminders = [
             'overdue' => Customer::whereDate('next_followup_date', '<', now())->count(),
             'today' => Customer::whereDate('next_followup_date', now())->count(),
             'upcoming' => Customer::whereBetween('next_followup_date', [now(), now()->addDays(7)])->count(),
         ];
 
-        // Statistik jumlah pelanggan per status (untuk chart di dashboard)
         $stats = [
             'follow_up'        => Customer::where('status', 'Follow up')->count(),
             'on_progress'      => Customer::where('status', 'On progress')->count(),
@@ -106,7 +99,6 @@ class CustomerController extends Controller
 
         $customer = Customer::create($data);
 
-        // Simpan log
         Log::create([
             'customer_id'    => $customer->id,
             'user_id'        => auth()->id(),
@@ -158,14 +150,11 @@ class CustomerController extends Controller
             'address'           => 'nullable|string',
         ]);
 
-        // Ambil data dari request, kecuali _token dan _method
         $fillable = (new Customer)->getFillable();
         $data = $request->except(['_token', '_method']);
 
-        // Pastikan hanya ambil yang termasuk fillable
         $data = array_intersect_key($data, array_flip($fillable));
 
-        // 🔎 cek perbedaan dulu (sebelum update)
         $changes = [];
         foreach ($data as $field => $newValue) {
             $oldValue = $customer->getOriginal($field);
@@ -175,10 +164,8 @@ class CustomerController extends Controller
             }
         }
 
-        // baru update data customer
         $customer->update($request->all());
 
-        // bikin log hanya jika ada perubahan beneran
         if (!empty($changes)) {
             Log::create([
                 'customer_id'     => $customer->id,
@@ -189,7 +176,6 @@ class CustomerController extends Controller
             ]);
         }
 
-        // update vessels kalau ada
         if ($request->has('vessels')) {
             $newVessels = $request->vessels;
 
@@ -228,10 +214,8 @@ class CustomerController extends Controller
     {
         $this->authorize('view', $customer);
 
-        // ambil vessels customer
         $customer->load('vessels');
 
-        // hitung total revenue (sum dari vessels)
         $totalRevenue = $customer->vessels->sum('estimate_revenue');
 
         return view('customers.show', compact('customer', 'totalRevenue'));
@@ -242,10 +226,8 @@ class CustomerController extends Controller
         $user = auth()->user();
 
         if ($user->role == 'super_admin') {
-            // Super admin bisa lihat semua
             $customers = Customer::with('assignedStaff')->get();
         } else {
-            // Staff cuma bisa lihat customer yg assigned ke dia
             $customers = Customer::with('assignedStaff')
                 ->where('assigned_staff_id', $user->id)
                 ->get();
