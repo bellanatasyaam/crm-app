@@ -33,9 +33,9 @@
 
     {{-- HEADER --}}
     <div class="dashboard-header d-flex justify-content-between align-items-center mb-3">
-        <h2 class="mb-0">🚢 Customer & Vessel Dashboard</h2>
+        <h2 class="mb-0">Customer Dashboard</h2>
         <div class="d-flex gap-2">
-            <a href="{{ route('customers_vessels.create') }}" class="btn btn-light btn-sm text-primary fw-semibold">+ New Customer Vessel</a>
+            <a href="{{ route('customers_vessels.create') }}" class="btn btn-light btn-sm text-primary fw-semibold">+ New Customer</a>
             <a href="{{ route('dashboard') }}" class="btn btn-outline-light btn-sm">Back to Master Menu</a>
         </div>
     </div>
@@ -58,6 +58,7 @@
                     <th>Phone</th>
                     <th>Address</th>
                     <th>Vessels</th>
+                    <th>Status</th>
                     <th>Action</th>
                 </tr>
             </thead>
@@ -68,28 +69,43 @@
                         <td>{{ $customer->email ?? '-' }}</td>
                         <td>{{ $customer->phone ?? '-' }}</td>
                         <td>{{ $customer->address ?? '-' }}</td>
-                        {{-- VESSEL + EDIT --}}
+
+                        {{-- VESSEL --}}
                         <td class="vessel-col">
                             @forelse ($customer->customerVessels as $cv)
                                 @if($cv->vessel)
                                     <div class="d-flex align-items-center mb-1">
                                         <span class="badge bg-info text-dark me-2">{{ $cv->vessel->name }}</span>
-                                        <a href="{{ route('customers_vessels.edit', $cv->id) }}" class="btn btn-sm btn-primary">Edit</a>
+                                        <a href="{{ route('customers_vessels.show', $cv->vessel->id) }}" class="btn btn-sm btn-secondary ms-2">Lihat Detail</a>
+                                        <a href="{{ route('customers_vessels.edit', $cv->id) }}" class="btn btn-sm btn-primary ms-2">Edit</a>
                                     </div>
                                 @endif
                             @empty
                                 <em class="text-muted">No vessels</em>
                             @endforelse
                         </td>
+
+                        {{-- STATUS --}}
+                        <td class="vessel-col">
+                            @forelse ($customer->customerVessels as $cv)
+                                @if($cv->status)
+                                    <span class="badge bg-secondary mb-1">{{ $cv->status }}</span>
+                                @else
+                                    <span class="text-muted">-</span>
+                                @endif
+                            @empty
+                                <em class="text-muted">No vessels</em>
+                            @endforelse
+                        </td>
+
                         {{-- ACTION --}}
                         <td class="table-actions">
-                            <a href="{{ route('customers_vessels.show', $customer->id) }}" class="btn btn-info btn-sm">Detail</a>
                             <a href="{{ route('customers_vessels.create', ['customer_id' => $customer->id]) }}" class="btn btn-primary btn-sm">+ Vessel</a>
                         </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="text-center text-muted">No customer data found.</td>
+                        <td colspan="7" class="text-center text-muted">No customer data found.</td>
                     </tr>
                 @endforelse
             </tbody>

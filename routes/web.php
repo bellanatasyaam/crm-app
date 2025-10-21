@@ -5,6 +5,7 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VesselController;
 use App\Http\Controllers\CustomerVesselController;
+use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn() => redirect()->route('login'));
@@ -16,19 +17,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
      * DASHBOARD
      * ======================
      */
-    Route::get('/dashboard', fn() => view('dashboard'))->name('dashboard');
+    Route::middleware(['auth', 'verified'])->group(function () {
 
-    /**
-     * ======================
-     * PROFILE USER
-     * ======================
-     */
+    // DASHBOARD
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // PROFILE USER
     Route::prefix('profile')->group(function () {
-        Route::get('/', [ProfileController::class, 'edit'])->name('profile.edit');
-        Route::patch('/', [ProfileController::class, 'update'])->name('profile.update');
-        Route::delete('/', [ProfileController::class, 'destroy'])->name('profile.destroy');
-        Route::get('/password', [ProfileController::class, 'editPassword'])->name('password.edit');
-        Route::post('/password', [ProfileController::class, 'updatePassword'])->name('password.update');
+            Route::get('/', [ProfileController::class, 'edit'])->name('profile.edit');
+            Route::patch('/', [ProfileController::class, 'update'])->name('profile.update');
+            Route::delete('/', [ProfileController::class, 'destroy'])->name('profile.destroy');
+            Route::get('/password', [ProfileController::class, 'editPassword'])->name('password.edit');
+            Route::post('/password', [ProfileController::class, 'updatePassword'])->name('password.update');
+        });
+
+        // ... sisanya sama seperti sebelumnya
     });
 
     /**

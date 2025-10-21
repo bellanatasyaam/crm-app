@@ -150,7 +150,7 @@
             </a>
             @can('create', App\Models\Customer::class)
                 <a href="{{ route('customers.create') }}" class="btn btn-light btn-sm text-primary fw-semibold">
-                    + Add Customer
+                    + Add Report
                 </a>
             @endcan
             <a href="{{ route('dashboard') }}" class="btn btn-outline-light btn-sm">
@@ -165,6 +165,14 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     @endif
+
+        {{-- === Daily Report Filter === --}}
+    <form method="GET" action="{{ route('dashboard') }}" class="d-flex mb-3 align-items-center gap-2">
+        <label for="date" class="mb-0 fw-semibold">Filter Tanggal:</label>
+        <input type="date" name="date" id="date" value="{{ request('date') ?? date('Y-m-d') }}" class="form-control form-control-sm">
+        <button type="submit" class="btn btn-primary btn-sm">Filter</button>
+    </form>
+
 
     {{-- === Dashboard Summary === --}}
     <div class="summary-cards">
@@ -232,7 +240,15 @@
                         @endif
                     </td>
                     <td>{{ $c->name }}</td>
-                    <td>{{ $c->email ?? '-' }}</td>
+                    <td class="email-col" title="{{ $c->email }}">
+                        @if($c->email)
+                            <span class="truncate">{{ \Illuminate\Support\Str::limit($c->email, 30) }}</span>
+                            <span class="more-link" onclick="toggleEmail(this)">More</span>
+                            <span class="full-text d-none">{{ $c->email }}</span>
+                        @else
+                            -
+                        @endif
+                    </td>
                     <td>{{ $c->phone ?? '-' }}</td>
                     <td>{{ $c->assigned_staff }}</td>
                     <td>{{ $c->last_followup_date ?? '-' }}</td>

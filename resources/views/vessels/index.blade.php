@@ -126,7 +126,7 @@
             @if($customer)
                 🚢 Vessels for {{ $customer->name }}
             @else
-                🚢 Vessel List
+                 Vessel List
             @endif
         </h2>
         <div class="d-flex gap-2">

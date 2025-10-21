@@ -30,7 +30,8 @@ class CustomerController extends Controller
         }
 
         $customers = $query->with('vessels')
-            ->orderBy('last_followup_date', 'asc')
+            ->orderBy('created_at', 'desc')      // paling baru di atas
+            ->orderBy('last_followup_date', 'asc') // kalau sama, urut tanggal followup
             ->paginate(10);
 
         $summary = [

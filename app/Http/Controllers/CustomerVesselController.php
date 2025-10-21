@@ -19,8 +19,8 @@ class CustomerVesselController extends Controller
 
     public function show($id)
     {
-        $customer = Customer::with('vessels.assignedStaff')->findOrFail($id);
-        return view('customers_vessels.show', compact('customer'));
+        $vessel = Vessel::with('customer', 'assignedStaff')->findOrFail($id);
+        return view('customers_vessels.show', compact('vessel'));
     }
 
     public function create(Customer $customer = null)
@@ -83,32 +83,26 @@ class CustomerVesselController extends Controller
         return view('customers_vessels.edit', compact('customerVessel', 'customers', 'vessels'));
     }
 
-    public function update(Request $request, Customer $customer, Vessel $vessel)
+    public function update(Request $request, $id)
     {
-        if ($vessel->customer_id !== $customer->id) {
-            abort(404);
-        }
+        $customerVessel = CustomerVessel::findOrFail($id);
 
         $data = $request->validate([
-            'vessel_name'       => 'required|string|max:255',
-            'imo_number'        => 'nullable|string|max:255',
-            'flag'              => 'nullable|string|max:255',
-            'type'              => 'nullable|string|max:255',
-            'port_of_call'      => 'nullable|string|max:255',
-            'estimate_revenue'  => 'nullable|numeric',
-            'currency'          => 'nullable|string|max:10',
-            'description'       => 'nullable|string',
-            'remark'            => 'nullable|string',
-            'status'            => 'nullable|string|max:50',
-            'last_contact'      => 'nullable|date',
-            'next_follow_up'    => 'nullable|date',
-            'assigned_staff_id' => 'nullable|exists:users,id',
+            'customer_id'        => 'required|exists:customers,id',
+            'vessel_id'          => 'required|exists:vessels,id',
+            'status'             => 'nullable|string|max:50',
+            'potential_revenue'  => 'nullable|numeric',
+            'currency'           => 'nullable|string|max:10',
+            'last_followup_date' => 'nullable|date',
+            'next_followup_date' => 'nullable|date',
+            'description'        => 'nullable|string',
+            'remark'             => 'nullable|string',
         ]);
 
-        $vessel->update($data);
+        $customerVessel->update($data);
 
-        return redirect()->route('customers.detail', $customer->id)
-                         ->with('success', 'Vessel berhasil diupdate.');
+        return redirect()->route('customers_vessels.index')
+            ->with('success', 'Customer Vessel updated successfully!');
     }
 
     public function showProfile(Customer $customer)
