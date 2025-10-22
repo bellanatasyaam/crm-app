@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Customer;
 use App\Models\Vessel;
 use App\Models\Log;
+use App\Models\User; 
 use App\Helpers\LogHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -18,7 +19,12 @@ class CustomerController extends Controller
         $query = Customer::query();
 
         if ($request->filled('search')) {
-            $query->where('name', 'like', '%' . $request->search . '%');
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%")
+                    ->orWhere('remark', 'like', "%{$search}%");
+            });
         }
 
         if ($request->filled('status')) {
@@ -29,11 +35,13 @@ class CustomerController extends Controller
             $query->where('assigned_staff', 'like', '%' . $request->assigned_staff . '%');
         }
 
-        $customers = $query->with('vessels')
-            ->orderBy('created_at', 'desc')      // paling baru di atas
-            ->orderBy('last_followup_date', 'asc') // kalau sama, urut tanggal followup
+        // Gunakan query sekali dengan urutan dan paginate
+        $customers = $query
+            ->orderBy('created_at', 'desc')
+            ->orderBy('last_followup_date', 'asc')
             ->paginate(10);
 
+        // Definisikan variabel summary, reminders, stats, dst
         $summary = [
             'total_customers' => Customer::count(),
             'by_status' => Customer::select('status', DB::raw('COUNT(*) as total'))
@@ -58,17 +66,53 @@ class CustomerController extends Controller
         ];
 
         $stats = [
-            'follow_up'        => Customer::where('status', 'Follow up')->count(),
-            'on_progress'      => Customer::where('status', 'On progress')->count(),
-            'request'          => Customer::where('status', 'Request')->count(),
+            'lead' => Customer::where('status', 'Lead')->count(),
+            'follow_up' => Customer::where('status', 'Follow up')->count(),
+            'on_progress' => Customer::where('status', 'On progress')->count(),
+            'request' => Customer::where('status', 'Request')->count(),
             'waiting_approval' => Customer::where('status', 'Waiting approval')->count(),
-            'approve'          => Customer::where('status', 'Approve')->count(),
-            'on_going'         => Customer::where('status', 'On going')->count(),
-            'quotation_sent'   => Customer::where('status', 'Quotation send')->count(),
-            'done'             => Customer::where('status', 'Done / Closing')->count(),
+            'approve' => Customer::where('status', 'Approve')->count(),
+            'on_going' => Customer::where('status', 'On going')->count(),
+            'quotation_sent' => Customer::where('status', 'Quotation send')->count(),
+            'done' => Customer::where('status', 'Done / Closing')->count(),
         ];
 
-        return view('customers.index', compact('customers', 'summary', 'reminders', 'stats'));
+        $statusOptions = [
+            'Lead','Follow up', 'On progress', 'Request', 'Waiting approval', 'Approve', 'On going', 'Quotation send', 'Done / Closing'
+        ];
+        $staffOptions = User::where('role', 'staff')->pluck('name')->toArray();
+
+        // Hitung staffLabels dsb
+        $allStaff = User::where('role', 'staff')->pluck('name');
+        $staffCounts = Customer::selectRaw('COALESCE(assigned_staff, "Unassigned") as staff')
+            ->selectRaw('COUNT(*) as total')
+            ->groupBy('staff')
+            ->pluck('total', 'staff');
+
+        $staffLabels = [];
+        $staffValues = [];
+
+        foreach ($allStaff as $staffName) {
+            $staffLabels[] = $staffName;
+            $staffValues[] = $staffCounts[$staffName] ?? 0;
+        }
+
+        $staffColors = array_map(function($name) {
+            return '#' . substr(md5($name), 0, 6);
+        }, $staffLabels);
+
+        // Return ke view dengan semua variabel sudah benar didefinisikan
+        return view('customers.index', compact(
+            'customers',
+            'summary',
+            'reminders',
+            'stats',
+            'staffLabels',
+            'staffValues',
+            'staffColors',
+            'statusOptions',
+            'staffOptions'
+        ));
     }
 
     public function create()
