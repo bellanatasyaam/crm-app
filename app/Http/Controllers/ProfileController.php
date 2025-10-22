@@ -15,27 +15,34 @@ class ProfileController extends Controller
     /**
      * Display the user's profile form.
      */
-    public function edit(Request $request): View
-    {
-        return view('profile.edit', [
-            'user' => $request->user(),
-        ]);
+    public function edit() {
+    $profile = auth()->user();   // ambil data user yg login
+    return view('profile.index', compact('profile'));
     }
 
-    /**
-     * Update the user's profile information.
-     */
-    public function update(ProfileUpdateRequest $request): RedirectResponse
-    {
-        $request->user()->fill($request->validated());
+    public function update(Request $request) {
+        $profile = auth()->user();
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255|unique:users,email,' . $profile->id,
+            'phone' => 'nullable|string|max:20',
+            'photo' => 'nullable|image|max:2048',
+        ]);
+
+        $profile->name = $request->name;
+        $profile->email = $request->email;
+        $profile->phone = $request->phone;
+
+        if ($request->hasFile('photo')) {
+            $photoName = time() . '.' . $request->photo->extension();
+            $request->photo->move(public_path('uploads/photos'), $photoName);
+            $profile->photoUrl = '/uploads/photos/' . $photoName;
         }
 
-        $request->user()->save();
+        $profile->save();
 
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
+        return redirect()->route('profile.edit')->with('success', 'Profile updated successfully.');
     }
 
     /**
