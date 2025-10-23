@@ -2,6 +2,11 @@
 
 namespace App\Providers;
 
+use App\Models\Company;
+use App\Policies\CustomerPolicy;
+use App\Models\Vessel;
+use App\Policies\VesselPolicy;
+
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 
@@ -15,6 +20,7 @@ class AuthServiceProvider extends ServiceProvider
     protected $policies = [
         \App\Models\Company::class => \App\Policies\CustomerPolicy::class,
         \App\Models\Vessel::class => \App\Policies\VesselPolicy::class,
+        \App\Models\Customer::class => \App\Policies\CustomerPolicy::class,
     ];
 
     /**
