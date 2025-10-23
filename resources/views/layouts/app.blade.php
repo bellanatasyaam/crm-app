@@ -41,7 +41,7 @@
                 @auth
                     <span class="me-3">{{ auth()->user()->name }} ({{ auth()->user()->email }})</span>
 
-                    <a href="{{ route('profile.edit') }}" class="btn btn-outline-primary btn-sm me-2">Profile</a>
+                    <a href="{{ route('profile.index') }}" class="btn btn-outline-primary btn-sm me-2">Profile</a>
 
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf

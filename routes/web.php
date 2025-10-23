@@ -7,6 +7,7 @@ use App\Http\Controllers\VesselController;
 use App\Http\Controllers\CustomerVesselController;
 use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\MarketingController;
 
 Route::get('/', fn() => redirect()->route('login'));
 
@@ -22,16 +23,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // DASHBOARD
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    // PROFILE USER
+    // Profile edit (user)
     Route::prefix('profile')->group(function () {
-            Route::get('/', [ProfileController::class, 'edit'])->name('profile.edit');
-            Route::patch('/', [ProfileController::class, 'update'])->name('profile.update');
-            Route::delete('/', [ProfileController::class, 'destroy'])->name('profile.destroy');
-            Route::get('/password', [ProfileController::class, 'editPassword'])->name('password.edit');
-            Route::post('/password', [ProfileController::class, 'updatePassword'])->name('password.update');
-        });
+        Route::get('/edit', [ProfileController::class, 'edit'])->name('profile.edit');
+        Route::patch('/edit', [ProfileController::class, 'update'])->name('profile.update');
+        Route::delete('/edit', [ProfileController::class, 'destroy'])->name('profile.destroy');
+        Route::get('/password', [ProfileController::class, 'editPassword'])->name('password.edit');
+        Route::post('/password', [ProfileController::class, 'updatePassword'])->name('password.update');
+    });
 
-        // ... sisanya sama seperti sebelumnya
+    // Daftar marketing (super admin / staff)
+    Route::get('/profile', [UserController::class, 'showProfile'])->name('profile.index');
+
     });
 
     /**
@@ -101,7 +104,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
      * MARKETING (alias CUSTOMER)
      * ======================
      */
-    Route::resource('marketing', CompanyController::class)
+    Route::resource('marketing', MarketingController::class)
         ->parameters(['marketing' => 'company'])
         ->names([
             'index'   => 'marketing.index',
@@ -111,16 +114,31 @@ Route::middleware(['auth', 'verified'])->group(function () {
             'edit'    => 'marketing.edit',
             'update'  => 'marketing.update',
             'destroy' => 'marketing.destroy',
+            'print'   => 'marketing.print',
         ]);
+        
+    Route::get('/marketing/print', [MarketingController::class, 'print'])->name('marketing.print');
 
-    /**
-     * ======================
-     * USERS (ADMIN ONLY)
-     * ======================
-     */
     Route::middleware('can:isAdmin')->group(function () {
         Route::resource('users', UserController::class);
     });
-});
+
+    // Profile routes
+    Route::prefix('profile')->middleware(['auth', 'verified'])->group(function () {
+        // Tampilkan form edit profile
+        Route::get('/edit', [ProfileController::class, 'edit'])->name('profile.edit');
+
+        // Update profile (PATCH)
+        Route::patch('/update', [ProfileController::class, 'update'])->name('profile.update');
+
+        // Hapus profile
+        Route::delete('/delete', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+        // Edit password
+        Route::get('/password', [ProfileController::class, 'editPassword'])->name('password.edit');
+        Route::post('/password', [ProfileController::class, 'updatePassword'])->name('password.update');
+    });
+
+}); 
 
 require __DIR__ . '/auth.php';

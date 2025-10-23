@@ -1,26 +1,44 @@
 @extends('layouts.app')
 
-@section('title', 'Edit Profile Marketing')
+@section('title', 'Edit Profile')
 
 @section('content')
-<h1>Edit Profile Marketing</h1>
+<div class="container py-4">
+    <h1>Edit Profile</h1>
 
-<form action="{{ route('profile.update', $profile->id) }}" method="POST" enctype="multipart/form-data">
-    @csrf
-    @method('PUT')
+    @if(session('success'))
+        <div class="alert alert-success">{{ session('success') }}</div>
+    @endif
 
-    <label>Nama:</label>
-    <input type="text" name="name" value="{{ old('name', $profile->name) }}" required>
-    
-    <label>Email:</label>
-    <input type="email" name="email" value="{{ old('email', $profile->email) }}" required>
+    <form action="{{ route('profile.update') }}" method="POST" enctype="multipart/form-data">
+        @csrf
+        @method('PATCH')
 
-    <label>Nomor Telepon:</label>
-    <input type="text" name="phone" value="{{ old('phone', $profile->phone) }}" required>
+        <div class="mb-3">
+            <label>Name</label>
+            <input type="text" name="name" class="form-control" value="{{ old('name', $profile->name) }}">
+        </div>
 
-    <label>Foto Profil:</label>
-    <input type="file" name="photo">
+        <div class="mb-3">
+            <label>Email</label>
+            <input type="email" name="email" class="form-control" value="{{ old('email', $profile->email) }}">
+        </div>
 
-    <button type="submit">Simpan</button>
-</form>
+        <div class="mb-3">
+            <label>Phone</label>
+            <input type="text" name="phone" class="form-control" value="{{ old('phone', $profile->phone) }}">
+        </div>
+
+        <div class="mb-3">
+            <label>Photo</label>
+            <input type="file" name="photo" class="form-control">
+            @if($profile->photoUrl)
+                <img src="{{ $profile->photoUrl }}" alt="Current Photo" style="width:80px; height:80px; object-fit:cover;">
+            @endif
+        </div>
+
+        <button type="submit" class="btn btn-primary">Update Profile</button>
+        <a href="{{ route('profile.index') }}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
 @endsection

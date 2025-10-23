@@ -16,8 +16,8 @@ class ProfileController extends Controller
      * Display the user's profile form.
      */
     public function edit() {
-    $profile = auth()->user();   // ambil data user yg login
-    return view('profile.index', compact('profile'));
+        $profile = auth()->user();   // ambil data user yg login
+        return view('profile.edit', compact('profile')); // pakai view 'edit', bukan 'index'
     }
 
     public function update(Request $request) {
@@ -42,12 +42,16 @@ class ProfileController extends Controller
 
         $profile->save();
 
-        return redirect()->route('profile.edit')->with('success', 'Profile updated successfully.');
+        return redirect()->route('profile.index')->with('success', 'Profile updated successfully.');
     }
 
-    /**
-     * Delete the user's account.
-     */
+    public function show()
+    {
+        $user = auth()->user();
+
+        return view('profile.show', compact('user'));
+    }
+
     public function destroy(Request $request): RedirectResponse
     {
         $request->validateWithBag('userDeletion', [
@@ -88,4 +92,11 @@ class ProfileController extends Controller
 
         return back()->with('success', 'Password updated successfully!');
     }
+
+    public function showProfile()
+    {
+        $profile = auth()->user(); // ambil user yang login
+        return view('profile.index', compact('profile'));
+    }
+
 }
