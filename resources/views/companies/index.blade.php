@@ -146,14 +146,14 @@
 
     <!-- === HEADER === -->
     <div class="dashboard-header d-flex justify-content-between align-items-center mb-3">
-        <h2 class="mb-0">📊 Marketing Dashboard</h2>
+        <h2 class="mb-0">Customers Dashboard</h2>
         <div class="d-flex gap-2">
             <a href="{{ route('companies.print') }}" class="btn btn-light btn-sm text-success fw-semibold" target="_blank">
-                <i class="fa fa-print"></i> Print Report
+                <i class="fa fa-print"></i> Print Customers
             </a>
             @can('create', App\Models\Company::class)
                 <a href="{{ route('companies.create') }}" class="btn btn-light btn-sm text-primary fw-semibold">
-                    + Add Report
+                    + Add Customer
                 </a>
             @endcan
             <a href="{{ route('dashboard') }}" class="btn btn-outline-light btn-sm">
