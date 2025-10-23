@@ -1,7 +1,7 @@
 <?php 
 
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VesselController;
 use App\Http\Controllers\CustomerVesselController;
@@ -39,15 +39,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
      * CUSTOMERS
      * ======================
      */
-    Route::prefix('customers')->group(function () {
-        Route::get('/print', [CustomerController::class, 'print'])->name('customers.print');
-        Route::get('/{customer}/print', [CustomerController::class, 'printSingle'])->name('customers.print_single');
-        Route::get('/{customer}/vessels-json', [CustomerController::class, 'getVessels'])->name('customers.get_vessels');
+    Route::prefix('companies')->group(function () {
+        Route::get('/print', [CompanyController::class, 'print'])->name('companies.print');
+        Route::get('/{company}/print', [CompanyController::class, 'printSingle'])->name('companies.print_single');
+        Route::get('/{company}/vessels-json', [CompanyController::class, 'getVessels'])->name('companies.get_vessels');
     });
-    Route::resource('customers', CustomerController::class);
+    Route::resource('companies', CompanyController::class);
+    Route::get('/companies', [CompanyController::class, 'index'])->name('companies.index');
 
     // Staff dashboard
-    Route::get('/staff/dashboard', [CustomerController::class, 'index'])->name('staff.dashboard');
+    Route::get('/staff/dashboard', [CompanyController::class, 'index'])->name('staff.dashboard');
 
     /**
      * ======================
@@ -80,19 +81,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
      * CUSTOMERS + VESSELS (NESTED PER CUSTOMER)
      * ======================
      * contoh: /customers/{customer}/vessels/create
-     * ini PAKAI route name customers.vessels.store
+     * ini PAKAI route name companies.vessels.store
      */
     Route::prefix('customers/{customer}')->group(function () {
-        Route::get('/profile', [CustomerVesselController::class, 'profile'])->name('customers.profile');
-        Route::get('/detail', [CustomerVesselController::class, 'show'])->name('customers.detail');
+        Route::get('/profile', [CustomerVesselController::class, 'profile'])->name('companies.profile');
+        Route::get('/detail', [CustomerVesselController::class, 'show'])->name('companies.detail');
 
         // Vessel nested routes
-        Route::get('/vessels/create', [CustomerVesselController::class, 'create'])->name('customers.vessels.create');
-        Route::post('/vessels', [CustomerVesselController::class, 'store'])->name('customers.vessels.store');
-        Route::get('/vessels/{vessel}', [CustomerVesselController::class, 'show'])->name('customers.vessels.show');
-        Route::get('/vessels/{vessel}/edit', [CustomerVesselController::class, 'edit'])->name('customers.vessels.edit');
-        Route::put('/vessels/{vessel}', [CustomerVesselController::class, 'update'])->name('customers.vessels.update');
-        Route::delete('/vessels/{vessel}', [CustomerVesselController::class, 'destroy'])->name('customers.vessels.destroy');
+        Route::get('/vessels/create', [CustomerVesselController::class, 'create'])->name('companies.vessels.create');
+        Route::post('/vessels', [CustomerVesselController::class, 'store'])->name('companies.vessels.store');
+        Route::get('/vessels/{vessel}', [CustomerVesselController::class, 'show'])->name('companies.vessels.show');
+        Route::get('/vessels/{vessel}/edit', [CustomerVesselController::class, 'edit'])->name('companies.vessels.edit');
+        Route::put('/vessels/{vessel}', [CustomerVesselController::class, 'update'])->name('companies.vessels.update');
+        Route::delete('/vessels/{vessel}', [CustomerVesselController::class, 'destroy'])->name('companies.vessels.destroy');
     });
 
     /**
@@ -100,8 +101,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
      * MARKETING (alias CUSTOMER)
      * ======================
      */
-    Route::resource('marketing', CustomerController::class)
-        ->parameters(['marketing' => 'customer'])
+    Route::resource('marketing', CompanyController::class)
+        ->parameters(['marketing' => 'company'])
         ->names([
             'index'   => 'marketing.index',
             'create'  => 'marketing.create',

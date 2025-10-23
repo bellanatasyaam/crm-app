@@ -13,12 +13,12 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         $schedule->call(function () {
-            $customers = \App\Models\Customer::whereDate('next_followup_date', now())->get();
+            $companies = \App\Models\Company::whereDate('next_followup_date', now())->get();
 
-            foreach ($customers as $customer) {
+            foreach ($companies as $company) {
                 // misal kirim notifikasi email
-                $staffEmail = $customer->assigned_staff_email; 
-                \Mail::to($staffEmail)->send(new \App\Mail\FollowupReminder($customer));
+                $staffEmail = $company->assigned_staff_email; 
+                \Mail::to($staffEmail)->send(new \App\Mail\FollowupReminder($company));
             }
         })->dailyAt('08:00'); // cek tiap jam 8 pagi
     }

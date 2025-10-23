@@ -11,14 +11,25 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('customers', function (Blueprint $table) {
+        Schema::create('companies', function (Blueprint $table) {
             $table->id();
-            $table->string('name');            // Nama perusahaan
-            $table->string('contact')->nullable();
-            $table->string('email')->nullable();
+            $table->string('code')->unique();
+            $table->string('name');
+            $table->enum('type', ['prospect', 'client', 'vendor', 'partner', 'customer'])->default('prospect');
+            $table->string('industry')->nullable();
             $table->string('phone')->nullable();
-            $table->string('address')->nullable();
+            $table->string('email')->nullable();
+            $table->string('website')->nullable();
+            $table->text('address')->nullable();
+            $table->string('city')->nullable();
+            $table->string('country')->default('Indonesia');
+            $table->string('tax_id')->nullable();
+            $table->enum('customer_tier', ['regular', 'premium', 'vip'])->default('regular');
+            $table->enum('status', ['active', 'inactive'])->default('active');
+            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignId('updated_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
+            $table->softDeletes(); // Pastikan ini ada
         });
     }
 
@@ -28,6 +39,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('customers');
+        Schema::dropIfExists('companies');
     }
 };

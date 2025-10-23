@@ -2,7 +2,7 @@
 
 namespace App\Events;
 
-use App\Models\Customer;
+use App\Models\Company;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Queue\SerializesModels;
@@ -12,26 +12,26 @@ use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Broadcasting\PrivateChannel;
 
 
-class CustomerUpdated implements ShouldBroadcast
+class CompanyUpdated implements ShouldBroadcast
 {
     use Dispatchable, SerializesModels;
 
-    public $customer;
+    public $company;
     public $message;
 
-    public function __construct(Customer $customer, $message)
+    public function __construct(Company $company, $message)
     {
-        $this->customer = $customer;
+        $this->company = $company;
         $this->message = $message;
     }
 
     public function broadcastOn()
     {
-        return new Channel('customers');
+        return new Channel('companies');
     }
 
     public function broadcastAs()
     {
-        return 'customer.updated';
+        return 'company.updated';
     }
 }

@@ -10,7 +10,7 @@ class Log extends Model
     use HasFactory;
 
     protected $fillable = [
-        'customer_id',
+        'company_id',
         'user_id',
         'activity',
         'activity_type',
@@ -19,7 +19,7 @@ class Log extends Model
     
     public function customer()
     {
-        return $this->belongsTo(Customer::class);
+        return $this->belongsTo(Company::class);
     }
 
     public function user()

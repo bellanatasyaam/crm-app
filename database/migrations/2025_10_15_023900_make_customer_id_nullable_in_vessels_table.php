@@ -8,14 +8,14 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::table('vessels', function (Blueprint $table) {
-            $table->foreignId('customer_id')->nullable()->change();
+            $table->foreignId('company_id')->nullable()->change();
         });
     }
 
     public function down(): void
     {
         Schema::table('vessels', function (Blueprint $table) {
-            $table->foreignId('customer_id')->nullable(false)->change();
+            $table->foreignId('company_id')->nullable(false)->change();
         });
     }
 };

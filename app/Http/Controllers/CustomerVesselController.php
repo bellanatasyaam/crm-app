@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\CustomerVessel;
 use App\Models\User;
-use App\Models\Customer;
+use App\Models\Company;
 use App\Models\Vessel;
 use Illuminate\Http\Request;
 
@@ -13,29 +13,29 @@ class CustomerVesselController extends Controller
 
     public function index()
     {
-        $customers = Customer::with('customerVessels.vessel')->paginate(10);
-        return view('customers_vessels.index', compact('customers'));
+        $companies = Company::with('customerVessels.vessel')->paginate(10);
+        return view('customers_vessels.index', compact('companies'));
     }
 
     public function show($id)
     {
-        $vessel = Vessel::with('customer', 'assignedStaff')->findOrFail($id);
+        $vessel = Vessel::with('company', 'assignedStaff')->findOrFail($id);
         return view('customers_vessels.show', compact('vessel'));
     }
 
-    public function create(Customer $customer = null)
+    public function create(Company $company = null)
     {
         $staffs    = User::where('role', 'staff')->get();
         $ports     = Vessel::whereNotNull('port_of_call')->distinct()->pluck('port_of_call');
-        $customers = Customer::all(); 
+        $companies = Company::all();
 
-        return view('customers_vessels.create', compact('customer', 'customers', 'staffs', 'ports'));
+        return view('customers_vessels.create', compact('company', 'companies', 'staffs', 'ports'));
     }
 
-    public function store(Request $request, Customer $customer = null)
+    public function store(Request $request, Company $company = null)
     {
         $data = $request->validate([
-            'customer_id'       => 'nullable|exists:customers,id',
+            'company_id'       => 'nullable|exists:companies,id',
             'vessel_name'       => 'required|string|max:255',
             'imo_number'        => 'nullable|string|max:255',
             'flag'              => 'nullable|string|max:255',
@@ -51,16 +51,16 @@ class CustomerVesselController extends Controller
             'assigned_staff_id' => 'nullable|exists:users,id',
         ]);
 
-        if ($customer && $customer->exists) {
-            $data['customer_id'] = $customer->id;
+        if ($company && $company->exists) {
+            $data['company_id'] = $company->id;
         } else {
-            $data['customer_id'] = $request->input('customer_id');
+            $data['company_id'] = $request->input('company_id');
         }
 
         Vessel::create($data);
 
-        if ($customer && $customer->exists) {
-            return redirect()->route('customers.detail', $customer->id)
+        if ($company && $company->exists) {
+            return redirect()->route('companies.detail', $company->id)
                              ->with('success', 'Vessel berhasil ditambahkan.');
         } else {
             return redirect()->route('customers_vessels.index')
@@ -77,10 +77,10 @@ class CustomerVesselController extends Controller
                             ->with('error', 'Customer Vessel not found!');
         }
 
-        $customers = Customer::all();
+        $companies = Company::all();
         $vessels = Vessel::all();
 
-        return view('customers_vessels.edit', compact('customerVessel', 'customers', 'vessels'));
+        return view('customers_vessels.edit', compact('customerVessel', 'companies', 'vessels'));
     }
 
     public function update(Request $request, $id)
@@ -88,7 +88,7 @@ class CustomerVesselController extends Controller
         $customerVessel = CustomerVessel::findOrFail($id);
 
         $data = $request->validate([
-            'customer_id'        => 'required|exists:customers,id',
+            'company_id'        => 'required|exists:customers,id',
             'vessel_id'          => 'required|exists:vessels,id',
             'status'             => 'nullable|string|max:50',
             'potential_revenue'  => 'nullable|numeric',
@@ -105,28 +105,28 @@ class CustomerVesselController extends Controller
             ->with('success', 'Customer Vessel updated successfully!');
     }
 
-    public function showProfile(Customer $customer)
+    public function showProfile(Company $company)
     {
-        $customer->load('vessels.assignedStaff');
-        return view('customers.profile', compact('customer'));
+        $company->load('vessels.assignedStaff');
+        return view('companies.profile', compact('company'));
     }
 
-    public function destroy(Customer $customer, Vessel $vessel)
+    public function destroy(Company $company, Vessel $vessel)
     {
-        if ($vessel->customer_id !== $customer->id) {
+        if ($vessel->company_id !== $company->id) {
             abort(404);
         }
 
         $vessel->delete();
 
-        return redirect()->route('customers.detail', $customer->id)
+        return redirect()->route('companies.detail', $company->id)
                          ->with('success', 'Vessel berhasil dihapus.');
     }
 
     public function profile($id)
     {
-        $customer = Customer::with('logs')->findOrFail($id);
-        return view('customers.profile', compact('customer'));
+        $company = Company::with('logs')->findOrFail($id);
+        return view('companies.profile', compact('company'));
     }
 
     

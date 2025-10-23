@@ -23,7 +23,7 @@
                     <i class="bi bi-people fs-1 text-primary mb-3"></i>
                     <h5 class="fw-bold">Customers</h5>
                     <p class="text-muted small">View and manage customers & vessels</p>
-                    <a href="{{ route('customers_vessels.index') }}" class="btn btn-primary btn-sm mt-2">Go to Customers</a>
+                    <a href="{{ route('companies.index') }}" class="btn btn-primary btn-sm mt-2">Go to Customers</a>
                 </div>
             </div>
         </div>

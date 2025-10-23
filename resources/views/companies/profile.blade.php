@@ -8,20 +8,20 @@
 
     <div class="card mb-4">
         <div class="card-body">
-            <p><strong>Name:</strong> {{ $customer->name }}</p>
-            <p><strong>Email:</strong> {{ $customer->email }}</p>
-            <p><strong>Phone:</strong> {{ $customer->phone }}</p>
-            <p><strong>Address:</strong> {{ $customer->address }}</p>
+            <p><strong>Name:</strong> {{ $company->name }}</p>
+            <p><strong>Email:</strong> {{ $company->email }}</p>
+            <p><strong>Phone:</strong> {{ $company->phone }}</p>
+            <p><strong>Address:</strong> {{ $company->address }}</p>
         </div>
     </div>
 
     {{-- Bagian Vessels --}}
     <div class="d-flex justify-content-between mb-3">
         <h4>Vessels</h4>
-        <a href="{{ route('customers.vessels.create', $customer->id) }}" class="btn btn-primary btn-sm">+ Add Vessel</a>
+        <a href="{{ route('companies.vessels.create', $company->id) }}" class="btn btn-primary btn-sm">+ Add Vessel</a>
     </div>
 
-    @if($customer->vessels->isEmpty())
+    @if($company->vessels->isEmpty())
         <div class="alert alert-info">No vessels for this customer.</div>
     @else
         <table class="table table-bordered">
@@ -34,14 +34,14 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach($customer->vessels as $vessel)
+                @foreach($company->vessels as $vessel)
                     <tr>
                         <td>{{ $vessel->vessel_name }}</td>
                         <td>{{ $vessel->port_of_call ?? '-' }}</td>
                         <td>{{ $vessel->status ?? '-' }}</td>
                         <td>
-                            <a href="{{ route('customers.vessels.edit', [$customer->id, $vessel->id]) }}" class="btn btn-sm btn-warning">Edit</a>
-                            <form action="{{ route('customers.vessels.destroy', [$customer->id, $vessel->id]) }}" method="POST" style="display:inline-block">
+                            <a href="{{ route('companies.vessels.edit', [$company->id, $vessel->id]) }}" class="btn btn-sm btn-warning">Edit</a>
+                            <form action="{{ route('companies.vessels.destroy', [$company->id, $vessel->id]) }}" method="POST" style="display:inline-block">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="btn btn-sm btn-danger"
@@ -57,7 +57,7 @@
     {{-- Bagian Log Activity --}}
     <div class="mt-5">
         <h4>Log Activity</h4>
-        @if($customer->logs->isEmpty())
+        @if($company->logs->isEmpty())
             <div class="alert alert-info">No log activity available.</div>
         @else
             <table class="table table-bordered detail-table">
@@ -71,7 +71,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($customer->logs as $log)
+                    @foreach($company->logs as $log)
                         <tr>
                             <td>{{ $log->created_at->format('d M Y H:i') }}</td>
                             <td>{{ $log->activity }}</td>
@@ -87,7 +87,7 @@
 
     {{-- Tombol Kembali --}}
     <a href="{{ route('customers_vessels.index') }}" class="btn btn-secondary">Back to Customer List</a>
-    <a href="{{ route('customers.index') }}" class="btn btn-secondary">Back to Marketing</a>
+    <a href="{{ route('companies.index') }}" class="btn btn-secondary">Back to Marketing</a>
     <a href="{{ route('vessels.index') }}" class="btn btn-secondary">Back to Vessels List</a>
 
 </div>

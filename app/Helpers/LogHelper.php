@@ -6,7 +6,7 @@ use App\Models\Log;
 
 class LogHelper
 {
-    public static function add($customerId, $activity, $type = null, $detail = null)
+    public static function add($companyId, $activity, $type = null, $detail = null)
     {
         // Jika detail berupa array, filter token & method
         if (is_array($detail)) {
@@ -23,7 +23,7 @@ class LogHelper
         }
 
         Log::create([
-            'customer_id'     => $customerId,
+            'company_id'     => $companyId,
             'user_id'         => auth()->id(),
             'activity'        => $activity,
             'activity_type'   => $type,

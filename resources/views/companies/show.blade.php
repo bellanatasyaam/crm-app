@@ -5,11 +5,11 @@
 
     <div class="card mb-4">
         <div class="card-body">
-            <p><strong>Name:</strong> {{ $customer->name }}</p>
-            <p><strong>Email:</strong> {{ $customer->email }}</p>
+            <p><strong>Name:</strong> {{ $company->name }}</p>
+            <p><strong>Email:</strong> {{ $company->email }}</p>
             <p><strong>Address:</strong><br>
                 @php
-                    $uniqueAddresses = $customer->vessels
+                    $uniqueAddresses = $company->vessels
                         ->map(fn($v) => $v->port_of_call ?? $v->address)
                         ->filter()
                         ->unique();
@@ -23,23 +23,23 @@
                     -
                 @endif
             </p>
-            <p><strong>Assigned Staff:</strong> {{ $customer->assigned_staff }}</p>
-            <p><strong>Last Contact Date:</strong> {{ $customer->last_followup_date ?? '-' }}</p>
-            <p><strong>Next Follow-Up:</strong> {{ $customer->next_followup_date ?? '-' }}</p>
+            <p><strong>Assigned Staff:</strong> {{ $company->assigned_staff }}</p>
+            <p><strong>Last Contact Date:</strong> {{ $company->last_followup_date ?? '-' }}</p>
+            <p><strong>Next Follow-Up:</strong> {{ $company->next_followup_date ?? '-' }}</p>
             <p><strong>Description:</strong> 
-                @if($customer->description)
-                    <span class="truncate">{{ $customer->description }}</span>
+                @if($company->description)
+                    <span class="truncate">{{ $company->description }}</span>
                     <span class="more-link" onclick="toggleDesc(this)">More</span>
-                    <span class="full-text d-none">{{ $customer->description }}</span>
+                    <span class="full-text d-none">{{ $company->description }}</span>
                 @else
                     -
                 @endif
             </p>
             <p><strong>Remark:</strong> 
-                @if($customer->remark)
-                    <span class="truncate">{{ $customer->remark }}</span>
+                @if($company->remark)
+                    <span class="truncate">{{ $company->remark }}</span>
                     <span class="more-link" onclick="toggleDesc(this)">More</span>
-                    <span class="full-text d-none">{{ $customer->remark }}</span>
+                    <span class="full-text d-none">{{ $company->remark }}</span>
                 @else
                     -
                 @endif
@@ -56,7 +56,7 @@
                         // Tambah mata uang lain jika perlu
                     ];
 
-                    foreach($customer->vessels as $vessel) {
+                    foreach($company->vessels as $vessel) {
                         $curr = $vessel->currency ?? 'IDR';
                         $amount = is_numeric($vessel->estimate_revenue ?? $vessel->potential_revenue) 
                                     ? ($vessel->estimate_revenue ?? $vessel->potential_revenue) 
@@ -86,7 +86,7 @@
     </div>
 
     <h4 class="mb-3">Vessels</h4>
-    <a href="{{ route('customers_vessels.create', $customer->id) }}" class="btn btn-primary mb-3">+ Add Vessel</a>
+    <a href="{{ route('customers_vessels.create', $company->id) }}" class="btn btn-primary mb-3">+ Add Vessel</a>
 
     <table class="table table-bordered">
         <thead>
@@ -110,7 +110,7 @@
                     'Done / Closing'   => 'badge bg-success',
                 ];
             @endphp
-            @forelse($customer->vessels as $vessel)
+            @forelse($company->vessels as $vessel)
                 <tr>
                     <td>{{ $vessel->vessel_name }}</td>
                     <td>
@@ -133,7 +133,7 @@
     </table>
 
     <a href="{{ route('customers_vessels.index') }}" class="btn btn-secondary">Back to Customer List</a>
-    <a href="{{ route('customers.index') }}" class="btn btn-secondary">Back to Marketing</a>
+    <a href="{{ route('companies.index') }}" class="btn btn-secondary">Back to Marketing</a>
     <a href="{{ route('vessels.index') }}" class="btn btn-secondary">Back to Vessels List</a>
 </div>
 

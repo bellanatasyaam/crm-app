@@ -13,12 +13,12 @@ return new class extends Migration
     {
         Schema::create('logs', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('customer_id');
+            $table->unsignedBigInteger('company_id');
             $table->unsignedBigInteger('user_id')->nullable();
             $table->string('activity');
             $table->timestamps();
 
-            $table->foreign('customer_id')->references('id')->on('customers')->onDelete('cascade');
+            $table->foreign('company_id')->references('id')->on('companies')->onDelete('cascade');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('set null');
         });
     }

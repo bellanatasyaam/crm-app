@@ -4,8 +4,8 @@
 <div class="container py-4">
 
     <h2>
-        @if(isset($customer) && $customer)
-            Add Vessel for {{ $customer->name }}
+        @if(isset($company) && $company)
+            Add Vessel for {{ $company->name }}
         @else
             Add Vessel (Select Customer)
         @endif
@@ -14,15 +14,15 @@
     <form action="{{ route('customers_vessels.store') }}" method="POST">
         @csrf
 
-        @if(isset($customer) && $customer)
-            <input type="hidden" name="customer_id" value="{{ $customer->id }}">
+        @if(isset($company) && $company)
+            <input type="hidden" name="company_id" value="{{ $company->id }}">
         @else
             {{-- Kalau global: dropdown --}}
             <div class="mb-3">
                 <label class="form-label">Select Customer</label>
-                <select name="customer_id" class="form-select" required>
+                <select name="company_id" class="form-select" required>
                     <option value="">-- Select Customer --</option>
-                    @foreach($customers as $cust)
+                    @foreach($companies as $cust)
                         <option value="{{ $cust->id }}">{{ $cust->name }}</option>
                     @endforeach
                 </select>

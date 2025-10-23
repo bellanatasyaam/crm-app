@@ -123,18 +123,18 @@
     <!-- Header -->
     <div class="dashboard-header d-flex justify-content-between align-items-center mb-3">
         <h2 class="mb-0">
-            @if($customer)
-                🚢 Vessels for {{ $customer->name }}
+            @if($company)
+                🚢 Vessels for {{ $company->name }}
             @else
                  Vessel List
             @endif
         </h2>
         <div class="d-flex gap-2">
-            @if($customer)
-                <a href="{{ route('customers.vessels.create', $customer->id) }}" class="btn btn-light btn-sm text-primary fw-semibold">
+            @if($company)
+                <a href="{{ route('companies.vessels.create', $company->id) }}" class="btn btn-light btn-sm text-primary fw-semibold">
                     + Add Vessel
                 </a>
-                <a href="{{ route('customers.index') }}" class="btn btn-outline-light btn-sm">
+                <a href="{{ route('vessels.index') }}" class="btn btn-outline-light btn-sm">
                     Back to Customers
                 </a>
             @else
@@ -174,7 +174,7 @@
                         <th>Last Contact</th>
                         <th>Next FU</th>
                         <th>Staff</th>
-                        @unless($customer)
+                        @unless($company)
                             <th>Customer</th>
                         @endunless
                         <th>Action</th>
@@ -217,21 +217,21 @@
                         <td>{{ $vessel->last_contact ?? '-' }}</td>
                         <td>{{ $vessel->next_follow_up ?? '-' }}</td>
                         <td>{{ $vessel->assignedStaff?->name ?? '-' }}</td>
-                        @unless($customer)
+                        @unless($company)
                             <td>{{ $vessel->customer?->name ?? '-' }}</td>
                         @endunless
                         <td>
                             <div class="table-actions">
                                 @php
-                                    $hasCustomer = isset($vessel->customer_id) && !empty($vessel->customer_id);
+                                    $hasCustomer = isset($vessel->company_id) && !empty($vessel->company_id);
                                 @endphp
 
                                 {{-- Tombol untuk Staff yang Assigned atau Super Admin --}}
                                 @if($vessel->assigned_staff_id == auth()->id() || auth()->user()->role == 'super_admin')
                                     @if($hasCustomer)
-                                        <a href="{{ route('customers_vessels.edit', [$vessel->customer_id, $vessel->id]) }}" class="btn btn-warning btn-sm">Edit</a>
-                                        <a href="{{ route('customers_vessels.show', [$vessel->customer_id, $vessel->id]) }}" class="btn btn-info btn-sm">Detail</a>
-                                        <form action="{{ route('customers.vessels.destroy', [$vessel->customer_id, $vessel->id]) }}" method="POST" style="display:inline;">
+                                        <a href="{{ route('vessels.edit', [$vessel->company_id, $vessel->id]) }}" class="btn btn-warning btn-sm">Edit</a>
+                                        <a href="{{ route('vessels.show', [$vessel->company_id, $vessel->id]) }}" class="btn btn-info btn-sm">Detail</a>
+                                        <form action="{{ route('vessels.destroy', [$vessel->company_id, $vessel->id]) }}" method="POST" style="display:inline;">
                                             @csrf
                                             @method('DELETE')
                                             <button class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">Del</button>
@@ -248,7 +248,7 @@
                                 @else
                                     {{-- Untuk staff lain (hanya bisa lihat Detail) --}}
                                     @if($hasCustomer)
-                                        <a href="{{ route('customers.vessels.show', [$vessel->customer_id, $vessel->id]) }}" class="btn btn-info btn-sm">Detail</a>
+                                        <a href="{{ route('vessels.show', [$vessel->company_id, $vessel->id]) }}" class="btn btn-info btn-sm">Detail</a>
                                     @else
                                         <a href="{{ route('vessels.show', $vessel->id) }}" class="btn btn-info btn-sm">Detail</a>
                                     @endif

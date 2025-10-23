@@ -2,111 +2,124 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Customer;
+use App\Models\Company;
 use App\Models\Vessel;
 use App\Models\User;
 use Illuminate\Http\Request;
 
 class VesselController extends Controller
 {
-    public function index(Customer $customer = null)
+    /**
+     * Display a listing of the resource.
+     * Optionally filtered by a specific company.
+     */
+    public function index(Company $company = null)
     {
         $this->authorize('viewAny', Vessel::class);
 
         $perPage = 10; 
 
-        if ($customer) {
-            $vessels = $customer->vessels()
-                ->with('assignedStaff')
+        if ($company) {
+            $vessels = $company->vessels()
                 ->orderBy('id', 'desc')
                 ->paginate($perPage);
 
             return view('vessels.index', [
                 'vessels'  => $vessels,
-                'customer' => $customer,
+                'company' => $company,
             ]);
         } else {
-            $vessels = Vessel::with(['customer', 'assignedStaff'])
+            $vessels = Vessel::with('company')
                 ->orderBy('id', 'desc')
                 ->paginate($perPage);
 
             return view('vessels.index', [
                 'vessels'  => $vessels,
-                'customer' => null,
+                'company' => null,
             ]);
         }
     }
 
-    public function create(Customer $customer = null)
+    /**
+     * Show the form for creating a new resource.
+     */
+    public function create(Company $company = null)
     {
         $this->authorize('create', Vessel::class);
 
-        $customers = Customer::all();
-        $staffs    = User::where('role', '!=', 'super_admin')->get();
+        $companies = Company::all();
 
         return view('vessels.create', [
-            'customers' => $customers,
-            'staffs'    => $staffs,
-            'customer'  => $customer,
+            'companies' => $companies,
+            'company'  => $company,
         ]);
     }
 
-    public function store(Request $request, Customer $customer = null)
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(Request $request, Company $company = null)
     {
         $this->authorize('create', Vessel::class);
 
         $data = $request->validate([
-            'vessel_name'       => 'required|string',
-            'port_of_call'      => 'nullable|string',
-            'estimate_revenue'  => 'nullable|numeric',
-            'currency'          => 'nullable|string|max:10',
-            'description'       => 'nullable|string',
-            'remark'            => 'nullable|string',
-            'status'            => 'nullable|string|max:50',
-            'last_contact'      => 'nullable|date',
-            'next_follow_up'    => 'nullable|date',
-            'assigned_staff_id' => 'nullable|exists:users,id',
-            'customer_id'       => 'nullable|exists:customers,id',
+            'name'             => 'required|string|max:255',
+            'imo_number'       => 'nullable|string|max:255',
+            'call_sign'        => 'nullable|string|max:255',
+            'port_of_call'     => 'nullable|string|max:255',
+            'flag'             => 'nullable|string|max:255', 
+            'vessel_type'      => 'required|string|max:255',
+            'gross_tonnage'    => 'nullable|numeric|max:99999999.99',
+            'net_tonnage'      => 'nullable|numeric|max:99999999.99',
+            'year_built'       => 'nullable|integer|digits:4',
+            'status'           => 'required|in:active,maintenance,retired', 
+            'company_id'       => 'nullable|exists:companies,id',
         ]);
 
-        if ($customer) {
-            $data['customer_id'] = $customer->id;
+        if ($company) {
+            $data['company_id'] = $company->id;
         }
 
         Vessel::create($data);
 
-        if ($customer) {
-            return redirect()
-                ->route('customers.vessels.index', $customer->id)
-                ->with('success', 'Vessel added successfully.');
-        }
+        $redirectRoute = $company 
+            ? route('companies.vessels.index', $company->id) 
+            : route('vessels.index');
 
-        return redirect()
-            ->route('vessels.index')
-            ->with('success', 'Vessel added successfully.');
+        return redirect($redirectRoute)->with('success', 'Vessel added successfully.');
     }
 
+    /**
+     * Display the specified resource.
+     */
     public function show(Vessel $vessel)
     {
         $this->authorize('view', $vessel);
+        $company = Company::with('vessels.assignedStaff')
+            ->findOrFail($vessel->company_id);
 
-        $customer = Customer::with('vessels.assignedStaff')
-            ->findOrFail($vessel->customer_id);
+        $vessel->load('company');
 
-        return view('vessels.show', compact('customer'));
+        return view('vessels.show', [
+            'vessel' => $vessel,
+            'company' => $company,
+        ]);
     }
 
+    /**
+     * Show the form for editing the specified resource.
+     */
     public function edit(Vessel $vessel)
     {
         $this->authorize('update', $vessel);
 
+        $companies = Company::all();
         $staffs    = User::where('role', '!=', 'super_admin')->get();
-        $customers = Customer::all();
 
         return view('vessels.edit', [
             'vessel'    => $vessel,
+            'companies' => $companies,
             'staffs'    => $staffs,
-            'customers' => $customers,
         ]);
     }
 
@@ -118,17 +131,17 @@ class VesselController extends Controller
         $this->authorize('update', $vessel);
 
         $data = $request->validate([
-            'vessel_name'       => 'required|string',
-            'port_of_call'      => 'nullable|string',
-            'estimate_revenue'  => 'nullable|numeric',
-            'currency'          => 'nullable|string|max:10',
-            'description'       => 'nullable|string',
-            'remark'            => 'nullable|string',
-            'status'            => 'nullable|string|max:50',
-            'last_contact'      => 'nullable|date',
-            'next_follow_up'    => 'nullable|date',
-            'assigned_staff_id' => 'nullable|exists:users,id',
-            'customer_id'       => 'nullable|exists:customers,id',
+            'name'             => 'required|string|max:255',
+            'imo_number'       => 'nullable|string|max:255',
+            'call_sign'        => 'nullable|string|max:255',
+            'port_of_call'     => 'nullable|string|max:255',
+            'flag'             => 'nullable|string|max:255', 
+            'vessel_type'      => 'required|string|max:255',
+            'gross_tonnage'    => 'nullable|numeric|max:99999999.99',
+            'net_tonnage'      => 'nullable|numeric|max:99999999.99',
+            'year_built'       => 'nullable|integer|digits:4',
+            'status'           => 'required|in:active,maintenance,retired', 
+            'company_id'       => 'nullable|exists:customers,id',
         ]);
 
         $vessel->update($data);

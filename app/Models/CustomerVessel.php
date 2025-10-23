@@ -10,7 +10,7 @@ class CustomerVessel extends Model
     use HasFactory;
 
     protected $fillable = [
-        'customer_id',
+        'company_id',
         'vessel_id',
         'status',
         'potential_revenue',
@@ -28,6 +28,6 @@ class CustomerVessel extends Model
 
     public function customer()
     {
-        return $this->belongsTo(Customer::class, 'customer_id');
+        return $this->belongsTo(Company::class, 'company_id');
     }
 }

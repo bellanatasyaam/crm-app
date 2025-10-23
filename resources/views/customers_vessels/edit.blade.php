@@ -12,9 +12,9 @@
             <!-- Pilih Customer -->
             <div class="col-md-6">
                 <label class="form-label">Customer</label>
-                <select name="customer_id" class="form-select" required>
-                    @foreach($customers as $customer)
-                        <option value="{{ $customer->id }}" {{ $customerVessel->customer_id == $customer->id ? 'selected' : '' }}>
+                <select name="company_id" class="form-select" required>
+                    @foreach($companies as $customer)
+                        <option value="{{ $customer->id }}" {{ $customerVessel->company_id == $customer->id ? 'selected' : '' }}>
                             {{ $customer->name }}
                         </option>
                     @endforeach

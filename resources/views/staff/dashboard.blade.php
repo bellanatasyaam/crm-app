@@ -8,7 +8,7 @@
         <nav class="flex-1">
             <ul class="space-y-2">
                 <li><a href="{{ url('/home') }}" class="block py-2 px-3 rounded hover:bg-indigo-600">🏠 Dashboard</a></li>
-                <li><a href="{{ route('customers.index') }}" class="block py-2 px-3 rounded bg-indigo-900">👥 Customers</a></li>
+                <li><a href="{{ route('companies.index') }}" class="block py-2 px-3 rounded bg-indigo-900">👥 Customers</a></li>
                 <li><a href="#" class="block py-2 px-3 rounded hover:bg-indigo-600">📊 Reports</a></li>
             </ul>
         </nav>
@@ -22,11 +22,11 @@
     <main class="flex-1 p-6">
         <div class="flex justify-between items-center mb-6">
             <h2 class="text-2xl font-bold">Customer Dashboard</h2>
-            <a href="{{ route('customers.create') }}" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-500">+ Add Customer</a>
+            <a href="{{ route('companies.create') }}" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-500">+ Add Customer</a>
         </div>
 
         <!-- Filter Form -->
-        <form action="{{ route('customers.index') }}" method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <form action="{{ route('companies.index') }}" method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
             <input type="text" name="search" placeholder="Search customer..." value="{{ request('search') }}"
                    class="border rounded-lg p-2 w-full">
             <select name="status" class="border rounded-lg p-2">
@@ -84,7 +84,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($customers as $c)
+                    @foreach($companies as $c)
                         <tr class="hover:bg-gray-50">
                             <td class="p-3 border">{{ $c->name }}</td>
                             <td class="p-3 border">{{ $c->assigned_staff }}</td>
@@ -107,8 +107,8 @@
                             <td class="p-3 border">{{ $c->currency }} {{ number_format($c->potential_revenue, 0) }}</td>
                             <td class="p-3 border">{{ $c->description ?? '-' }}</td>
                             <td class="p-3 border flex gap-2">
-                                <a href="{{ route('customers.edit', $c->id) }}" class="bg-yellow-400 px-2 py-1 rounded text-xs">Edit</a>
-                                <form action="{{ route('customers.destroy', $c->id) }}" method="POST">
+                                <a href="{{ route('companies.edit', $c->id) }}" class="bg-yellow-400 px-2 py-1 rounded text-xs">Edit</a>
+                                <form action="{{ route('companies.destroy', $c->id) }}" method="POST">
                                     @csrf @method('DELETE')
                                     <button class="bg-red-500 text-white px-2 py-1 rounded text-xs">Delete</button>
                                 </form>
@@ -118,7 +118,7 @@
                 </tbody>
             </table>
             <div class="p-3 border-t">
-                {{ $customers->links() }}
+                {{ $companies->links() }}
             </div>
         </div>
     </main>

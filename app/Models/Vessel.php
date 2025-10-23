@@ -4,18 +4,20 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Vessel extends Model
 {
+    use HasFactory, SoftDeletes;
+
     protected $fillable = [
-        'name', 'email', 'address', 'phone', 'customer_id','assigned_staff_id','vessel_name','port_of_call',
-        'estimate_revenue','currency','description','remark','status',
-        'last_contact','next_follow_up'
+        'company_id', 'name', 'imo_number', 'call_sign', 'port_of_call', 'flag', 
+        'vessel_type', 'gross_tonnage', 'net_tonnage', 'year_built', 'status',
     ];
 
-    public function customer()
+    public function company()
     {
-        return $this->belongsTo(Customer::class);
+        return $this->belongsTo(Company::class, 'company_id');
     }
 
     public function descriptionLogs()

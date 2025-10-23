@@ -63,7 +63,7 @@
                 </tr>
             </thead>
             <tbody>
-                @forelse ($customers as $customer)
+                @forelse ($companies as $customer)
                     <tr>
                         <td>{{ $customer->name }}</td>
                         <td>{{ $customer->email ?? '-' }}</td>
@@ -100,7 +100,7 @@
 
                         {{-- ACTION --}}
                         <td class="table-actions">
-                            <a href="{{ route('customers_vessels.create', ['customer_id' => $customer->id]) }}" class="btn btn-primary btn-sm">+ Vessel</a>
+                            <a href="{{ route('customers_vessels.create', ['company_id' => $customer->id]) }}" class="btn btn-primary btn-sm">+ Vessel</a>
                         </td>
                     </tr>
                 @empty
@@ -114,7 +114,7 @@
 
     {{-- PAGINATION --}}
     <div class="d-flex justify-content-center mt-3">
-        {{ $customers->links() }}
+        {{ $companies->links() }}
     </div>
 
 </div>

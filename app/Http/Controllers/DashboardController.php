@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Customer;
-use App\Models\CustomerVessel; // Tambahkan ini
+use App\Models\Company;
+use App\Models\CustomerVessel;
 
 class DashboardController extends Controller
 {
@@ -14,7 +14,7 @@ class DashboardController extends Controller
         $date = $request->input('date', date('Y-m-d'));
 
         // --- Query customer ---
-        $customers = Customer::with('vessels')
+        $companies = Company::with('vessels')
             ->whereHas('vessels', function($q) use ($date) {
                 $q->whereDate('created_at', $date);
             })
@@ -23,24 +23,24 @@ class DashboardController extends Controller
         // --- Query vessel report berdasarkan tanggal ---
         $reports = CustomerVessel::whereDate('created_at', $date)->get();
 
-        $totalRevenue = $customers->sum(function($c) {
+        $totalRevenue = $companies->sum(function($c) {
             return $c->vessels->sum('potential_revenue');
         });
-        $totalCustomer = $customers->count();
+        $totalCustomer = $companies->count();
 
         // --- Summary counts ---
-        $allCustomers = Customer::all();
+        $companies = Company::all();
 
         $summary = [
-            'totalCustomers'   => $allCustomers->count(),
-            'leads'            => $allCustomers->where('status', 'Lead')->count(),
-            'quotationSent'    => $allCustomers->where('status', 'Quotation Sent')->count(),
-            'negotiation'      => $allCustomers->where('status', 'Negotiation')->count(),
-            'onGoingVessel'    => $allCustomers->where('status', 'On Going Vessel')->count(),
-            'pendingPayment'   => $allCustomers->where('status', 'Pending Payment')->count(),
-            'closing'          => $allCustomers->where('status', 'Closing')->count(),
-            'overdue'          => $allCustomers->where('next_follow_up','<', now()->format('Y-m-d'))->count(),
-            'dueToday'         => $allCustomers->where('next_follow_up', now()->format('Y-m-d'))->count()
+            'totalCustomers'   => $companies->count(),
+            'leads'            => $companies->where('status', 'Lead')->count(),
+            'quotationSent'    => $companies->where('status', 'Quotation Sent')->count(),
+            'negotiation'      => $companies->where('status', 'Negotiation')->count(),
+            'onGoingVessel'    => $companies->where('status', 'On Going Vessel')->count(),
+            'pendingPayment'   => $companies->where('status', 'Pending Payment')->count(),
+            'closing'          => $companies->where('status', 'Closing')->count(),
+            'overdue'          => $companies->where('next_follow_up','<', now()->format('Y-m-d'))->count(),
+            'dueToday'         => $companies->where('next_follow_up', now()->format('Y-m-d'))->count()
         ];
 
         // --- Dummy recent activities ---
@@ -51,7 +51,7 @@ class DashboardController extends Controller
         ];
 
         return view('dashboard', [
-            'customers' => $customers,
+            'companies' => $companies,
             'totalCustomers' => $summary['totalCustomers'],
             'leads' => $summary['leads'],
             'quotationSent' => $summary['quotationSent'],

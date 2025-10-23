@@ -13,24 +13,27 @@ return new class extends Migration
     {
         Schema::create('vessels', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('customer_id')->constrained()->onDelete('cascade');
-            $table->foreignId('assigned_staff_id')->nullable()->constrained('users')->nullOnDelete();
-
-            $table->string('vessel_name');
-            $table->string('port_of_call')->nullable();
-            $table->decimal('estimate_revenue', 15, 2)->nullable();
-            $table->string('currency', 10)->default('USD');
-
-            $table->text('description')->nullable();
-            $table->string('remark')->nullable();
-
-            $table->string('status')->default('Follow Up'); 
-            // Follow up, On progress, Request, Waiting approval, Approve, On going, Quotation sent, Done/Closing
-
-            $table->date('last_contact')->nullable();
-            $table->date('next_follow_up')->nullable();
-
             $table->timestamps();
+            
+            $table->softDeletes();
+            
+            $table->foreignId('company_id')
+                  ->nullable() 
+                  ->constrained('companies')
+                  ->onDelete('set null');
+            
+            $table->string('name');
+            $table->string('imo_number')->nullable();
+            $table->string('call_sign')->nullable();
+            $table->string('port_of_call')->nullable();
+            $table->string('flag')->default('Indonesia');
+            $table->string('vessel_type');
+
+            $table->decimal('gross_tonnage', 10, 2)->nullable();
+            $table->decimal('net_tonnage', 10, 2)->nullable();
+            $table->integer('year_built')->nullable();
+
+            $table->enum('status', ['active', 'maintenance', 'retired'])->default('active');
         });
     }
 

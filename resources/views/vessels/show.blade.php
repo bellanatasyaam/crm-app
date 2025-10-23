@@ -36,22 +36,22 @@
     <h2 class="mb-4">Customer Profile</h2>
     <div class="card mb-4">
         <div class="card-body">
-            <h4 class="mb-3">{{ $customer->name }}</h4>
-            <p><strong>Email:</strong> {{ $customer->email ?? '-' }}</p>
-            <p><strong>Phone:</strong> {{ $customer->phone ?? '-' }}</p>
-            <p><strong>Address:</strong> {{ $customer->address ?? '-' }}</p>
+            <h4 class="mb-3">{{ $company->name }}</h4>
+            <p><strong>Email:</strong> {{ $company->email ?? '-' }}</p>
+            <p><strong>Phone:</strong> {{ $company->phone ?? '-' }}</p>
+            <p><strong>Address:</strong> {{ $company->address ?? '-' }}</p>
         </div>
     </div>
 
     {{-- Vessels List --}}
     <div class="d-flex justify-content-between mb-3">
         <h4 class="mb-0">Vessels</h4>
-        <a href="{{ route('customers.vessels.create', $customer->id) }}" class="btn btn-primary btn-sm">
+        <a href="{{ route('companies.vessels.create', $company->id) }}" class="btn btn-primary btn-sm">
             + Add Vessel
         </a>
     </div>
 
-    @if($customer->vessels->isEmpty())
+    @if($company->vessels->isEmpty())
         <div class="alert alert-info">No vessels found.</div>
     @else
         <div class="table-responsive">
@@ -73,7 +73,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($customer->vessels as $v)
+                    @foreach($companies->vessels as $v)
                         <tr>
                             <td>{{ $v->vessel_name }}</td>
                             <td>{{ $v->port_of_call ?? '-' }}</td>
@@ -104,9 +104,9 @@
                             <td>{{ $v->customer?->name ?? '-' }}</td>
                             <td>
                                 <div class="table-actions">
-                                    <a href="{{ route('customers.vessels.edit', [$customer->id, $v->id]) }}" 
+                                    <a href="{{ route('companies.vessels.edit', [$company->id, $v->id]) }}" 
                                        class="btn btn-warning btn-sm">Edit</a>
-                                    <form action="{{ route('customers.vessels.destroy', [$customer->id, $v->id]) }}" 
+                                    <form action="{{ route('companies.vessels.destroy', [$company->id, $v->id]) }}" 
                                           method="POST" 
                                           onsubmit="return confirm('Delete this vessel?')" 
                                           style="display:inline;">
@@ -128,7 +128,7 @@
     {{-- Navigation --}}
     <div class="mt-4 d-flex gap-2">
         <a href="{{ route('customers_vessels.index') }}" class="btn btn-secondary">Back to Customer List</a>
-        <a href="{{ route('customers.index') }}" class="btn btn-secondary">Back to Marketing</a>
+        <a href="{{ route('companies.index') }}" class="btn btn-secondary">Back to Marketing</a>
         <a href="{{ route('vessels.index') }}" class="btn btn-secondary">Back to Vessels List</a>
     </div>
 

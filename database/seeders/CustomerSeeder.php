@@ -58,7 +58,7 @@ class CustomerSeeder extends Seeder
         ];
 
         foreach ($data as $item) {
-            Customer::create($item);
+            Company::create($item);
         }
     }
 }
