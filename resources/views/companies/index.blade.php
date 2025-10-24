@@ -49,14 +49,6 @@
         }
         table.custom-table td { background: #fff; }
 
-        table.custom-table td.desc-col,
-        table.custom-table td.remark-col {
-            white-space: normal !important;
-            word-break: break-word;
-            max-width: 250px;
-            text-align: left;
-        }
-
         .table-actions {
             display: flex;
             gap: 3px;
@@ -80,7 +72,7 @@
             color: #0d6efd;
             font-size: 11px;
             margin-left: 5px;
-            user-select: none; /* Prevents text selection on click */
+            user-select: none;
         }
 
         /* === Dashboard Summary === */
@@ -119,9 +111,8 @@
             .chart-section { grid-template-columns: 1fr; }
         }
 
-        /* Chart adjustment */
         .chart-section canvas {
-            max-height: 250px !important; /* Increased height for better visibility */
+            max-height: 250px !important;
         }
         .chart-legend {
             display: flex;
@@ -149,7 +140,7 @@
         <h2 class="mb-0">Customers Dashboard</h2>
         <div class="d-flex gap-2">
             <a href="{{ route('companies.print') }}" class="btn btn-light btn-sm text-success fw-semibold" target="_blank">
-                <i class="fa fa-print"></i> Print Customers
+                <i class="fa fa-print"></i> Print
             </a>
             @can('create', App\Models\Company::class)
                 <a href="{{ route('companies.create') }}" class="btn btn-light btn-sm text-primary fw-semibold">
@@ -157,7 +148,7 @@
                 </a>
             @endcan
             <a href="{{ route('dashboard') }}" class="btn btn-outline-light btn-sm">
-                Back to Master Menu
+                Back To Master Menu
             </a>
         </div>
     </div>
@@ -165,21 +156,12 @@
     @if (session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
             {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     @endif
 
-    {{-- === Daily Report Filter === --}}
-    <form method="GET" action="{{ route('dashboard') }}" class="d-flex mb-3 align-items-center gap-2">
-        <label for="date" class="mb-0 fw-semibold">Filter Tanggal:</label>
-        {{-- Use form-control-sm for better fit --}}
-        <input type="date" name="date" id="date" value="{{ request('date') ?? date('Y-m-d') }}" class="form-control form-control-sm" style="max-width: 180px;">
-        <button type="submit" class="btn btn-primary btn-sm">Filter</button>
-    </form>
-
-
     {{-- === Dashboard Summary === --}}
-    <div class="summary-cards">
+    <div class="summary-cards mb-3">
         <div class="summary-card">
             <h4>{{ $summary['total_customers'] ?? 0 }}</h4>
             <span>Total Customers</span>
@@ -213,98 +195,63 @@
         </div>
     </div>
 
-    <!-- Customer Table -->
+    <!-- === TABLE === -->
     <div class="table-responsive">
         <table class="custom-table">
             <thead>
                 <tr>
-                    <th>Description</th>
-                    <th>Name</th>
+                    <th>Company Name</th>
                     <th>Email</th>
                     <th>Phone</th>
-                    <th>Staff</th>
-                    <th>Last Contact</th>
-                    <th>Next FU</th>
+                    <th>Website</th>
+                    <th>Tax ID</th>
+                    <th>Customer Type</th>
+                    <th>Industry</th>
+                    <th>Tier</th>
                     <th>Status</th>
-                    <th>Revenue</th>
-                    <th>Vessels</th>
-                    <th>Remark</th>
+                    <th>Address</th>
+                    <th>City</th>
+                    <th>Country</th>
                     <th>Action</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach($companies as $c)
                 <tr>
-                    <td class="desc-col" title="{{ $c->description }}">
-                        @if($c->description)
-                            {{-- Use a generalized class for truncation --}}
-                            <span class="truncate-text">{{ $c->description }}</span>
-                            {{-- Use a generalized toggle function --}}
-                            <span class="more-link" onclick="toggleText(this)">More</span>
-                            <span class="full-text d-none">{{ $c->description }}</span>
-                        @else
-                            -
-                        @endif
-                    </td>
                     <td>{{ $c->name }}</td>
-                    <td class="email-col" title="{{ $c->email }}">
-                        @if($c->email)
-                            {{-- Use a generalized class for truncation --}}
-                            <span class="truncate-text">{{ \Illuminate\Support\Str::limit($c->email, 30) }}</span>
-                            <span class="more-link" onclick="toggleText(this)">More</span>
-                            <span class="full-text d-none">{{ $c->email }}</span>
-                        @else
-                            -
-                        @endif
-                    </td>
+                    <td>{{ $c->email ?? '-' }}</td>
                     <td>{{ $c->phone ?? '-' }}</td>
-                    <td>{{ $c->assigned_staff }}</td>
-                    <td>{{ $c->last_followup_date ?? '-' }}</td>
-                    <td>{{ $c->next_followup_date ?? '-' }}</td>
+                    <td>{{ $c->website ?? '-' }}</td>
+                    <td>{{ $c->tax_id ?? '-' }}</td>
+                    <td>{{ $c->type ?? '-' }}</td>
+                    <td>{{ $c->industry ?? '-' }}</td>
+                    <td>{{ ucfirst($c->customer_tier ?? '-') }}</td>
                     <td>
                         @php
                             $statusColors = [
-                                'Follow up'         => 'badge bg-primary',
-                                'On progress'       => 'badge bg-info text-dark',
-                                'Request'           => 'badge bg-warning text-dark',
-                                'Waiting approval'  => 'badge bg-secondary',
-                                'Approve'           => 'badge bg-success',
-                                'On going'          => 'badge bg-dark',
-                                'Quotation send'    => 'badge bg-primary',
-                                'Done / Closing'    => 'badge bg-success',
+                                'Follow up' => 'badge bg-primary',
+                                'On progress' => 'badge bg-info text-dark',
+                                'Quotation send' => 'badge bg-warning text-dark',
+                                'Done / Closing' => 'badge bg-success',
+                                'Inactive' => 'badge bg-secondary',
                             ];
                         @endphp
                         <span class="{{ $statusColors[$c->status] ?? 'badge bg-light text-dark' }}">
-                            {{ $c->status }}
+                            {{ $c->status ?? '-' }}
                         </span>
                     </td>
-                    <td>{{ $c->currency }} {{ number_format($c->potential_revenue, 0) }}</td>
-                    <td>
-                        @forelse($c->vessels as $v)
-                            <span class="badge bg-info text-dark">{{ $v->vessel_name }}</span>
-                        @empty
-                            -
-                        @endforelse
-                    </td>
-                    <td class="remark-col" title="{{ $c->remark }}">
-                        {{ \Illuminate\Support\Str::limit($c->remark, 20) }}
-                    </td>
+                    <td>{{ \Illuminate\Support\Str::limit($c->address, 30) }}</td>
+                    <td>{{ $c->city ?? '-' }}</td>
+                    <td>{{ $c->country ?? '-' }}</td>
                     <td>
                         <div class="table-actions">
-                            @can('update', $c)
-                                <a href="{{ route('companies.edit', $c->id) }}" class="btn btn-warning btn-sm">Edit</a>
-                            @endcan
-                            @can('view', $c)
-                                <a href="{{ route('companies.show', $c->id) }}" class="btn btn-info btn-sm">Detail</a>
-                            @endcan
-                            @can('delete', $c)
-                                <form action="{{ route('companies.destroy', $c->id) }}" method="POST" style="display:inline;">
-                                    @csrf
-                                    @method('DELETE')
-                                    {{-- Replaced confirm() with a visual indicator/modal approach, though for brevity, keeping the inline approach here --}}
-                                    <button class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">Del</button>
-                                </form>
-                            @endcan
+                            <a href="{{ route('companies.edit', $c->id) }}" class="btn btn-warning btn-sm">Edit</a>
+                            <a href="{{ route('companies.show', $c->id) }}" class="btn btn-info btn-sm">Detail</a>
+                            <form action="{{ route('companies.destroy', $c->id) }}" method="POST" style="display:inline;">
+                                @csrf
+                                @method('DELETE')
+                                <button class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">Del</button>
+                            </form>
                             <a href="{{ route('companies.print_single', $c->id) }}" target="_blank" class="btn btn-secondary btn-sm">🖨</a>
                         </div>
                     </td>
@@ -320,146 +267,63 @@
 
 </div>
 
-{{-- Chart.js and custom JS --}}
+{{-- === CHARTS === --}}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    // Define the data for the charts outside the Chart initialization function
+document.addEventListener('DOMContentLoaded', function() {
     const statusData = {
-        labels: [
-            'Follow up', 'On progress', 'Request', 'Waiting approval',
-            'Approve', 'On going', 'Quotation send', 'Done / Closing'
-        ],
+        labels: ['Follow up', 'On progress', 'Quotation send', 'Done / Closing', 'Inactive'],
         data: [
             {{ $stats['follow_up'] ?? 0 }},
             {{ $stats['on_progress'] ?? 0 }},
-            {{ $stats['request'] ?? 0 }},
-            {{ $stats['waiting_approval'] ?? 0 }},
-            {{ $stats['approve'] ?? 0 }},
-            {{ $stats['on_going'] ?? 0 }},
             {{ $stats['quotation_sent'] ?? 0 }},
-            {{ $stats['done'] ?? 0 }}
+            {{ $stats['done'] ?? 0 }},
+            {{ $stats['inactive'] ?? 0 }},
         ],
-        colors: [
-            '#60a5fa', '#34d399', '#fbbf24', '#9ca3af', // Tailwind Blue-400, Emerald-400, Amber-400, Gray-400
-            '#22c55e', '#111827', '#3b82f6', '#ef4444'  // Tailwind Green-600, Gray-900, Blue-500, Red-500
-        ]
+        colors: ['#60a5fa', '#34d399', '#fbbf24', '#22c55e', '#9ca3af']
     };
 
     const staffData = {
-        labels: @json(array_keys($staff_stats ?? ['Wika', 'Aulia', 'Leni'])), // Assuming $staff_stats is available or fallback
-        data: @json(array_values($staff_stats ?? [10, 6, 8])),
-        colors: '#3b82f6'
+        labels: @json(array_keys($staff_stats ?? [])),
+        data: @json(array_values($staff_stats ?? [])),
+        color: '#3b82f6'
     };
 
-    // Generalized function to toggle truncation for description/email
-    function toggleText(el) {
-        let row = el.closest('td');
-        // Find the truncated and full text spans within the closest <td>
-        let trunc = row.querySelector('.truncate-text');
-        let full = row.querySelector('.full-text');
-
-        if (!trunc || !full) return; // Guard clause
-
-        if (full.classList.contains('d-none')) {
-            // Show full text
-            trunc.classList.add('d-none');
-            full.classList.remove('d-none');
-            el.innerText = "Less";
-        } else {
-            // Show truncated text
-            trunc.classList.remove('d-none');
-            full.classList.add('d-none');
-            el.innerText = "More";
-        }
-    }
-
-    // Initialize charts when the DOM is fully loaded
-    document.addEventListener('DOMContentLoaded', function() {
-
-        // === Status Chart (Pie) ===
-        const ctx1 = document.getElementById('statusChart');
-        const statusChart = new Chart(ctx1, {
-            type: 'pie',
-            data: {
-                labels: statusData.labels,
-                datasets: [{
-                    data: statusData.data,
-                    backgroundColor: statusData.colors
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        display: false // We will render a custom legend
-                    },
-                    title: {
-                        display: true,
-                        text: 'Customer Status Distribution',
-                        font: { size: 14, weight: '600' }
-                    }
-                },
-                maintainAspectRatio: false
-            }
-        });
-
-        // Custom Legend Generation
-        const legendContainer = document.getElementById('statusChartLegendContainer');
-        legendContainer.classList.add('chart-legend');
-        statusData.labels.forEach((label, i) => {
-            // Only add legend items for data points > 0
-            if (statusData.data[i] > 0) {
-                const item = document.createElement('span');
-                item.innerHTML = `<i style="background:${statusData.colors[i]}"></i>${label} (${statusData.data[i]})`;
-                legendContainer.appendChild(item);
-            }
-        });
-
-        // === Staff Chart (Bar) ===
-        const ctx2 = document.getElementById('staffChart');
-        new Chart(ctx2, {
-            type: 'bar',
-            data: {
-                labels: staffData.labels,
-                datasets: [{
-                    label: 'Total Customers Handled',
-                    data: staffData.data,
-                    backgroundColor: staffData.colors,
-                    borderRadius: 4
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            callback: function(value) {
-                                // Ensure ticks are integers
-                                if (Number.isInteger(value)) {
-                                    return value;
-                                }
-                            }
-                        }
-                    },
-                },
-                plugins: {
-                    title: {
-                        display: true,
-                        text: 'Customers Per Staff Member',
-                        font: { size: 14, weight: '600' }
-                    },
-                    legend: {
-                        display: false
-                    }
-                },
-                maintainAspectRatio: false
-            }
-        });
+    // === STATUS CHART ===
+    const ctx1 = document.getElementById('statusChart');
+    new Chart(ctx1, {
+        type: 'pie',
+        data: {
+            labels: statusData.labels,
+            datasets: [{ data: statusData.data, backgroundColor: statusData.colors }]
+        },
+        options: { plugins: { legend: { display: false }, title: { display: true, text: 'Customer Status' } } }
     });
 
-    // Make the toggleText function globally available for inline onclick calls
-    window.toggleText = toggleText;
+    const legend = document.getElementById('statusChartLegendContainer');
+    legend.classList.add('chart-legend');
+    statusData.labels.forEach((l, i) => {
+        if (statusData.data[i] > 0) {
+            const item = document.createElement('span');
+            item.innerHTML = `<i style="background:${statusData.colors[i]}"></i>${l} (${statusData.data[i]})`;
+            legend.appendChild(item);
+        }
+    });
 
+    // === STAFF CHART ===
+    const ctx2 = document.getElementById('staffChart');
+    new Chart(ctx2, {
+        type: 'bar',
+        data: {
+            labels: staffData.labels,
+            datasets: [{ label: 'Handled', data: staffData.data, backgroundColor: staffData.color }]
+        },
+        options: {
+            responsive: true,
+            scales: { y: { beginAtZero: true } },
+            plugins: { legend: { display: false }, title: { display: true, text: 'Customers Per Staff' } }
+        }
+    });
+});
 </script>
 @endsection
