@@ -119,6 +119,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         
     Route::get('/marketing/print', [MarketingController::class, 'print'])->name('marketing.print');
 
+        // 🔹 Route tambahan untuk menampilkan profil marketing staff
+    Route::get('/marketing/{id}/profile', [MarketingController::class, 'showProfile'])
+        ->name('marketing.profile');
+
+
     Route::middleware('can:isAdmin')->group(function () {
         Route::resource('users', UserController::class);
     });
