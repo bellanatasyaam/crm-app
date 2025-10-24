@@ -25,12 +25,17 @@ class MarketingController extends Controller
             $staffValues[] = $count;
         }
 
+        $marketings = \App\Models\Marketing::all();
+        $marketingData = \App\Models\User::where('role','staff')->paginate(10); 
+
         return view('marketing.index', compact(
             'statusOptions',
             'staffOptions',
             'marketingData',
             'staffLabels',
-            'staffValues'
+            'staffValues',
+            'marketings',
+            'marketingData'
         ));
     }
 
@@ -46,4 +51,21 @@ class MarketingController extends Controller
         $marketingData = Marketing::all();
         return view('marketing.print', compact('marketingData')); 
     }
+
+    public function show($id)
+    {
+        $company = \App\Models\Company::findOrFail($id);
+        $statusOptions = ['New', 'Contacted', 'Qualified', 'Lost', 'Won'];
+        $staffOptions  = User::where('role', 'staff')->pluck('name');
+        
+        return view('marketing.show', compact('company', 'statusOptions', 'staffOptions'));
+    }
+
+    public function showProfile($id)
+    {
+        $marketing = \App\Models\User::findOrFail($id); // atau model Marketing kamu
+        return view('marketing.profile', compact('marketing'));
+    }
+
+
 }
