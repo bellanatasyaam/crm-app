@@ -11,7 +11,7 @@
             <div class="card shadow-sm border-0 rounded-4 p-4 text-center hover-scale" style="background: #e8f0fe;">
                 <div class="card-body">
 
-                    <img src="{{ $profile->photoUrl ?? asset('images/default-avatar.png') }}"
+                    <img src="{{ $profile->photo_url ?? asset('images/default-avatar.png') }}"
                          alt="Profile Photo"
                          class="rounded-circle mb-3"
                          style="width:120px; height:120px; object-fit:cover; border:3px solid #0d6efd;">
