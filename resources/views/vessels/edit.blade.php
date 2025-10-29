@@ -12,7 +12,7 @@
         @method('PUT')
 
         <div class="mb-3">
-            <label class="form-label">Vessel Name</label>
+            <label class="form-label">Vessels Name</label>
             <input type="text" name="vessel_name" class="form-control" value="{{ $vessel->vessel_name }}" required>
         </div>
 

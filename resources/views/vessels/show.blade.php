@@ -127,7 +127,7 @@
 
     {{-- Navigation --}}
     <div class="mt-4 d-flex gap-2">
-        <a href="{{ route('customers_vessels.index') }}" class="btn btn-secondary">Back to Customer List</a>
+        <a href="{{ route('customers_vessels.index') }}" class="btn btn-secondary">Back to Customers List</a>
         <a href="{{ route('companies.index') }}" class="btn btn-secondary">Back to Marketing</a>
         <a href="{{ route('vessels.index') }}" class="btn btn-secondary">Back to Vessels List</a>
     </div>

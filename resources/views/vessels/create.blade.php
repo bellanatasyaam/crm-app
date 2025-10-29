@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="container py-4">
-    <h2 class="mb-4"><i class="fas fa-ship"></i> Add New Vessel Details</h2>
+    <h2 class="mb-4"><i class="fas fa-ship"></i> Add New Vessel Detail</h2>
 
     <form action="{{ $company 
         ? route('companies.vessels.store', $company->id) 
