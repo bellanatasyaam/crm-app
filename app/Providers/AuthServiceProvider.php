@@ -2,13 +2,9 @@
 
 namespace App\Providers;
 
-use App\Models\Company;
-use App\Policies\CustomerPolicy;
-use App\Models\Vessel;
-use App\Policies\VesselPolicy;
-
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
+use Illuminate\Support\Facades\Gate;
+use App\Models\User;
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -23,15 +19,18 @@ class AuthServiceProvider extends ServiceProvider
         \App\Models\Customer::class => \App\Policies\CustomerPolicy::class,
     ];
 
-    /**
-     * Register any authentication / authorization services.
-     */
-    public function boot()
+    public function boot(): void
     {
         $this->registerPolicies();
 
-        // Super admin boleh semua
-        Gate::before(function ($user, $ability) {
+        Gate::define('isAdmin', function (User $user) {
+            return in_array($user->role, ['admin', 'super_admin']);
+        });
+
+        /**
+         * ✅ Super admin boleh semua hal (akses penuh)
+         */
+        Gate::before(function (User $user, $ability) {
             if ($user->role === 'super_admin') {
                 return true;
             }

@@ -41,4 +41,10 @@ class User extends Authenticatable
         return in_array($this->email, $adminEmails);
     }
 
+
+        public function marketings()
+    {
+        return $this->hasMany(Marketing::class, 'staff_id');
+    }
+
 }
