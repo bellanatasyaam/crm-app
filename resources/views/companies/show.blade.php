@@ -240,6 +240,7 @@
 
 </div>
 
+
 {{-- JS Expand Description --}}
 <script>
 function toggleDesc(el) {
