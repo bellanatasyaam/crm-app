@@ -3,133 +3,53 @@
 @section('content')
 <div class="container py-4">
 
-    <style>
-        .custom-table {
-            font-size: 13px;
-            border-collapse: collapse;
-            width: 100%;
-        }
-        .custom-table th,
-        .custom-table td {
-            padding: 6px 8px;
-            text-align: center;
-            vertical-align: middle;
-            border: 1px solid #dee2e6;
-            white-space: nowrap;
-        }
-        .custom-table th {
-            background: #f8f9fa;
-            font-weight: 600;
-        }
-        .table-actions {
-            display: flex;
-            gap: 5px;
-            justify-content: center;
-        }
-        .table-actions .btn {
-            font-size: 11px;
-            padding: 2px 6px;
-        }
-    </style>
+    <h2 class="mb-4"><i class="fas fa-ship"></i> Vessel Detail</h2>
 
-    {{-- Customer Profile --}}
-    <h2 class="mb-4">Customer Profile</h2>
-    <div class="card mb-4">
+    {{-- Company & Basic Info --}}
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-primary text-white">
+            Company & Basic Info
+        </div>
         <div class="card-body">
-            <h4 class="mb-3">{{ $company->name }}</h4>
-            <p><strong>Email:</strong> {{ $company->email ?? '-' }}</p>
-            <p><strong>Phone:</strong> {{ $company->phone ?? '-' }}</p>
-            <p><strong>Address:</strong> {{ $company->address ?? '-' }}</p>
+            <p><strong>Customer / Company:</strong> {{ $vessel->company?->name ?? '—' }}</p>
+            <p><strong>Vessel Name:</strong> {{ $vessel->name ?? '—' }}</p>
         </div>
     </div>
 
-    {{-- Vessels List --}}
-    <div class="d-flex justify-content-between mb-3">
-        <h4 class="mb-0">Vessels</h4>
-        <a href="{{ route('companies.vessels.create', $company->id) }}" class="btn btn-primary btn-sm">
-            + Add Vessel
+    {{-- Technical Specifications --}}
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-info text-white">
+            Technical Specifications
+        </div>
+        <div class="card-body">
+            <p><strong>IMO Number:</strong> {{ $vessel->imo_number ?? '—' }}</p>
+            <p><strong>Call Sign:</strong> {{ $vessel->call_sign ?? '—' }}</p>
+            <p><strong>Port of Call:</strong> {{ $vessel->port_of_call ?? '—' }}</p>
+            <p><strong>Vessel Type:</strong> {{ $vessel->vessel_type ?? '—' }}</p>
+            <p><strong>Flag:</strong> {{ $vessel->flag ?? '—' }}</p>
+            <p><strong>Gross Tonnage:</strong> {{ $vessel->gross_tonnage ?? '—' }}</p>
+            <p><strong>Net Tonnage:</strong> {{ $vessel->net_tonnage ?? '—' }}</p>
+            <p><strong>Year Built:</strong> {{ $vessel->year_built ?? '—' }}</p>
+        </div>
+    </div>
+
+    {{-- Operational Status --}}
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-warning text-dark">
+            Operational Status
+        </div>
+        <div class="card-body">
+            <p><strong>Status:</strong> {{ ucfirst($vessel->status ?? '—') }}</p>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <a href="{{ route('vessels.edit', $vessel->id) }}" class="btn btn-warning">
+            <i class="fas fa-edit"></i> Edit
         </a>
-    </div>
-
-    @if($company->vessels->isEmpty())
-        <div class="alert alert-info">No vessels found.</div>
-    @else
-        <div class="table-responsive">
-            <table class="custom-table">
-                <thead>
-                    <tr>
-                        <th>Vessel Name</th>
-                        <th>Port of Call</th>
-                        <th>Status</th>
-                        <th>Revenue</th>
-                        <th>Currency</th>
-                        <th>Description</th>
-                        <th>Remark</th>
-                        <th>Last Contact</th>
-                        <th>Next FU</th>
-                        <th>Staff</th>
-                        <th>Customer</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($companies->vessels as $v)
-                        <tr>
-                            <td>{{ $v->vessel_name }}</td>
-                            <td>{{ $v->port_of_call ?? '-' }}</td>
-                            <td>
-                                @php
-                                    $statusColors = [
-                                        'Follow up'        => 'badge bg-primary',
-                                        'On progress'      => 'badge bg-info text-dark',
-                                        'Request'          => 'badge bg-warning text-dark',
-                                        'Waiting approval' => 'badge bg-secondary',
-                                        'Approve'          => 'badge bg-success',
-                                        'On going'         => 'badge bg-dark',
-                                        'Quotation send'   => 'badge bg-primary',
-                                        'Done / Closing'   => 'badge bg-success',
-                                    ];
-                                @endphp
-                                <span class="{{ $statusColors[$v->status] ?? 'badge bg-light text-dark' }}">
-                                    {{ $v->status ?? '-' }}
-                                </span>
-                            </td>
-                            <td>{{ number_format($v->estimate_revenue ?? 0, 0) }}</td>
-                            <td>{{ $v->currency ?? '-' }}</td>
-                            <td>{{ $v->description ?? '-' }}</td>
-                            <td>{{ $v->remark ?? '-' }}</td>
-                            <td>{{ $v->last_contact ?? '-' }}</td>
-                            <td>{{ $v->next_follow_up ?? '-' }}</td>
-                            <td>{{ $v->assignedStaff?->name ?? '-' }}</td>
-                            <td>{{ $v->customer?->name ?? '-' }}</td>
-                            <td>
-                                <div class="table-actions">
-                                    <a href="{{ route('companies.vessels.edit', [$company->id, $v->id]) }}" 
-                                       class="btn btn-warning btn-sm">Edit</a>
-                                    <form action="{{ route('companies.vessels.destroy', [$company->id, $v->id]) }}" 
-                                          method="POST" 
-                                          onsubmit="return confirm('Delete this vessel?')" 
-                                          style="display:inline;">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button class="btn btn-danger btn-sm">Del</button>
-                                    </form>
-                                    <a href="{{ route('vessels.show', $v->id) }}" 
-                                       class="btn btn-info btn-sm">Detail</a>
-                                </div>
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-    @endif
-
-    {{-- Navigation --}}
-    <div class="mt-4 d-flex gap-2">
-        <a href="{{ route('customers_vessels.index') }}" class="btn btn-secondary">Back to Customers List</a>
-        <a href="{{ route('companies.index') }}" class="btn btn-secondary">Back to Marketing</a>
-        <a href="{{ route('vessels.index') }}" class="btn btn-secondary">Back to Vessels List</a>
+        <a href="{{ route('vessels.index') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
     </div>
 
 </div>

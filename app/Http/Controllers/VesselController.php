@@ -135,20 +135,18 @@ class VesselController extends Controller
             'imo_number'       => 'nullable|string|max:255',
             'call_sign'        => 'nullable|string|max:255',
             'port_of_call'     => 'nullable|string|max:255',
-            'flag'             => 'nullable|string|max:255', 
+            'flag'             => 'nullable|string|max:255',
             'vessel_type'      => 'required|string|max:255',
             'gross_tonnage'    => 'nullable|numeric|max:99999999.99',
             'net_tonnage'      => 'nullable|numeric|max:99999999.99',
             'year_built'       => 'nullable|integer|digits:4',
-            'status'           => 'required|in:active,maintenance,retired', 
-            'company_id'       => 'nullable|exists:customers,id',
+            'status'           => 'required|in:active,maintenance,retired',
+            'company_id'       => 'nullable|exists:companies,id', // <-- diubah di sini
         ]);
 
         $vessel->update($data);
 
-        return redirect()
-            ->route('vessels.index')
-            ->with('success', 'Vessel updated successfully.');
+        return redirect()->route('vessels.index')->with('success', 'Vessel updated successfully!');
     }
 
     /**

@@ -134,9 +134,12 @@
 
         /* Image */
         .profile-card img {
-            width: 100%;
-            height: 220px;
+            width: 120px;      /* lebih besar dari 90px */
+            height: 120px;     /* lebih besar dari 90px */
+            border-radius: 50%;
             object-fit: cover;
+            border: 3px solid #e0f2fe;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
 
         /* Text section */
@@ -168,83 +171,97 @@
         </div>
     </div>
 
-    <!-- === MARKETING PROFILES GRID === -->
-<div id="marketingProfiles">
-    <h4 class="mb-3">Marketing Profiles</h4>
+    <!-- === MARKETING PROFILES MODERN === -->
+    <div id="marketingProfiles" style="display:none;">
+        <div class="text-center mb-4">
+            <h2 class="fw-bold mb-2">Marketing Profiles</h2>
+            <p class="text-muted">Tim yang solid untuk hasil maksimal 🚀</p>
+        </div>
 
-    <div class="profile-grid">
-        @forelse ($marketingProfiles as $profile)
-            <div class="profile-card">
-                <img src="{{ $profile->photo_url ?? '/uploads/photos/default.jpg' }}" 
-                     alt="Photo of {{ $profile->name }}">
-                <div class="profile-info">
-                    <h5>{{ $profile->name }}</h5>
-                    <p><strong>Email:</strong> {{ $profile->email }}</p>
-                    <p><strong>Phone:</strong> {{ $profile->phone ?? '-' }}</p>
+        <div class="profile-grid">
+            @forelse ($marketingProfiles as $profile)
+                <div class="profile-card">
+                    <img src="{{ $profile->photo_url ?? '/uploads/photos/default.jpg' }}" alt="{{ $profile->name }}">
+                    <h5 class="mt-3 mb-1">{{ $profile->name }}</h5>
+                    <p class="text-muted mb-1">{{ $profile->email }}</p>
+                    <p class="text-muted">{{ $profile->phone ?? '-' }}</p>
+                    <a href="{{ route('marketing.profile', $profile->id) }}" class="btn-view">View Profile</a>
                 </div>
-            </div>
-        @empty
-            <p class="text-center w-100 text-muted py-4">
-                No marketing profile found.
-            </p>
-        @endforelse
+            @empty
+                <p class="text-center text-muted py-4">No marketing profile found.</p>
+            @endforelse
+        </div>
     </div>
-</div>
 
-<style>
-    #marketingProfiles {
-        background: #fff;
-        border-radius: 15px;
-        padding: 25px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        margin-bottom: 30px;
-    }
+    <style>
+        #marketingProfiles {
+            background: #f9fafb;
+            border-radius: 20px;
+            padding: 40px 30px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+        }
 
-    .profile-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 20px;
-        justify-content: center; /* ✅ Biar ketengah */
-        justify-items: center;    /* ✅ Biar setiap card-nya juga rata tengah */
-    }
+        .profile-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            justify-items: center;
+        }
 
-    .profile-card {
-        background: linear-gradient(135deg, #e3f2fd, #bbdefb);
-        border-radius: 15px;
-        overflow: hidden;
-        text-align: center;
-        padding: 20px;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
+        .profile-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 30px 20px;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            width: 100%;
+            max-width: 300px;
+        }
 
-    .profile-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    }
+        .profile-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 10px 25px rgba(37,99,235,0.15);
+        }
 
-    .profile-card img {
-        width: 90px;
-        height: 90px;
-        object-fit: cover;
-        border-radius: 50%;
-        margin-bottom: 15px;
-        border: 3px solid #fff;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    }
+        .profile-card img {
+            width: 120px;      /* lebih besar dari 90px */
+            height: 120px;     /* lebih besar dari 90px */
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #e0f2fe;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
 
-    .profile-info h5 {
-        margin-bottom: 8px;
-        font-weight: 600;
-        color: #0d47a1;
-    }
+        .profile-card h5 {
+            font-weight: 600;
+            color: #1e293b;
+        }
 
-    .profile-info p {
-        margin: 2px 0;
-        color: #333;
-        font-size: 14px;
-    }
-</style>
+        .profile-card p {
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
 
+        .btn-view {
+            display: inline-block;
+            margin-top: 10px;
+            background: #3b82f6;
+            color: #fff;
+            padding: 8px 18px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 14px;
+            transition: 0.3s ease;
+        }
+
+        .btn-view:hover {
+            background: #2563eb;
+            box-shadow: 0 3px 8px rgba(37,99,235,0.25);
+        }
+    </style>
 
     {{-- TABEL --}}
     <div class="table-responsive mt-4">

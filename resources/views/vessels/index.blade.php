@@ -9,7 +9,6 @@
     .container { max-width: 100% !important; }
     body { background: #f5f6fa; font-family: 'Poppins', sans-serif; }
 
-    /* === HEADER === */
     .dashboard-header {
         background: linear-gradient(90deg, #0ea5e9 0%, #0284c7 100%);
         color: #fff;
@@ -25,17 +24,9 @@
         margin: 0;
     }
 
-    .btn {
-        border-radius: 8px;
-        transition: 0.2s ease-in-out;
-    }
+    .btn { border-radius: 8px; transition: 0.2s ease-in-out; }
+    .btn:hover { transform: translateY(-1px); box-shadow: 0 3px 6px rgba(0,0,0,0.15); }
 
-    .btn:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 3px 6px rgba(0,0,0,0.15);
-    }
-
-    /* === TABLE === */
     .table-container {
         background: #fff;
         border-radius: 14px;
@@ -44,11 +35,7 @@
         padding: 0;
     }
 
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 14px;
-    }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
 
     thead {
         background: linear-gradient(90deg, #0284c7 0%, #0ea5e9 100%);
@@ -59,36 +46,43 @@
         padding: 12px 16px;
         text-align: left;
         border-bottom: 1px solid #e2e8f0;
+        vertical-align: middle;
     }
 
-    th {
-        font-weight: 600;
-        font-size: 14px;
-    }
-
-    tbody tr:hover {
-        background: #f1f5f9;
-    }
-
-    .badge {
-        font-size: 12px;
-        border-radius: 6px;
-        padding: 4px 8px;
-    }
-
+    th { font-weight: 600; font-size: 14px; }
+    tbody tr:hover { background: #f1f5f9; }
+    .badge { font-size: 12px; border-radius: 6px; padding: 4px 8px; }
     .alert { border-radius: 8px; }
+
+    /* === ACTION BUTTONS === */
+    td:last-child {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 6px;
+        white-space: nowrap;
+    }
+
+    td:last-child .btn {
+        padding: 5px 10px;
+        font-size: 13px;
+        border-radius: 6px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        height: 32px;
+    }
+
+    td:last-child form {
+        margin: 0;
+    }
 </style>
 
-<!-- Header -->
 <div class="dashboard-header d-flex justify-content-between align-items-center">
     <h2 class="mb-0">🚢 Daftar Vessels</h2>
     <div class="d-flex gap-2">
-        <a href="{{ route('vessels.create') }}" class="btn btn-light btn-sm text-primary fw-semibold">
-            + Tambah Vessel
-        </a>
-        <a href="{{ route('dashboard') }}" class="btn btn-outline-light btn-sm">
-            Kembali
-        </a>
+        <a href="{{ route('vessels.create') }}" class="btn btn-light btn-sm text-primary fw-semibold">+ Tambah Vessel</a>
+        <a href="{{ route('dashboard') }}" class="btn btn-outline-light btn-sm">Kembali</a>
     </div>
 </div>
 
@@ -107,59 +101,54 @@
         <thead>
             <tr>
                 <th>No</th>
-                <th>Customer</th>
+                <th>Company</th>
                 <th>Vessel Name</th>
                 <th>IMO</th>
-                <th>Port</th>
-                <th>Staff</th>
+                <th>Call Sign</th>
+                <th>Port of Call</th>
+                <th>Vessel Type</th>
+                <th>Flag</th>
+                <th>Gross (GT)</th>
+                <th>Net (NT)</th>
+                <th>Year Built</th>
                 <th>Status</th>
-                <th>Revenue</th>
-                <th>Last Contact</th>
-                <th>Next FU</th>
-                <th>Remark</th>
-                <th style="width: 120px;">Action</th>
+                <th style="width: 150px;">Action</th>
             </tr>
         </thead>
         <tbody>
             @foreach($vessels as $index => $vessel)
             <tr>
                 <td>{{ $index + 1 }}</td>
-                <td>{{ $vessel->customer?->name ?? '—' }}</td>
-                <td>{{ $vessel->vessel_name }}</td>
+                <td>{{ $vessel->company?->name ?? '—' }}</td>
+                <td>{{ $vessel->name ?? '—' }}</td>
                 <td>{{ $vessel->imo_number ?? '—' }}</td>
+                <td>{{ $vessel->call_sign ?? '—' }}</td>
                 <td>{{ $vessel->port_of_call ?? '—' }}</td>
-                <td>{{ $vessel->assignedStaff?->name ?? '—' }}</td>
+                <td>{{ $vessel->vessel_type ?? '—' }}</td>
+                <td>{{ $vessel->flag ?? '—' }}</td>
+                <td>{{ $vessel->gross_tonnage ?? '—' }}</td>
+                <td>{{ $vessel->net_tonnage ?? '—' }}</td>
+                <td>{{ $vessel->year_built ?? '—' }}</td>
                 <td>
                     @php
                         $statusColors = [
-                            'Follow up'        => 'badge bg-primary',
-                            'On progress'      => 'badge bg-info text-dark',
-                            'Request'          => 'badge bg-warning text-dark',
-                            'Waiting approval' => 'badge bg-secondary',
-                            'Approve'          => 'badge bg-success',
-                            'On going'         => 'badge bg-dark',
-                            'Quotation send'   => 'badge bg-primary',
-                            'Done / Closing'   => 'badge bg-success'
+                            'active' => 'badge bg-success',
+                            'maintenance' => 'badge bg-warning text-dark',
+                            'retired' => 'badge bg-secondary text-white',
                         ];
                     @endphp
                     <span class="{{ $statusColors[$vessel->status] ?? 'badge bg-light text-dark' }}">
-                        {{ $vessel->status }}
+                        {{ ucfirst($vessel->status ?? '-') }}
                     </span>
                 </td>
-                <td>{{ number_format($vessel->estimate_revenue, 0) }} {{ $vessel->currency ?? '' }}</td>
-                <td>{{ $vessel->last_contact ?? '—' }}</td>
-                <td>{{ $vessel->next_follow_up ?? '—' }}</td>
-                <td>{{ $vessel->remark ?? '—' }}</td>
                 <td>
-                    @if($vessel->assigned_staff_id == auth()->id() || auth()->user()->role == 'super_admin')
+                    <a href="{{ route('vessels.show', $vessel->id) }}" class="btn btn-sm btn-info text-white">Detail</a>
+                    @if(auth()->user()->role == 'super_admin' || $vessel->created_by == auth()->id())
                         <a href="{{ route('vessels.edit', $vessel->id) }}" class="btn btn-sm btn-warning text-white">Edit</a>
-                        <a href="{{ route('vessels.show', $vessel->id) }}" class="btn btn-sm btn-info text-white">Detail</a>
-                        <form action="{{ route('vessels.destroy', $vessel->id) }}" method="POST" style="display:inline;">
+                        <form action="{{ route('vessels.destroy', $vessel->id) }}" method="POST">
                             @csrf @method('DELETE')
                             <button class="btn btn-sm btn-danger" onclick="return confirm('Yakin hapus?')">Del</button>
                         </form>
-                    @else
-                        <a href="{{ route('vessels.show', $vessel->id) }}" class="btn btn-sm btn-info text-white">Detail</a>
                     @endif
                 </td>
             </tr>

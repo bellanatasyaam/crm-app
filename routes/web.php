@@ -44,7 +44,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     /**
      * ======================
-     * CUSTOMERS
+     * COMPANIES
      * ======================
      */
     Route::prefix('companies')->group(function () {
@@ -84,10 +84,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     /**
      * ======================
-     * CUSTOMERS + VESSELS (NESTED PER CUSTOMER)
+     * CUSTOMERS + VESSELS (NESTED PER COMPANY)
      * ======================
+     * 🛠 FIXED: ubah prefix & parameter dari `customers/{customer}` ke `companies/{company}`
+     * biar cocok sama route name `companies.vessels.update` yang kamu pakai di Blade
      */
-    Route::prefix('customers/{customer}')->group(function () {
+    Route::prefix('companies/{company}')->group(function () {
         Route::get('/profile', [CustomerVesselController::class, 'profile'])->name('companies.profile');
         Route::get('/detail', [CustomerVesselController::class, 'show'])->name('companies.detail');
 
@@ -129,7 +131,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
      * ======================
      * USERS (ADMIN ONLY)
      * ======================
-     * 🔥 Tambahan fix biar super_admin juga bisa akses tanpa 403
      */
     Route::middleware(['can:isAdmin'])->group(function () {
         Route::resource('users', UserController::class);
