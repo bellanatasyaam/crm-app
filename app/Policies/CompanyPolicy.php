@@ -2,43 +2,34 @@
 
 namespace App\Policies;
 
+use App\Models\Company;
 use App\Models\User;
-use App\Models\Customer;
 
 class CompanyPolicy
 {
-    public function viewAny(User $user)
+    public function viewAny(User $user): bool
     {
-        return true; // semua user boleh lihat daftar company
+        return true;
     }
 
-    public function view(User $user, Company $company)
+    public function view(User $user, Company $company): bool
     {
-        return true; // semua user boleh lihat detail
+
+        return true;
     }
 
-    public function create(User $user)
+    public function create(User $user): bool
     {
-        // hanya admin & super_admin boleh create
-        return in_array($user->role, ['staff', 'admin', 'super_admin']);
+        return $user->role === 'super_admin' || $user->role === 'staff';
     }
 
-    public function update(User $user, Company $company)
+    public function update(User $user, Company $company): bool
     {
-        if (in_array($user->role, ['admin', 'super_admin'])) {
-            return true;
-        }
-
-        return $user->id === $company->assigned_staff_id;
+        return $user->role === 'super_admin' || $company->assigned_staff_id === $user->id;
     }
 
-    public function delete(User $user, Company $company)
+    public function delete(User $user, Company $company): bool
     {
-        if (in_array($user->role, ['admin', 'super_admin'])) {
-            return true;
-        }
-
-        return $user->id === $company->assigned_staff_id;
+        return $user->role === 'super_admin' || $company->assigned_staff_id === $user->id;
     }
-
 }

@@ -84,38 +84,34 @@ class CompanyController extends Controller
     public function store(Request $request)
     {
         $this->authorize('create', Company::class);
-        
-        
+
         $validated = $request->validate([
-            'name'          => 'required|string|max:255',
-            'type'          => 'nullable|string|max:100',
-            'industry'      => 'nullable|string|max:100',
-            'phone'         => 'nullable|string|max:20',
-            'email'         => 'nullable|email|max:255',
-            'website'       => 'nullable|url|max:255',
-            'address'       => 'nullable|string',
-            'city'          => 'nullable|string|max:100',
-            'country'       => 'nullable|string|max:100',
-            'tax_id'        => 'nullable|string|max:50',
-            'customer_tier' => 'nullable|string|in:regular,vip,premium',
-            'status'        => 'nullable|string|in:active,inactive',
-            
+            'name' => 'required|string|max:255',
+            'email' => 'nullable|email|max:255',
+            'phone' => 'nullable|string|max:20',
+            'website' => 'nullable|string|max:255',
+            'tax_id' => 'nullable|string|max:100',
+            'type' => 'nullable|string|max:100',
+            'industry' => 'nullable|string|max:100',
+            'customer_tier' => 'nullable|string|max:50',
+            'status' => 'nullable|string|max:50',
+            'address' => 'nullable|string',
+            'city' => 'nullable|string|max:100',
+            'country' => 'nullable|string|max:100',
+            'assigned_staff_id' => 'nullable|integer',
+            'assigned_staff' => 'nullable|string|max:255',
+            'assigned_staff_email' => 'nullable|email|max:255',
+            'last_followup_date' => 'nullable|date',
+            'next_followup_date' => 'nullable|date',
+            'remark' => 'nullable|string',
         ]);
 
         $company = Company::create($validated);
 
-        Log::create([
-            'company_id'    => $company->id,
-            'user_id'        => auth()->id(),
-            'activity'       => 'Created company: ' . $company->name,
-            'activity_type'  => 'create',
-            'activity_detail'=> 'New company created with code ' . $company->code,
-        ]);
-
-        
-
-        return redirect()->route('companies.index')->with('success', 'Comapny created!');
+        return redirect()->route('companies.show', $company->id)
+            ->with('success', 'Customer created successfully!');
     }
+
 
     /**
      * Show the form for editing the specified resource.
@@ -139,50 +135,33 @@ class CompanyController extends Controller
     {
         $this->authorize('update', $company);
 
-        
         $validated = $request->validate([
-            'name'          => 'required|string|max:255',
-            'type'          => 'nullable|string|max:100',
-            'industry'      => 'nullable|string|max:100',
-            'phone'         => 'nullable|string|max:20',
-            'email'         => 'nullable|email|max:255',
-            'website'       => 'nullable|url|max:255',
-            'address'       => 'nullable|string',
-            'city'          => 'nullable|string|max:100',
-            'country'       => 'nullable|string|max:100',
-            'tax_id'        => 'nullable|string|max:50',
-            'customer_tier' => 'nullable|string|in:regular,vip,premium',
-            'status'        => 'nullable|string|in:active,inactive',
+            'name' => 'required|string|max:255',
+            'email' => 'nullable|email|max:255',
+            'phone' => 'nullable|string|max:20',
+            'website' => 'nullable|string|max:255',
+            'tax_id' => 'nullable|string|max:100',
+            'type' => 'nullable|string|max:100',
+            'industry' => 'nullable|string|max:100',
+            'customer_tier' => 'nullable|string|max:50',
+            'status' => 'nullable|string|max:50',
+            'address' => 'nullable|string',
+            'city' => 'nullable|string|max:100',
+            'country' => 'nullable|string|max:100',
+            'assigned_staff_id' => 'nullable|integer',
+            'assigned_staff' => 'nullable|string|max:255',
+            'assigned_staff_email' => 'nullable|email|max:255',
+            'last_followup_date' => 'nullable|date',
+            'next_followup_date' => 'nullable|date',
+            'remark' => 'nullable|string',
         ]);
-        
-        $changes = [];
-        $fillableKeys = array_keys($validated); 
-        
-        foreach ($validated as $field => $newValue) {
-            $oldValue = $company->getOriginal($field);
 
-            
-            if ($oldValue != $newValue) {
-                $changes[] = ucfirst($field)." from '".($oldValue ?? '-')."' to '".($newValue ?? '-')."'";
-            }
-        }
-        
         $company->update($validated);
 
-        if (!empty($changes)) {
-            Log::create([
-                'company_id'     => $company->id,
-                'user_id'         => auth()->id(),
-                'activity'        => 'Updated Company details: '.$company->name,
-                'activity_type'   => 'update',
-                'activity_detail' => implode(', ', $changes),
-            ]);
-        }
-        
-        
-
-        return redirect()->route('companies.index')->with('success', 'Company updated successfully.');
+        return redirect()->route('companies.show', $company->id)
+            ->with('success', 'Customer updated successfully!');
     }
+
 
     /**
      * Remove the specified resource from storage.
@@ -211,20 +190,36 @@ class CompanyController extends Controller
         return redirect()->route('companies.index')->with('success', 'Company deleted successfully.');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Company $company)
+    public function show($id)
     {
-        $this->authorize('view', $company);
+        $company = \App\Models\Company::with(['assignedStaff', 'vessels', 'logs'])->findOrFail($id);
 
-        
-        $company->load('vessels');
+        // === Assigned Staff Info ===
+        $company->assigned_staff = $company->assignedStaff->name ?? '-';
+        $company->assigned_staff_email = $company->assignedStaff->email ?? '-';
 
-        
-        
+        // === Follow-Up Info (langsung dari table companies) ===
+        $company->last_follow_up = $company->last_follow_up ?? '-';
+        $company->next_follow_up = $company->next_follow_up ?? '-';
 
-        return view('companies.show', compact('company'));
+        // === Remark ===
+        $company->remark = $company->remark ?? '-';
+
+        // === Revenue Summary ===
+        $revenues = [];
+        $totalRevenueIDR = 0;
+        $exchangeRates = ['USD' => 15000, 'EUR' => 16000, 'IDR' => 1];
+
+        foreach ($company->vessels as $vessel) {
+            $curr = $vessel->currency ?? 'IDR';
+            $amount = is_numeric($vessel->potential_revenue ?? 0)
+                ? $vessel->potential_revenue
+                : 0;
+            $revenues[$curr] = ($revenues[$curr] ?? 0) + $amount;
+            $totalRevenueIDR += $amount * ($exchangeRates[$curr] ?? 1);
+        }
+
+        return view('companies.show', compact('company', 'revenues', 'totalRevenueIDR'));
     }
     
     /**

@@ -11,8 +11,24 @@ class Company extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'code', 'name', 'type', 'industry', 'phone', 'email', 'website',
-        'address', 'city', 'country', 'tax_id', 'customer_tier', 'status',
+        'name',
+        'email',
+        'phone',
+        'website',
+        'tax_id',
+        'type',
+        'industry',
+        'customer_tier',
+        'status',
+        'address',
+        'city',
+        'country',
+        'assigned_staff_id',
+        'assigned_staff',
+        'assigned_staff_email',
+        'last_followup_date',
+        'next_followup_date',
+        'remark',
     ];
 
     protected $attributes = [
@@ -25,10 +41,15 @@ class Company extends Model
     {
         static::creating(function ($company) {
             if (empty($company->code)) {
-                $latest = Company::withTrashed()->latest('id')->first();
-                $nextNumber = $latest ? ((int) substr($latest->code, 4)) + 1 : 1;
+                $maxCode = Company::withTrashed()
+                    ->selectRaw("MAX(CAST(SUBSTRING(code, 6) AS UNSIGNED)) as max_number")
+                    ->first()
+                    ->max_number;
+
+                $nextNumber = $maxCode ? $maxCode + 1 : 1;
                 $company->code = 'CUST-' . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
             }
+
             if (auth()->check()) {
                 $company->created_by = auth()->id();
                 $company->updated_by = auth()->id();

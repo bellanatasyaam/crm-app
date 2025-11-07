@@ -136,24 +136,28 @@
             <div class="col-md-6">
                 <p><strong>Assigned Staff:</strong> {{ $company->assigned_staff ?? '-' }}</p>
                 <p><strong>Staff Email:</strong> {{ $company->assigned_staff_email ?? '-' }}</p>
-                <p><strong>Last Follow-Up:</strong> {{ $company->last_followup_date ? \Carbon\Carbon::parse($company->last_followup_date)->format('d M Y') : '-' }}</p>
-                <p><strong>Next Follow-Up:</strong> {{ $company->next_followup_date ? \Carbon\Carbon::parse($company->next_followup_date)->format('d M Y') : '-' }}</p>
+                <p><strong>Last Follow-Up:</strong>
+                    @if(!empty($company->last_followup_date) && $company->last_followup_date != '-')
+                        {{ \Carbon\Carbon::parse($company->last_followup_date)->format('d M Y') }}
+                    @else
+                        -
+                    @endif
+                </p>
+
+                <p><strong>Next Follow-Up:</strong>
+                    @if(!empty($company->next_followup_date) && $company->next_followup_date != '-')
+                        {{ \Carbon\Carbon::parse($company->next_followup_date)->format('d M Y') }}
+                    @else
+                        -
+                    @endif
+                </p>
             </div>
         </div>
     </div>
 
     {{-- === REMARKS & DESCRIPTION === --}}
     <div class="info-section">
-        <h4 class="section-title">🗒️ Remarks & Description</h4>
-        <p><strong>Description:</strong>
-            @if($company->description)
-                <span class="truncate">{{ $company->description }}</span>
-                <span class="more-link" onclick="toggleDesc(this)">More</span>
-                <span class="full-text d-none">{{ $company->description }}</span>
-            @else
-                -
-            @endif
-        </p>
+        <h4 class="section-title">🗒️ Remarks</h4>
         <p><strong>Remark:</strong>
             @if($company->remark)
                 <span class="truncate">{{ $company->remark }}</span>
@@ -163,32 +167,6 @@
                 -
             @endif
         </p>
-    </div>
-
-    {{-- === REVENUE SUMMARY === --}}
-    <div class="info-section">
-        <h4 class="section-title">💰 Revenue Summary</h4>
-        @php
-            $revenues = [];
-            $totalRevenueIDR = 0;
-            $exchangeRates = ['USD'=>15000, 'EUR'=>16000, 'IDR'=>1];
-            foreach($company->vessels as $vessel) {
-                $curr = $vessel->currency ?? 'IDR';
-                $amount = is_numeric($vessel->estimate_revenue ?? $vessel->potential_revenue) 
-                            ? ($vessel->estimate_revenue ?? $vessel->potential_revenue) : 0;
-                $revenues[$curr] = ($revenues[$curr] ?? 0) + $amount;
-                $totalRevenueIDR += $amount * ($exchangeRates[$curr] ?? 1);
-            }
-        @endphp
-
-        @if(count($revenues) > 0)
-            @foreach($revenues as $curr => $total)
-                <p><strong>{{ $curr }}:</strong> {{ number_format($total, 0) }}</p>
-            @endforeach
-            <p><strong>Total in IDR:</strong> {{ number_format($totalRevenueIDR, 0) }}</p>
-        @else
-            <p>-</p>
-        @endif
     </div>
 
     {{-- === VESSEL LIST === --}}
