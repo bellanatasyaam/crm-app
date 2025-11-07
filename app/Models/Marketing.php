@@ -10,21 +10,19 @@ class Marketing extends Model
     use HasFactory;
 
     protected $fillable = [
-        'description',
         'client_name',
         'email',
         'phone',
-        'staff',
+        'staff_id',
         'last_contact',
         'next_follow_up',
         'status',
         'revenue',
         'vessel_name',
+        'description',
         'remark',
-        'staff_id', // 🔥 tambahkan ini
     ];
 
-    // 🔗 Relasi ke User (staff)
     public function staff()
     {
         return $this->belongsTo(User::class, 'staff_id');

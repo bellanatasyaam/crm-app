@@ -292,13 +292,12 @@
                                 <span class="full-text d-none">{{ $m->description }}</span>
                             @endif
                         </td>
-                        <td>{{ $m->name ?? '-' }}</td>
+                        <td>{{ $m->client_name ?? '-' }}</td>
                         <td>{{ $m->email ?? '-' }}</td>
                         <td>{{ $m->phone ?? '-' }}</td>
-                        <td>{{ $m->staff->name ?? '-' }}</td>
-
+                        <td>{{ $m->staff?->name ?? '-' }}</td>
                         <td>{{ $m->last_contact ?? '-' }}</td>
-                        <td>{{ $m->next_fu ?? '-' }}</td>
+                        <td>{{ $m->next_follow_up ?? '-' }}</td>
                         <td>
                             @php
                                 $statusColors = [
@@ -312,7 +311,7 @@
                             <span class="badge bg-{{ $color }}">{{ $m->status ?? '-' }}</span>
                         </td>
                         <td>{{ $m->revenue ?? '-' }}</td>
-                        <td>{{ $m->vessel ?? '-' }}</td>
+                        <td>{{ $m->vessel_name ?? '-' }}</td>
                         <td>
                             <span class="truncate-text">{{ Str::limit($m->remark ?? '-', 40) }}</span>
                             @if(strlen($m->remark ?? '') > 40)
