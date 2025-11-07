@@ -5,8 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Customer;
 use App\Models\Vessel;
 use App\Models\Log;
-use App\Models\User; 
-use App\Helpers\LogHelper;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -18,12 +17,16 @@ class CustomerController extends Controller
     {
         $query = Customer::query();
 
+        if (!auth()->user()->isAdmin()) {
+            $query->where('assigned_staff_id', auth()->id());
+        }
+
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('description', 'like', "%{$search}%")
-                    ->orWhere('remark', 'like', "%{$search}%");
+                  ->orWhere('description', 'like', "%{$search}%")
+                  ->orWhere('remark', 'like', "%{$search}%");
             });
         }
 
@@ -35,81 +38,33 @@ class CustomerController extends Controller
             $query->where('assigned_staff', 'like', '%' . $request->assigned_staff . '%');
         }
 
-        // Gunakan query sekali dengan urutan dan paginate
-        $customers = $query
-            ->orderBy('created_at', 'desc')
-            ->orderBy('last_followup_date', 'asc')
-            ->paginate(10);
+        // Paginate
+        $customers = $query->orderBy('created_at', 'desc')
+                           ->orderBy('last_followup_date', 'asc')
+                           ->paginate(10);
 
-        // Definisikan variabel summary, reminders, stats, dst
+        // Hitung overall_status tiap customer
+        $customers->each(function($customer) {
+            $customer->overall_status = $customer->customerVessels->contains(fn($v) => $v->status == 'active') ? 'Active' : 'Inactive';
+        });
+
+        // Summary & stats
         $summary = [
             'total_customers' => Customer::count(),
             'by_status' => Customer::select('status', DB::raw('COUNT(*) as total'))
                 ->groupBy('status')
                 ->pluck('total','status'),
-            'revenue_by_status' => Customer::select('status', DB::raw('SUM(potential_revenue) as revenue'))
-                ->groupBy('status')
-                ->pluck('revenue','status'),
-            'by_staff' => Customer::select('assigned_staff', DB::raw('COUNT(DISTINCT id) as total'))
+            'by_staff' => Customer::select('assigned_staff', DB::raw('COUNT(*) as total'))
                 ->groupBy('assigned_staff')
                 ->pluck('total','assigned_staff'),
-            'upcoming_followups' => Customer::whereDate('next_followup_date', '>=', now())
-                ->whereDate('next_followup_date', '<=', now()->addDays(7))
-                ->count(),
-            'overdue_followups' => Customer::whereDate('next_followup_date', '<', now())->count(),
         ];
 
-        $reminders = [
-            'overdue' => Customer::whereDate('next_followup_date', '<', now())->count(),
-            'today' => Customer::whereDate('next_followup_date', now())->count(),
-            'upcoming' => Customer::whereBetween('next_followup_date', [now(), now()->addDays(7)])->count(),
-        ];
+        $statusOptions = ['Lead','Follow up', 'On progress','Request','Waiting approval','Approve','On going','Quotation send','Done / Closing'];
+        $staffOptions = User::where('role','staff')->pluck('name')->toArray();
 
-        $stats = [
-            'lead' => Customer::where('status', 'Lead')->count(),
-            'follow_up' => Customer::where('status', 'Follow up')->count(),
-            'on_progress' => Customer::where('status', 'On progress')->count(),
-            'request' => Customer::where('status', 'Request')->count(),
-            'waiting_approval' => Customer::where('status', 'Waiting approval')->count(),
-            'approve' => Customer::where('status', 'Approve')->count(),
-            'on_going' => Customer::where('status', 'On going')->count(),
-            'quotation_sent' => Customer::where('status', 'Quotation send')->count(),
-            'done' => Customer::where('status', 'Done / Closing')->count(),
-        ];
-
-        $statusOptions = [
-            'Lead','Follow up', 'On progress', 'Request', 'Waiting approval', 'Approve', 'On going', 'Quotation send', 'Done / Closing'
-        ];
-        $staffOptions = User::where('role', 'staff')->pluck('name')->toArray();
-
-        // Hitung staffLabels dsb
-        $allStaff = User::where('role', 'staff')->pluck('name');
-        $staffCounts = Customer::selectRaw('COALESCE(assigned_staff, "Unassigned") as staff')
-            ->selectRaw('COUNT(*) as total')
-            ->groupBy('staff')
-            ->pluck('total', 'staff');
-
-        $staffLabels = [];
-        $staffValues = [];
-
-        foreach ($allStaff as $staffName) {
-            $staffLabels[] = $staffName;
-            $staffValues[] = $staffCounts[$staffName] ?? 0;
-        }
-
-        $staffColors = array_map(function($name) {
-            return '#' . substr(md5($name), 0, 6);
-        }, $staffLabels);
-
-        // Return ke view dengan semua variabel sudah benar didefinisikan
         return view('customers.index', compact(
             'customers',
             'summary',
-            'reminders',
-            'stats',
-            'staffLabels',
-            'staffValues',
-            'staffColors',
             'statusOptions',
             'staffOptions'
         ));
@@ -118,26 +73,15 @@ class CustomerController extends Controller
     public function create()
     {
         $this->authorize('create', Customer::class);
-
-        $customers = Customer::all();
-        $vessels = \App\Models\Vessel::all();
-        return view('customers.create', compact('customers', 'vessels'));
+        $vessels = Vessel::all();
+        return view('customers.create', compact('vessels'));
     }
 
     public function store(Request $request)
     {
         $data = $request->only([
-            'name',
-            'email',
-            'phone',
-            'address',
-            'assigned_staff',
-            'last_followup_date',
-            'next_followup_date',
-            'description',
-            'remark'
+            'name','email','phone','address','last_followup_date','next_followup_date','description','remark'
         ]);
-        
         $data['assigned_staff_id'] = auth()->id();
         $data['assigned_staff'] = auth()->user()->name;
         $data['assigned_staff_email'] = auth()->user()->email;
@@ -145,22 +89,22 @@ class CustomerController extends Controller
         $customer = Customer::create($data);
 
         Log::create([
-            'customer_id'    => $customer->id,
-            'user_id'        => auth()->id(),
-            'activity'       => 'Created customer: ' . $customer->name,
-            'activity_type'  => 'create',
-            'activity_detail'=> 'Customer created with email ' . ($customer->email ?? '-'),
+            'customer_id' => $customer->id,
+            'user_id' => auth()->id(),
+            'activity' => 'Created customer: ' . $customer->name,
+            'activity_type' => 'create',
+            'activity_detail' => 'Customer created'
         ]);
 
         if ($request->filled('vessels')) {
             foreach ($request->vessels as $v) {
                 CustomerVessel::create([
                     'customer_id' => $customer->id,
-                    'vessel_name' => $request->vessel_name ?? 'Unknown',
-                    'status' => $request->status ?? 'Follow up',
-                    'currency' => $request->currency ?? 'IDR',
-                    'potential_revenue' => $request->potential_revenue ?? 0,
-                    'next_followup_date' => $request->next_followup_date,
+                    'vessel_name' => $v['vessel_name'] ?? 'Unknown',
+                    'status' => $v['status'] ?? 'Follow up',
+                    'currency' => $v['currency'] ?? 'IDR',
+                    'potential_revenue' => $v['potential_revenue'] ?? 0,
+                    'next_followup_date' => $v['next_followup_date'] ?? null,
                 ]);
             }
         }
@@ -171,99 +115,61 @@ class CustomerController extends Controller
     public function edit(Customer $customer)
     {
         $this->authorize('update', $customer);
-
-        $vessels = Vessel::all(); 
-        return view('customers.edit', compact('customer', 'vessels'));
+        $vessels = Vessel::all();
+        return view('customers.edit', compact('customer','vessels'));
     }
 
     public function update(Request $request, Customer $customer)
     {
         $this->authorize('update', $customer);
 
-        $validated = $request->validate([
-            'name'              => 'required|string|max:255',
-            'email'             => 'nullable|email',
-            'phone'             => 'nullable|string|max:20',
-            'assigned_staff'    => 'nullable|string|max:255',
-            'last_followup_date'=> 'nullable|date',
-            'next_followup_date'=> 'nullable|date',
-            'status'            => 'nullable|string',
-            'potential_revenue' => 'nullable|numeric',
-            'currency'          => 'nullable|string|max:10',
-            'description'       => 'nullable|string',
-            'remark'            => 'nullable|string',
-            'address'           => 'nullable|string',
-        ]);
-
         $fillable = (new Customer)->getFillable();
-        $data = $request->except(['_token', '_method']);
-
-        $data = array_intersect_key($data, array_flip($fillable));
+        $data = array_intersect_key($request->all(), array_flip($fillable));
 
         $changes = [];
-        foreach ($data as $field => $newValue) {
-            $oldValue = $customer->getOriginal($field);
-
-            if ($oldValue != $newValue) {
-                $changes[] = ucfirst($field)." from '".($oldValue ?? '-')."' to '".($newValue ?? '-')."'";
+        foreach ($data as $field => $value) {
+            if ($customer->$field != $value) {
+                $changes[] = "$field: '{$customer->$field}' → '$value'";
             }
         }
 
-        $customer->update($request->all());
+        $customer->update($data);
 
         if (!empty($changes)) {
             Log::create([
-                'customer_id'     => $customer->id,
-                'user_id'         => auth()->id(),
-                'activity'        => 'Updated customer: '.$customer->name,
-                'activity_type'   => 'update',
-                'activity_detail' => implode(', ', $changes),
+                'customer_id' => $customer->id,
+                'user_id' => auth()->id(),
+                'activity' => 'Updated customer: ' . $customer->name,
+                'activity_type' => 'update',
+                'activity_detail' => implode(', ', $changes)
             ]);
         }
 
-        if ($request->has('vessels')) {
-            $newVessels = $request->vessels;
-
-            Vessel::where('customer_id', $customer->id)
-                ->whereNotIn('id', $newVessels)
-                ->update(['customer_id' => null]);
-
-            Vessel::whereIn('id', $newVessels)
-                ->update(['customer_id' => $customer->id]);
-        }
-
-        return redirect()->route('customers.index')->with('success', 'Customer updated successfully.');
+        return redirect()->route('customers.index')->with('success', 'Customer updated!');
     }
 
     public function destroy(Customer $customer)
     {
         $this->authorize('delete', $customer);
 
-        $customerName = $customer->name;
-        $customerId   = $customer->id;
-
         Log::create([
-            'customer_id'    => $customerId,
-            'user_id'        => auth()->id(),
-            'activity'       => 'Deleted customer: ' . $customerName,
-            'activity_type'  => 'delete',
-            'activity_detail'=> 'Customer was deleted permanently',
+            'customer_id' => $customer->id,
+            'user_id' => auth()->id(),
+            'activity' => 'Deleted customer: ' . $customer->name,
+            'activity_type' => 'delete',
+            'activity_detail' => 'Customer deleted'
         ]);
 
         $customer->delete();
 
-        return redirect()->route('customers.index')->with('success', 'Customer deleted successfully.');
+        return redirect()->route('customers.index')->with('success','Customer deleted!');
     }
 
     public function show(Customer $customer)
     {
         $this->authorize('view', $customer);
-
-        $customer->load('vessels');
-
-        $totalRevenue = $customer->vessels->sum('estimate_revenue');
-
-        return view('customers.show', compact('customer', 'totalRevenue'));
+        $customer->load('customerVessels');
+        return view('customers.show', compact('customer'));
     }
 
     public function print()

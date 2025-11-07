@@ -77,7 +77,11 @@
                                     <div class="d-flex align-items-center mb-1">
                                         <span class="badge bg-info text-dark me-2">{{ $cv->vessel->name }}</span>
                                         <a href="{{ route('customers_vessels.show', $cv->vessel->id) }}" class="btn btn-sm btn-secondary ms-2">Lihat Detail</a>
-                                        <a href="{{ route('customers_vessels.edit', $cv->id) }}" class="btn btn-sm btn-primary ms-2">Edit</a>
+
+                                        {{-- Edit hanya untuk super_admin atau assigned staff --}}
+                                        @if(auth()->user()->role === 'super_admin' || $customer->assigned_staff_id === auth()->id())
+                                            <a href="{{ route('customers_vessels.edit', $cv->id) }}" class="btn btn-sm btn-primary ms-2">Edit</a>
+                                        @endif
                                     </div>
                                 @endif
                             @empty
@@ -100,7 +104,22 @@
 
                         {{-- ACTION --}}
                         <td class="table-actions">
-                            <a href="{{ route('customers_vessels.create', ['company_id' => $customer->id]) }}" class="btn btn-primary btn-sm">+ Vessel</a>
+                            {{-- Semua bisa lihat detail --}}
+                            <a href="{{ route('customers.show', $customer->id) }}" class="btn btn-sm btn-info">Detail</a>
+
+                            {{-- Hanya assigned staff & super_admin yang bisa edit/delete --}}
+                            @if(auth()->user()->role === 'super_admin' || $customer->assigned_staff_id === auth()->id())
+                                <a href="{{ route('customers.edit', $customer->id) }}" class="btn btn-sm btn-primary">Edit</a>
+
+                                <form action="{{ route('customers.destroy', $customer->id) }}" method="POST" style="display:inline;">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</button>
+                                </form>
+
+                                {{-- Tombol tambah vessel --}}
+                                <a href="{{ route('customers_vessels.create', ['company_id' => $customer->id]) }}" class="btn btn-primary btn-sm">+ Vessel</a>
+                            @endif
                         </td>
                     </tr>
                 @empty
