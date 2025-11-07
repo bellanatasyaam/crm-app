@@ -102,11 +102,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/vessels/{vessel}', [CustomerVesselController::class, 'destroy'])->name('companies.vessels.destroy');
     });
 
-    /**
-     * ======================
-     * MARKETING (alias CUSTOMER)
-     * ======================
-     */
     Route::resource('marketing', MarketingController::class)
         ->parameters(['marketing' => 'company'])
         ->names([
@@ -120,27 +115,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
             'print'   => 'marketing.print',
         ]);
 
-    // Print route
     Route::get('/marketing/print', [MarketingController::class, 'print'])->name('marketing.print');
 
-    // ✅ FIXED: Ganti showProfile → show (pakai bawaan resource)
     Route::get('/marketing/{id}/profile', [MarketingController::class, 'show'])
         ->name('marketing.profile');
 
-    /**
-     * ======================
-     * USERS (ADMIN ONLY)
-     * ======================
-     */
     Route::middleware(['can:isAdmin'])->group(function () {
         Route::resource('users', UserController::class);
     });
 
-    /**
-     * ======================
-     * PROFILE ROUTES
-     * ======================
-     */
     Route::prefix('profile')->middleware(['auth', 'verified'])->group(function () {
         Route::get('/edit', [ProfileController::class, 'edit'])->name('profile.edit');
         Route::patch('/update', [ProfileController::class, 'update'])->name('profile.update');
@@ -150,9 +133,4 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 });
 
-/**
- * ======================
- * AUTH ROUTES
- * ======================
- */
 require __DIR__ . '/auth.php';
