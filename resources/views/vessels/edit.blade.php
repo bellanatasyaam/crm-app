@@ -168,17 +168,6 @@
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
-
-                {{-- Remark --}}
-                <div class="mb-3">
-                    <label class="form-label">Remark</label>
-                    <input type="text" name="remark" 
-                        class="form-control @error('remark') is-invalid @enderror" 
-                        value="{{ old('remark', $vessel->remark) }}">
-                    @error('remark')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
             </div>
         </div>
 
