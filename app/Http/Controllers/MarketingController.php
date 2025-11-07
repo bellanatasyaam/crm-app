@@ -11,15 +11,21 @@ class MarketingController extends Controller
     public function index()
     {
         $statusOptions = ['Follow up', 'On going', 'On progress', 'Quotation send'];
-        $staffOptions  = User::where('role', 'staff')->pluck('name');
 
-        // 1️⃣ Marketing Profiles (User yang staff dan is_marketing = 1)
+        // ✅ Hanya ambil staff marketing
+        $staffOptions = User::where('role', 'staff')
+                            ->where('is_marketing', 1)
+                            ->pluck('name', 'id');
+
+        // ✅ Marketing Profiles (staff marketing)
         $marketingProfiles = User::where('role', 'staff')
                                 ->where('is_marketing', 1)
                                 ->get();
 
-        // 2️⃣ Tabel Marketing
-        $marketingData = Marketing::with('staff')->orderBy('created_at', 'desc')->paginate(10);
+        // ✅ Tabel Marketing + relasi staff
+        $marketingData = Marketing::with('staff')
+                                ->orderBy('created_at', 'desc')
+                                ->paginate(10);
 
         return view('marketing.index', compact(
             'statusOptions',
@@ -31,7 +37,11 @@ class MarketingController extends Controller
 
     public function create()
     {
-        $staffOptions = User::where('role', 'staff')->pluck('name', 'id');
+        // ✅ hanya staff marketing yang bisa dipilih
+        $staffOptions = User::where('role', 'staff')
+                            ->where('is_marketing', 1)
+                            ->pluck('name', 'id');
+
         $statusOptions = ['Follow up', 'On going', 'On progress', 'Quotation send'];
 
         return view('marketing.create', compact('staffOptions', 'statusOptions'));
@@ -70,7 +80,12 @@ class MarketingController extends Controller
     public function edit($id)
     {
         $marketing = Marketing::findOrFail($id);
-        $staffOptions = User::where('role', 'staff')->pluck('name');
+
+        // ✅ Filter staff marketing aktif
+        $staffOptions = User::where('role', 'staff')
+                            ->where('is_marketing', 1)
+                            ->pluck('name', 'id');
+
         $statusOptions = ['Follow up', 'On going', 'On progress', 'Quotation send'];
 
         return view('marketing.edit', compact('marketing', 'staffOptions', 'statusOptions'));
@@ -83,7 +98,7 @@ class MarketingController extends Controller
             'client_name' => 'required|string|max:255',
             'email' => 'nullable|email|max:255',
             'phone' => 'nullable|string|max:50',
-            'staff' => 'nullable|string|max:255',
+            'staff_id' => 'nullable|exists:users,id',
             'last_contact' => 'nullable|date',
             'next_follow_up' => 'nullable|date',
             'status' => 'nullable|string|max:50',
@@ -111,7 +126,7 @@ class MarketingController extends Controller
 
     public function print()
     {
-        $marketingData = Marketing::all();
+        $marketingData = Marketing::with('staff')->get();
         return view('marketing.print', compact('marketingData'));
     }
 }
