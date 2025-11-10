@@ -17,48 +17,45 @@ class CompanyController extends Controller
      */
     public function index(Request $request)
     {
-        
         $query = Company::query();
 
         if ($request->filled('search')) {
             $query->where(function ($q) use ($request) {
                 $q->where('name', 'like', '%' . $request->search . '%')
-                  ->orWhere('code', 'like', '%' . $request->search . '%')
-                  ->orWhere('email', 'like', '%' . $request->search . '%');
+                ->orWhere('code', 'like', '%' . $request->search . '%')
+                ->orWhere('email', 'like', '%' . $request->search . '%');
             });
         }
 
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
-        
-        
 
         $companies = $query->with('vessels')
-            ->orderBy('created_at', 'desc') 
+            ->orderBy('created_at', 'desc')
             ->paginate(10);
 
-        
         $summary = [
             'total_customers' => Company::count(),
             'by_status' => Company::select('status', DB::raw('COUNT(*) as total'))
                 ->groupBy('status')
-                ->pluck('total','status'),
-            
-            
+                ->pluck('total', 'status'),
         ];
-
-        
 
         $stats = [
-            'active'    => Company::where('status', 'active')->count(),
-            'inactive'  => Company::where('status', 'inactive')->count(),
-            'tier_reg'  => Company::where('customer_tier', 'regular')->count(),
-            'tier_vip'  => Company::where('customer_tier', 'vip')->count(),
-            
+            'active'   => Company::where('status', 'active')->count(),
+            'inactive' => Company::where('status', 'inactive')->count(),
         ];
 
-        return view('companies.index', compact('companies', 'summary', 'stats'));
+        // 🔹 Tambahkan bagian ini sebelum return view
+        $staff_stats = Company::whereNotNull('assigned_staff')
+            ->select('assigned_staff', DB::raw('COUNT(*) as total'))
+            ->groupBy('assigned_staff')
+            ->pluck('total', 'assigned_staff')
+            ->toArray(); // <-- tambahkan ini
+
+        // 🔹 Return 1 kali aja, dan kirim semua data
+        return view('companies.index', compact('companies', 'summary', 'stats', 'staff_stats'));
     }
 
     /**
@@ -69,7 +66,6 @@ class CompanyController extends Controller
         $this->authorize('create', Company::class);
 
         $companies = Company::all();
-        
         $unassignedVessels = Vessel::whereNull('company_id')->get(); 
         
         return view('companies.create', [
@@ -98,70 +94,24 @@ class CompanyController extends Controller
             'address' => 'nullable|string',
             'city' => 'nullable|string|max:100',
             'country' => 'nullable|string|max:100',
-            'assigned_staff_id' => 'nullable|integer',
-            'assigned_staff' => 'nullable|string|max:255',
-            'assigned_staff_email' => 'nullable|email|max:255',
             'last_followup_date' => 'nullable|date',
             'next_followup_date' => 'nullable|date',
             'remark' => 'nullable|string',
         ]);
 
+        // 🔥 tambahin otomatis staff login
+        if (auth()->check()) {
+            $validated['assigned_staff_id'] = auth()->id();
+            $validated['assigned_staff'] = auth()->user()->name;
+            $validated['assigned_staff_email'] = auth()->user()->email;
+        }
+
+        // simpan
         $company = Company::create($validated);
 
         return redirect()->route('companies.show', $company->id)
             ->with('success', 'Customer created successfully!');
     }
-
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Company $company)
-    {
-        $this->authorize('update', $company);
-
-        
-        $vessels = Vessel::where('company_id', $company->id)->get();
-        
-        $unassignedVessels = Vessel::whereNull('company_id')->get();
-        
-        return view('companies.edit', compact('company', 'vessels', 'unassignedVessels'));
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Company $company)
-    {
-        $this->authorize('update', $company);
-
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'nullable|email|max:255',
-            'phone' => 'nullable|string|max:20',
-            'website' => 'nullable|string|max:255',
-            'tax_id' => 'nullable|string|max:100',
-            'type' => 'nullable|string|max:100',
-            'industry' => 'nullable|string|max:100',
-            'customer_tier' => 'nullable|string|max:50',
-            'status' => 'nullable|string|max:50',
-            'address' => 'nullable|string',
-            'city' => 'nullable|string|max:100',
-            'country' => 'nullable|string|max:100',
-            'assigned_staff_id' => 'nullable|integer',
-            'assigned_staff' => 'nullable|string|max:255',
-            'assigned_staff_email' => 'nullable|email|max:255',
-            'last_followup_date' => 'nullable|date',
-            'next_followup_date' => 'nullable|date',
-            'remark' => 'nullable|string',
-        ]);
-
-        $company->update($validated);
-
-        return redirect()->route('companies.show', $company->id)
-            ->with('success', 'Customer updated successfully!');
-    }
-
 
     /**
      * Remove the specified resource from storage.
@@ -192,17 +142,14 @@ class CompanyController extends Controller
 
     public function show($id)
     {
-        $company = \App\Models\Company::with(['assignedStaff', 'vessels', 'logs'])->findOrFail($id);
+        // Ambil company langsung dari DB tanpa override nilai-nilai yang udah ada
+        $company = \App\Models\Company::with(['vessels', 'logs'])->findOrFail($id);
 
-        // === Assigned Staff Info ===
-        $company->assigned_staff = $company->assignedStaff->name ?? '-';
-        $company->assigned_staff_email = $company->assignedStaff->email ?? '-';
-
-        // === Follow-Up Info (langsung dari table companies) ===
-        $company->last_follow_up = $company->last_follow_up ?? '-';
-        $company->next_follow_up = $company->next_follow_up ?? '-';
-
-        // === Remark ===
+        // Biar aman kalau null
+        $company->assigned_staff = $company->assigned_staff ?? '-';
+        $company->assigned_staff_email = $company->assigned_staff_email ?? '-';
+        $company->last_followup_date = $company->last_followup_date ?? '-';
+        $company->next_followup_date = $company->next_followup_date ?? '-';
         $company->remark = $company->remark ?? '-';
 
         // === Revenue Summary ===
@@ -220,6 +167,43 @@ class CompanyController extends Controller
         }
 
         return view('companies.show', compact('company', 'revenues', 'totalRevenueIDR'));
+    }
+
+    public function edit($id)
+    {
+        $company = Company::findOrFail($id);
+        $this->authorize('update', $company);
+
+        return view('companies.edit', compact('company'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $company = Company::findOrFail($id);
+        $this->authorize('update', $company);
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'nullable|email|max:255',
+            'phone' => 'nullable|string|max:20',
+            'website' => 'nullable|string|max:255',
+            'tax_id' => 'nullable|string|max:100',
+            'type' => 'nullable|string|max:100',
+            'industry' => 'nullable|string|max:100',
+            'customer_tier' => 'nullable|string|max:50',
+            'status' => 'nullable|string|max:50',
+            'address' => 'nullable|string',
+            'city' => 'nullable|string|max:100',
+            'country' => 'nullable|string|max:100',
+            'last_followup_date' => 'nullable|date',
+            'next_followup_date' => 'nullable|date',
+            'remark' => 'nullable|string',
+        ]);
+
+        $company->update($validated);
+
+        return redirect()->route('companies.show', $company->id)
+            ->with('success', 'Customer updated successfully!');
     }
     
     /**

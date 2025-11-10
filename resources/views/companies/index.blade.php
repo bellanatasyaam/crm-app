@@ -132,7 +132,9 @@
             <tbody>
                 @foreach($companies as $c)
                 @php
-                    $canEdit = auth()->user()->role === 'super_admin' || $c->assigned_staff_id === auth()->id();
+                    $canEdit = auth()->user()->role === 'super_admin'
+                        || $c->assigned_staff_id == auth()->id()
+                        || $c->created_by == auth()->id();
                 @endphp
                 <tr>
                     <td>{{ $c->name }}</td>
@@ -189,15 +191,12 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const statusData = {
-        labels: ['Follow up', 'On progress', 'Quotation send', 'Done / Closing', 'Inactive'],
+        labels: ['Active', 'Inactive'],
         data: [
-            {{ $stats['follow_up'] ?? 0 }},
-            {{ $stats['on_progress'] ?? 0 }},
-            {{ $stats['quotation_sent'] ?? 0 }},
-            {{ $stats['done'] ?? 0 }},
+            {{ $stats['active'] ?? 0 }},
             {{ $stats['inactive'] ?? 0 }},
         ],
-        colors: ['#60a5fa', '#34d399', '#fbbf24', '#22c55e', '#9ca3af']
+        colors: ['#34d399', '#9ca3af']
     };
 
     const staffData = {

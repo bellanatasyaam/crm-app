@@ -11,24 +11,10 @@ class Company extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'name',
-        'email',
-        'phone',
-        'website',
-        'tax_id',
-        'type',
-        'industry',
-        'customer_tier',
-        'status',
-        'address',
-        'city',
-        'country',
-        'assigned_staff_id',
-        'assigned_staff',
-        'assigned_staff_email',
-        'last_followup_date',
-        'next_followup_date',
-        'remark',
+        'name', 'email', 'phone', 'website', 'tax_id', 'type', 'industry',
+        'customer_tier', 'status', 'address', 'city', 'country',
+        'assigned_staff_id', 'assigned_staff', 'assigned_staff_email',
+        'last_followup_date', 'next_followup_date', 'remark',
     ];
 
     protected $attributes = [

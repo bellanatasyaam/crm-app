@@ -20,12 +20,12 @@ class CompanyPolicy
 
     public function create(User $user): bool
     {
-        return $user->role === 'super_admin' || $user->role === 'staff';
+        return true;
     }
 
     public function update(User $user, Company $company): bool
     {
-        return $user->role === 'super_admin' || $company->assigned_staff_id === $user->id;
+        return in_array($user->role, ['super_admin', 'staff']);
     }
 
     public function delete(User $user, Company $company): bool
