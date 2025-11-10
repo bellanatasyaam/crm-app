@@ -165,8 +165,8 @@
     <div class="dashboard-header d-flex justify-content-between align-items-center">
         <h2>📈 Daftar Marketing</h2>
         <div class="d-flex gap-2">
-            <a href="{{ route('marketing.create') }}" class="btn btn-primary btn-sm">+ Add Marketing</a>
             <button id="showProfilesBtn" class="btn btn-info btn-sm">Show Marketing Profiles</button>
+            <a href="{{ route('marketing.create') }}" class="btn btn-primary btn-sm">+ Add Laporan</a>
             <a href="{{ route('dashboard') }}" class="btn btn-light btn-sm">Back to Master Menu</a>
         </div>
     </div>
@@ -322,13 +322,22 @@
                         <td>
                             <div class="table-actions">
                                 <a href="{{ route('marketing.profile', $m->id) }}" class="btn btn-info btn-sm">Detail</a>
-                                <a href="{{ route('marketing.edit', $m->id) }}" class="btn btn-warning btn-sm">Edit</a>
-                                <form action="{{ route('marketing.destroy', $m->id) }}" method="POST"
-                                    onsubmit="return confirm('Yakin hapus data ini?')" style="display:inline;">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button class="btn btn-danger btn-sm">Del</button>
-                                </form>
+
+                                {{-- Edit & Delete hanya muncul kalau:
+                                    - user admin, atau
+                                    - user staff yang sesuai dengan assigned staff di data marketing --}}
+                                @if(
+                                    in_array(Auth::user()->role, ['admin', 'super_admin']) ||
+                                    (Auth::user()->role === 'staff' && Auth::user()->name === ($m->staff->name ?? ''))
+                                )
+                                    <a href="{{ route('marketing.edit', $m->id) }}" class="btn btn-warning btn-sm">Edit</a>
+                                    <form action="{{ route('marketing.destroy', $m->id) }}" method="POST"
+                                        onsubmit="return confirm('Yakin hapus data ini?')" style="display:inline;">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button class="btn btn-danger btn-sm">Del</button>
+                                    </form>
+                                @endif
                             </div>
                         </td>
                     </tr>
