@@ -129,4 +129,23 @@ class MarketingController extends Controller
         $marketingData = Marketing::with('staff')->get();
         return view('marketing.print', compact('marketingData'));
     }
+
+    public function showAll()
+    {
+        // Ambil semua marketing beserta relasi staff
+        $marketingData = Marketing::with('staff')->orderBy('created_at', 'desc')->paginate(10);
+
+        // Kirim ke view (bisa pakai view yang sama dengan show)
+        return view('marketing.show', compact('marketingData'));
+    }
+
+    public function profile($id)
+    {
+        // Ambil data user berdasarkan ID
+        $profile = User::findOrFail($id);
+
+        // Kirim ke view 'marketing.profile'
+        return view('marketing.profile', compact('profile'));
+    }
+
 }
