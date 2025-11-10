@@ -143,10 +143,25 @@
                 </td>
                 <td>
                     <a href="{{ route('vessels.show', $vessel->id) }}" class="btn btn-sm btn-info text-white">Detail</a>
-                    @if(auth()->user()->role == 'super_admin' || $vessel->created_by == auth()->id())
+
+                    {{-- Tombol EDIT: muncul untuk super_admin, pembuat, dan staff yang di-assign --}}
+                    @if(
+                        auth()->user()->role == 'super_admin' || 
+                        $vessel->created_by == auth()->id() ||
+                        $vessel->assigned_staff_id == auth()->id()
+                    )
                         <a href="{{ route('vessels.edit', $vessel->id) }}" class="btn btn-sm btn-warning text-white">Edit</a>
-                        <form action="{{ route('vessels.destroy', $vessel->id) }}" method="POST">
-                            @csrf @method('DELETE')
+                    @endif
+
+                    {{-- Tombol DELETE: muncul juga untuk super_admin, pembuat, dan staff yang di-assign --}}
+                    @if(
+                        auth()->user()->role == 'super_admin' || 
+                        $vessel->created_by == auth()->id() ||
+                        $vessel->assigned_staff_id == auth()->id()
+                    )
+                        <form action="{{ route('vessels.destroy', $vessel->id) }}" method="POST" style="display:inline;">
+                            @csrf
+                            @method('DELETE')
                             <button class="btn btn-sm btn-danger" onclick="return confirm('Yakin hapus?')">Del</button>
                         </form>
                     @endif

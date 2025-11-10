@@ -7,8 +7,15 @@ use App\Models\Vessel;
 
 class VesselPolicy
 {
-    public function viewAny(User $user) { return true; }
-    public function view(User $user, Vessel $vessel) { return true; }
+    public function viewAny(User $user)
+    {
+        return true;
+    }
+
+    public function view(User $user, Vessel $vessel)
+    {
+        return true;
+    }
 
     public function create(User $user)
     {
@@ -21,8 +28,7 @@ class VesselPolicy
             return true;
         }
 
-        // staff hanya bisa edit vessel yg assigned ke dia
-        return $user->id === $vessel->assigned_staff_id;
+        return $vessel->assigned_staff_id === $user->id;
     }
 
     public function delete(User $user, Vessel $vessel)
@@ -31,7 +37,6 @@ class VesselPolicy
             return true;
         }
 
-        // staff hanya bisa hapus vessel yg assigned ke dia
-        return $user->id === $vessel->assigned_staff_id;
+        return $vessel->assigned_staff_id === $user->id;
     }
 }

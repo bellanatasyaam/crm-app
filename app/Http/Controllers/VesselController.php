@@ -80,8 +80,12 @@ class VesselController extends Controller
             $data['company_id'] = $company->id;
         }
 
-        Vessel::create($data);
+        $data['created_by'] = auth()->id();
 
+        $vessel = new Vessel($data);
+        $vessel->save();
+
+        // 🔹 lanjut seperti biasa
         $redirectRoute = $company 
             ? route('companies.vessels.index', $company->id) 
             : route('vessels.index');

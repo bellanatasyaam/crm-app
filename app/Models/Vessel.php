@@ -13,6 +13,7 @@ class Vessel extends Model
     protected $fillable = [
         'company_id', 'name', 'imo_number', 'call_sign', 'port_of_call', 'flag', 
         'vessel_type', 'gross_tonnage', 'net_tonnage', 'year_built', 'status',
+        'created_by',
     ];
 
     public function company()
@@ -28,5 +29,9 @@ class Vessel extends Model
     public function assignedStaff()
     {
         return $this->belongsTo(User::class, 'assigned_staff_id');
+    }
+
+    public function user() {
+        return $this->belongsTo(User::class, 'created_by');
     }
 }
