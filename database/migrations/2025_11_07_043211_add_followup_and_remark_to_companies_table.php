@@ -6,27 +6,16 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::table('companies', function (Blueprint $table) {
-            // Customer Type (Prospect, Existing, dll)
-            $table->string('customer_type')->nullable()->after('tax_id');
-
-            // Follow-up fields
-            $table->date('last_follow_up')->nullable()->after('status');
+            $table->string('customer_type')->nullable();
+            $table->date('last_follow_up')->nullable();
             $table->date('next_follow_up')->nullable()->after('last_follow_up');
-
-            // Remark / Notes
             $table->text('remark')->nullable()->after('next_follow_up');
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::table('companies', function (Blueprint $table) {
