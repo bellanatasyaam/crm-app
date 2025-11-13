@@ -144,18 +144,18 @@
                 <td>
                     <a href="{{ route('vessels.show', $vessel->id) }}" class="btn btn-sm btn-info text-white">Detail</a>
 
-                    {{-- Tombol EDIT: muncul untuk super_admin, pembuat, dan staff yang di-assign --}}
+                    {{-- Tombol EDIT: muncul untuk admin, pembuat, dan staff yang di-assign --}}
                     @if(
-                        auth()->user()->role == 'super_admin' || 
+                        auth()->user()->role == 'admin' || 
                         $vessel->created_by == auth()->id() ||
                         $vessel->assigned_staff_id == auth()->id()
                     )
                         <a href="{{ route('vessels.edit', $vessel->id) }}" class="btn btn-sm btn-warning text-white">Edit</a>
                     @endif
 
-                    {{-- Tombol DELETE: muncul juga untuk super_admin, pembuat, dan staff yang di-assign --}}
+                    {{-- Tombol DELETE: muncul juga untuk admin, pembuat, dan staff yang di-assign --}}
                     @if(
-                        auth()->user()->role == 'super_admin' || 
+                        auth()->user()->role == 'admin' || 
                         $vessel->created_by == auth()->id() ||
                         $vessel->assigned_staff_id == auth()->id()
                     )

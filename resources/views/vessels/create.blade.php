@@ -165,12 +165,10 @@
         </div>
 
         {{-- Buttons --}}
-        <button type="submit" class="btn btn-success btn-lg">
-            <i class="fas fa-save"></i> Save Vessel
-        </button>
-        <a href="{{ route('vessels.index') }}" class="btn btn-secondary btn-lg">
-            <i class="fas fa-times"></i> Cancel
-        </a>
+        <div class="d-flex justify-content-start">
+            <button type="submit" class="btn btn-success btn-lg">Save Vessel</button>
+            <a href="{{ route('vessels.index') }}" class="btn btn-secondary btn-lg ms-2">Cancel</a>
+        </div>
     </form>
 </div>
 @endsection

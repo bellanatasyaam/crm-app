@@ -11,9 +11,19 @@ class Vessel extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'company_id', 'name', 'imo_number', 'call_sign', 'port_of_call', 'flag', 
-        'vessel_type', 'gross_tonnage', 'net_tonnage', 'year_built', 'status',
+        'company_id',
+        'name',
+        'imo_number',
+        'call_sign',
+        'port_of_call',
+        'flag',
+        'vessel_type',
+        'gross_tonnage',
+        'net_tonnage',
+        'year_built',
+        'status',
         'created_by',
+        'assigned_staff_id', // ← tambahkan ini
     ];
 
     public function company()
