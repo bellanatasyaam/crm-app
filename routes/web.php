@@ -8,6 +8,7 @@ use App\Http\Controllers\CustomerVesselController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MarketingController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\FollowUpController;
 
 /*
 |--------------------------------------------------------------------------
@@ -26,7 +27,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
      */
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    // User profile (akun login)
+    /**
+     * ======================
+     * USER PROFILE (AKUN LOGIN)
+     * ======================
+     */
     Route::prefix('profile')->group(function () {
         Route::get('/edit', [ProfileController::class, 'edit'])->name('profile.edit');
         Route::patch('/edit', [ProfileController::class, 'update'])->name('profile.update');
@@ -50,7 +55,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     Route::resource('companies', CompanyController::class);
-    Route::get('/companies', [CompanyController::class, 'index'])->name('companies.index');
 
     // Staff dashboard
     Route::get('/staff/dashboard', [CompanyController::class, 'index'])->name('staff.dashboard');
@@ -101,8 +105,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
      * MARKETING
      * ======================
      */
-    Route::get('/marketing/profile/{id}', [MarketingController::class, 'profile'])
-        ->name('marketing.profile'); // ✅ route baru buat tombol View Profile
+    Route::get('/marketing/profile/{id}', [MarketingController::class, 'profile'])->name('marketing.profile');
 
     Route::resource('marketing', MarketingController::class)
         ->parameters(['marketing' => 'company'])
@@ -114,7 +117,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
             'edit'    => 'marketing.edit',
             'update'  => 'marketing.update',
             'destroy' => 'marketing.destroy',
-            'print'   => 'marketing.print',
         ]);
 
     Route::get('/marketing/show-all', [MarketingController::class, 'showAll'])->name('marketing.showAll');
@@ -128,6 +130,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware(['can:isAdmin'])->group(function () {
         Route::resource('users', UserController::class);
     });
+
+    /**
+     * ======================
+     * FOLLOWUPS
+     * ======================
+     */
+    Route::resource('followups', FollowUpController::class);
+
 });
 
 require __DIR__ . '/auth.php';
