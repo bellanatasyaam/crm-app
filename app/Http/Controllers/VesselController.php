@@ -60,6 +60,7 @@ class VesselController extends Controller
      */
     public function store(Request $request, Company $company = null)
     {
+        \Log::info('User yang login:', ['id' => auth()->id()]);
         $this->authorize('create', Vessel::class);
 
         $data = $request->validate([
@@ -81,6 +82,8 @@ class VesselController extends Controller
         }
 
         $data['created_by'] = auth()->id();
+        $data['assigned_staff_id'] = auth()->id();
+
 
         $vessel = new Vessel($data);
         $vessel->save();
@@ -118,7 +121,7 @@ class VesselController extends Controller
         $this->authorize('update', $vessel);
 
         $companies = Company::all();
-        $staffs    = User::where('role', '!=', 'super_admin')->get();
+        $staffs    = User::where('role', '!=', 'admin')->get();
 
         return view('vessels.edit', [
             'vessel'    => $vessel,
