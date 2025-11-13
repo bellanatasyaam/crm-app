@@ -4,11 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Company;
 use App\Models\Vessel;
-use App\Models\Log; 
-
+use App\Models\Log;
+use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB; 
-use PDF; 
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use PDF;
 
 class CompanyController extends Controller
 {
@@ -22,8 +23,8 @@ class CompanyController extends Controller
         if ($request->filled('search')) {
             $query->where(function ($q) use ($request) {
                 $q->where('name', 'like', '%' . $request->search . '%')
-                ->orWhere('code', 'like', '%' . $request->search . '%')
-                ->orWhere('email', 'like', '%' . $request->search . '%');
+                  ->orWhere('code', 'like', '%' . $request->search . '%')
+                  ->orWhere('email', 'like', '%' . $request->search . '%');
             });
         }
 
@@ -47,14 +48,14 @@ class CompanyController extends Controller
             'inactive' => Company::where('status', 'inactive')->count(),
         ];
 
-        // 🔹 Tambahkan bagian ini sebelum return view
-        $staff_stats = Company::whereNotNull('assigned_staff')
-            ->select('assigned_staff', DB::raw('COUNT(*) as total'))
-            ->groupBy('assigned_staff')
-            ->pluck('total', 'assigned_staff')
-            ->toArray(); // <-- tambahkan ini
+        $staff_stats = Company::whereNotNull('assigned_staff_id')
+            ->with('assignedStaff')
+            ->select('assigned_staff_id', DB::raw('COUNT(*) as total'))
+            ->groupBy('assigned_staff_id')
+            ->get()
+            ->mapWithKeys(fn($c) => [$c->assignedStaff->name ?? 'Unassigned' => $c->total])
+            ->toArray();
 
-        // 🔹 Return 1 kali aja, dan kirim semua data
         return view('companies.index', compact('companies', 'summary', 'stats', 'staff_stats'));
     }
 
@@ -66,11 +67,13 @@ class CompanyController extends Controller
         $this->authorize('create', Company::class);
 
         $companies = Company::all();
-        $unassignedVessels = Vessel::whereNull('company_id')->get(); 
-        
+        $unassignedVessels = Vessel::whereNull('company_id')->get();
+        $staffs = User::where('role', 'staff')->pluck('name', 'id');
+
         return view('companies.create', [
             'companies' => $companies,
-            'vessels' => $unassignedVessels, 
+            'vessels' => $unassignedVessels,
+            'staffs' => $staffs,
         ]);
     }
 
@@ -97,16 +100,13 @@ class CompanyController extends Controller
             'last_followup_date' => 'nullable|date',
             'next_followup_date' => 'nullable|date',
             'remark' => 'nullable|string',
+            'assigned_staff_id' => 'nullable|exists:users,id',
         ]);
 
-        // 🔥 tambahin otomatis staff login
-        if (auth()->check()) {
+        if (auth()->check() && !$request->filled('assigned_staff_id')) {
             $validated['assigned_staff_id'] = auth()->id();
-            $validated['assigned_staff'] = auth()->user()->name;
-            $validated['assigned_staff_email'] = auth()->user()->email;
         }
 
-        // simpan
         $company = Company::create($validated);
 
         return redirect()->route('companies.show', $company->id)
@@ -114,45 +114,13 @@ class CompanyController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Display the specified resource.
      */
-    public function destroy(Company $company)
+    public function show(Company $company)
     {
-        $this->authorize('delete', $company);
+        $company->load(['vessels', 'logs', 'assignedStaff']);
 
-        $companyName = $company->name;
-        $companyId   = $company->id;
-        $companyCode = $company->code;
-
-        
-        
-
-        $company->delete(); 
-
-        Log::create([
-            'company_id'    => $companyId,
-            'user_id'        => auth()->id(),
-            'activity'       => 'Soft deleted company: ' . $companyName,
-            'activity_type'  => 'delete',
-            'activity_detail'=> 'Customer ('.$companyCode.') was soft deleted.',
-        ]);
-
-        return redirect()->route('companies.index')->with('success', 'Company deleted successfully.');
-    }
-
-    public function show($id)
-    {
-        // Ambil company langsung dari DB tanpa override nilai-nilai yang udah ada
-        $company = \App\Models\Company::with(['vessels', 'logs'])->findOrFail($id);
-
-        // Biar aman kalau null
-        $company->assigned_staff = $company->assigned_staff ?? '-';
-        $company->assigned_staff_email = $company->assigned_staff_email ?? '-';
-        $company->last_followup_date = $company->last_followup_date ?? '-';
-        $company->next_followup_date = $company->next_followup_date ?? '-';
-        $company->remark = $company->remark ?? '-';
-
-        // === Revenue Summary ===
+        // Revenue summary
         $revenues = [];
         $totalRevenueIDR = 0;
         $exchangeRates = ['USD' => 15000, 'EUR' => 16000, 'IDR' => 1];
@@ -169,17 +137,22 @@ class CompanyController extends Controller
         return view('companies.show', compact('company', 'revenues', 'totalRevenueIDR'));
     }
 
-    public function edit($id)
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(Company $company)
     {
-        $company = Company::findOrFail($id);
         $this->authorize('update', $company);
+        $staffs = User::where('role', 'staff')->pluck('name', 'id');
 
-        return view('companies.edit', compact('company'));
+        return view('companies.edit', compact('company', 'staffs'));
     }
 
-    public function update(Request $request, $id)
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, Company $company)
     {
-        $company = Company::findOrFail($id);
         $this->authorize('update', $company);
 
         $validated = $request->validate([
@@ -198,6 +171,7 @@ class CompanyController extends Controller
             'last_followup_date' => 'nullable|date',
             'next_followup_date' => 'nullable|date',
             'remark' => 'nullable|string',
+            'assigned_staff_id' => 'nullable|exists:users,id',
         ]);
 
         $company->update($validated);
@@ -205,24 +179,40 @@ class CompanyController extends Controller
         return redirect()->route('companies.show', $company->id)
             ->with('success', 'Customer updated successfully!');
     }
-    
+
     /**
-     * Print all companies list.
+     * Remove the specified resource from storage.
+     */
+    public function destroy(Company $company)
+    {
+        $this->authorize('delete', $company);
+
+        $company->delete();
+
+        Log::create([
+            'company_id' => $company->id,
+            'user_id' => auth()->id(),
+            'activity' => 'Soft deleted company: ' . $company->name,
+            'activity_type' => 'delete',
+            'activity_detail' => 'Customer (' . $company->code . ') was soft deleted.',
+        ]);
+
+        return redirect()->route('companies.index')->with('success', 'Company deleted successfully.');
+    }
+
+    /**
+     * Print all companies to PDF.
      */
     public function print()
     {
-        $user = auth()->user();
-
-        
-        
-        $companies = Company::all(); 
+        $companies = Company::all();
 
         Log::create([
-            'company_id'    => null,
-            'user_id'        => auth()->id(),
-            'activity'       => 'Printed all companies list',
-            'activity_type'  => 'print',
-            'activity_detail'=> 'Exported companies list to PDF',
+            'company_id' => null,
+            'user_id' => auth()->id(),
+            'activity' => 'Printed all companies list',
+            'activity_type' => 'print',
+            'activity_detail' => 'Exported companies list to PDF',
         ]);
 
         $pdf = PDF::loadView('companies.print', compact('companies'))
@@ -232,36 +222,33 @@ class CompanyController extends Controller
     }
 
     /**
-     * Print single company profile.
+     * Print single company profile to PDF.
      */
     public function printSingle(Company $company)
     {
         $this->authorize('view', $company);
 
         Log::create([
-            'company_id'    => $company->id,
-            'user_id'        => auth()->id(),
-            'activity'       => 'Printed profile for company: ' . $company->name,
-            'activity_type'  => 'print',
-            'activity_detail'=> 'Exported company profile to PDF',
+            'company_id' => $company->id,
+            'user_id' => auth()->id(),
+            'activity' => 'Printed profile for company: ' . $company->name,
+            'activity_type' => 'print',
+            'activity_detail' => 'Exported company profile to PDF',
         ]);
 
         $pdf = PDF::loadView('companies.print_single', compact('company'))
             ->setPaper('A4', 'portrait');
 
-        return $pdf->stream('company-'.$company->name.'.pdf');
+        return $pdf->stream('company-' . $company->name . '.pdf');
     }
 
     /**
      * Get vessels associated with a company via API.
      */
-    public function getVessels($id)
+    public function getVessels(Company $company)
     {
-        $company = Company::findOrFail($id);
         $this->authorize('view', $company);
 
-        
-        $vessels = Vessel::where('company_id', $id)->get();
-        return response()->json($vessels);
+        return response()->json($company->vessels);
     }
 }

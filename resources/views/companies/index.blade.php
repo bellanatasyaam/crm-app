@@ -132,7 +132,7 @@
             <tbody>
                 @foreach($companies as $c)
                 @php
-                    $canEdit = auth()->user()->role === 'super_admin'
+                    $canEdit = auth()->user()->role === 'admin'
                         || $c->assigned_staff_id == auth()->id()
                         || $c->created_by == auth()->id();
                 @endphp

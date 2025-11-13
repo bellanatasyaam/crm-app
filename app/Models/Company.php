@@ -49,11 +49,6 @@ class Company extends Model
         });
     }
 
-    public function staff()
-    {
-        return $this->belongsTo(User::class, 'assigned_staff_id');
-    }
-
     public function vessels()
     {
         return $this->hasMany(Vessel::class, 'company_id');

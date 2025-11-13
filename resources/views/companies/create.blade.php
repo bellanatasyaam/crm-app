@@ -171,7 +171,14 @@
             <div class="row g-3">
                 <div class="col-md-6">
                     <label class="form-label">Assigned Staff</label>
-                    <input type="text" name="assigned_staff" class="form-control" value="{{ old('assigned_staff', auth()->user()->name ?? '') }}">
+                    <select name="assigned_staff_id" class="form-select">
+                        <option value="">-- Select Staff --</option>
+                        @foreach($staffs as $id => $name)
+                            <option value="{{ $id }}" {{ old('assigned_staff_id') == $id ? 'selected' : '' }}>
+                                {{ $name }}
+                            </option>
+                        @endforeach
+                    </select>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Assigned Staff Email</label>

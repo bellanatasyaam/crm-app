@@ -134,8 +134,8 @@
                 <p><strong>Country:</strong> {{ $company->country ?? '-' }}</p>
             </div>
             <div class="col-md-6">
-                <p><strong>Assigned Staff:</strong> {{ $company->assigned_staff ?? '-' }}</p>
-                <p><strong>Staff Email:</strong> {{ $company->assigned_staff_email ?? '-' }}</p>
+                <p><strong>Assigned Staff:</strong> {{ $company->assignedStaff?->name ?? '-' }}</p>
+                <p><strong>Staff Email:</strong> {{ $company->assignedStaff?->email ?? '-' }}</p>
                 <p><strong>Last Follow-Up:</strong>
                     @if(!empty($company->last_followup_date) && $company->last_followup_date != '-')
                         {{ \Carbon\Carbon::parse($company->last_followup_date)->format('d M Y') }}
