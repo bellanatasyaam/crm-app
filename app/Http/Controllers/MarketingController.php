@@ -81,7 +81,6 @@ class MarketingController extends Controller
     {
         $marketing = Marketing::findOrFail($id);
 
-        // ✅ Filter staff marketing aktif
         $staffOptions = User::where('role', 'staff')
                             ->where('is_marketing', 1)
                             ->pluck('name', 'id');
@@ -132,19 +131,15 @@ class MarketingController extends Controller
 
     public function showAll()
     {
-        // Ambil semua marketing beserta relasi staff
         $marketingData = Marketing::with('staff')->orderBy('created_at', 'desc')->paginate(10);
 
-        // Kirim ke view (bisa pakai view yang sama dengan show)
         return view('marketing.show', compact('marketingData'));
     }
 
     public function profile($id)
     {
-        // Ambil data user berdasarkan ID
         $profile = User::findOrFail($id);
 
-        // Kirim ke view 'marketing.profile'
         return view('marketing.profile', compact('profile'));
     }
 

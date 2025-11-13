@@ -165,8 +165,8 @@
     <div class="dashboard-header d-flex justify-content-between align-items-center">
         <h2>📈 Daftar Marketing</h2>
         <div class="d-flex gap-2">
-            <button id="showProfilesBtn" class="btn btn-info btn-sm">Show Marketing Profiles</button>
             <a href="{{ route('marketing.create') }}" class="btn btn-primary btn-sm">+ Add Laporan</a>
+            <button id="showProfilesBtn" class="btn btn-info btn-sm">Show Marketing Profiles</button>
             <a href="{{ route('dashboard') }}" class="btn btn-light btn-sm">Back to Master Menu</a>
         </div>
     </div>
@@ -328,7 +328,7 @@
                                     - user staff yang sesuai dengan assigned staff di data marketing --}}
                                 @if(
                                     in_array(Auth::user()->role, ['admin', 'super_admin']) ||
-                                    (Auth::user()->role === 'staff' && Auth::user()->name === ($m->staff->name ?? ''))
+                                    (Auth::user()->role === 'staff' && Auth::id() === ($m->staff_id ?? 0))
                                 )
                                     <a href="{{ route('marketing.edit', $m->id) }}" class="btn btn-warning btn-sm">Edit</a>
                                     <form action="{{ route('marketing.destroy', $m->id) }}" method="POST"
