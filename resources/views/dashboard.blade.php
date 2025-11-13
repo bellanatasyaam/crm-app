@@ -32,7 +32,7 @@
             <div class="card shadow-sm border-0 rounded-4 p-3 text-center h-100 hover-scale" style="background: #fff4e6;">
                 <div class="card-body">
                     {{-- Icon kapal --}}
-                    <i class="bi bi-ship fs-1 text-primary mb-3"></i>
+                    <i class="bi bi-laptop fs-1 text-warning mb-3"></i>
                     <h5 class="fw-bold">Vessels</h5>
                     <p class="text-muted small">Track vessel data & activities</p>
                     <a href="{{ route('vessels.index') }}" class="btn btn-warning btn-sm mt-2">Go to Vessels</a>
