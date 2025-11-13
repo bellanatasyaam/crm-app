@@ -12,12 +12,9 @@ use Illuminate\Support\Facades\Hash;
 
 class ProfileController extends Controller
 {
-    /**
-     * Display the user's profile form.
-     */
     public function edit() {
-        $profile = auth()->user();   // ambil data user yg login
-        return view('profile.edit', compact('profile')); // pakai view 'edit', bukan 'index'
+        $profile = auth()->user();  
+        return view('profile.edit', compact('profile'));
     }
 
     public function update(Request $request) {
