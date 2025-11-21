@@ -1,62 +1,77 @@
-<x-guest-layout>
-    <div class="min-h-screen flex items-center justify-center bg-gray-100">
-        <div class="w-full max-w-md bg-white rounded-2xl shadow-lg p-8">
-            <!-- Logo -->
-            <div class="flex justify-center mb-6">
-                <img src="{{ asset('images/logo.png') }}" alt="Logo" class="w-20 h-20">
-                {{-- Atau kalau masih pakai bawaan Breeze:
-                <x-authentication-card-logo class="w-20 h-20" />
-                --}}
+@extends('layouts.app')
+
+@section('content')
+<div class="container d-flex justify-content-center align-items-center" style="min-height: 80vh;">
+    <div class="card shadow-lg p-4" style="max-width: 450px; width: 100%;">
+        
+        <div class="text-center mb-4">
+            <img src="{{ asset('logo.png') }}" alt="Logo" style="width: 80px;">
+            <h4 class="mt-2 fw-bold">Register</h4>
+        </div>
+
+        <form method="POST" action="{{ route('register') }}">
+            @csrf
+
+            {{-- Name --}}
+            <div class="mb-3">
+                <label class="form-label">Name</label>
+                <input id="name" 
+                       type="text" 
+                       name="name"
+                       class="form-control @error('name') is-invalid @enderror"
+                       value="{{ old('name') }}" required autofocus>
+                @error('name')
+                    <span class="text-danger small">{{ $message }}</span>
+                @enderror
             </div>
 
-            <!-- Form -->
-            <form method="POST" action="{{ route('register') }}">
-                @csrf
+            {{-- Email --}}
+            <div class="mb-3">
+                <label class="form-label">Email</label>
+                <input id="email" 
+                       type="email" 
+                       name="email"
+                       class="form-control @error('email') is-invalid @enderror"
+                       value="{{ old('email') }}" required>
+                @error('email')
+                    <span class="text-danger small">{{ $message }}</span>
+                @enderror
+            </div>
 
-                <!-- Name -->
-                <div>
-                    <x-input-label for="name" :value="__('Name')" />
-                    <x-text-input id="name" class="block mt-1 w-full" type="text" name="name"
-                        :value="old('name')" required autofocus autocomplete="name" />
-                    <x-input-error :messages="$errors->get('name')" class="mt-2" />
-                </div>
+            {{-- Password --}}
+            <div class="mb-3">
+                <label class="form-label">Password</label>
+                <input id="password" 
+                       type="password" 
+                       name="password"
+                       class="form-control @error('password') is-invalid @enderror"
+                       required>
+                @error('password')
+                    <span class="text-danger small">{{ $message }}</span>
+                @enderror
+            </div>
 
-                <!-- Email Address -->
-                <div class="mt-4">
-                    <x-input-label for="email" :value="__('Email')" />
-                    <x-text-input id="email" class="block mt-1 w-full" type="email" name="email"
-                        :value="old('email')" required autocomplete="username" />
-                    <x-input-error :messages="$errors->get('email')" class="mt-2" />
-                </div>
+            {{-- Confirm --}}
+            <div class="mb-3">
+                <label class="form-label">Confirm Password</label>
+                <input id="password_confirmation" 
+                       type="password" 
+                       name="password_confirmation"
+                       class="form-control @error('password_confirmation') is-invalid @enderror"
+                       required>
+                @error('password_confirmation')
+                    <span class="text-danger small">{{ $message }}</span>
+                @enderror
+            </div>
 
-                <!-- Password -->
-                <div class="mt-4">
-                    <x-input-label for="password" :value="__('Password')" />
-                    <x-text-input id="password" class="block mt-1 w-full"
-                        type="password" name="password" required autocomplete="new-password" />
-                    <x-input-error :messages="$errors->get('password')" class="mt-2" />
-                </div>
+            {{-- Submit --}}
+            <button type="submit" class="btn btn-primary w-100">Register</button>
 
-                <!-- Confirm Password -->
-                <div class="mt-4">
-                    <x-input-label for="password_confirmation" :value="__('Confirm Password')" />
-                    <x-text-input id="password_confirmation" class="block mt-1 w-full"
-                        type="password" name="password_confirmation" required autocomplete="new-password" />
-                    <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
-                </div>
+            <div class="d-flex justify-content-between mt-3">
+                <a href="{{ route('login') }}">Already registered?</a>
+            </div>
+        </form>
 
-                <!-- Actions -->
-                <div class="flex items-center justify-between mt-6">
-                    <a class="underline text-sm text-gray-600 hover:text-gray-900"
-                        href="{{ route('login') }}">
-                        {{ __('Already registered?') }}
-                    </a>
-
-                    <x-primary-button>
-                        {{ __('Register') }}
-                    </x-primary-button>
-                </div>
-            </form>
-        </div>
     </div>
-</x-guest-layout>
+</div>
+@endsection
