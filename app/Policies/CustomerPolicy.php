@@ -19,17 +19,17 @@ class CustomerPolicy
 
     public function create(User $user): bool
     {
-        return $user->role === 'super_admin' || $user->role === 'staff';
+        return $user->role === 'admin' || $user->role === 'staff';
     }
 
     public function update(User $user, Customer $customer): bool
     {
-        return $user->role === 'super_admin' || $customer->assigned_staff_id === $user->id;
+        return $user->role === 'admin' || $customer->assigned_staff_id === $user->id;
     }
 
     public function delete(User $user, Customer $customer): bool
     {
-        return $user->role === 'super_admin' || $customer->assigned_staff_id === $user->id;
+        return $user->role === 'admin' || $customer->assigned_staff_id === $user->id;
     }
 
 }

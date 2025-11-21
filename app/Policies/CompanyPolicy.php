@@ -25,11 +25,11 @@ class CompanyPolicy
 
     public function update(User $user, Company $company): bool
     {
-        return in_array($user->role, ['super_admin', 'staff']);
+        return in_array($user->role, ['admin', 'staff']);
     }
 
     public function delete(User $user, Company $company): bool
     {
-        return $user->role === 'super_admin' || $company->assigned_staff_id === $user->id;
+        return $user->role === 'admin' || $company->assigned_staff_id === $user->id;
     }
 }
