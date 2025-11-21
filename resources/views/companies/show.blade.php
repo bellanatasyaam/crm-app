@@ -179,8 +179,6 @@
                 <tr>
                     <th>Vessel Name</th>
                     <th>Status</th>
-                    <th>Potential Revenue</th>
-                    <th>Next Follow-Up</th>
                 </tr>
             </thead>
             <tbody>
@@ -196,12 +194,12 @@
                         'Done / Closing' => 'badge bg-success',
                     ];
                 @endphp
-                @forelse($company->vessels as $vessel)
+               @forelse($company->vessels as $vessel)
                     <tr>
-                        <td>{{ $vessel->vessel_name }}</td>
-                        <td><span class="{{ $statusColors[$vessel->status] ?? 'badge bg-light text-dark' }}">{{ $vessel->status }}</span></td>
-                        <td>{{ $vessel->currency ?? 'IDR' }} {{ number_format($vessel->estimate_revenue ?? $vessel->potential_revenue ?? 0, 0) }}</td>
-                        <td>{{ $vessel->next_followup_date ? \Carbon\Carbon::parse($vessel->next_followup_date)->format('d M Y') : '-' }}</td>
+                        <td>{{ $vessel->name }}</td>
+                        <td><span class="{{ $statusColors[$vessel->status] ?? 'badge bg-light text-dark' }}">
+                            {{ $vessel->status }}
+                        </span></td>
                     </tr>
                 @empty
                     <tr><td colspan="4" class="text-center">No vessels found.</td></tr>
