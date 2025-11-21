@@ -119,6 +119,65 @@
         </div>
     </div>
 
+    {{-- === FILTER BAR === --}}
+    <div class="d-flex justify-content-between align-items-end gap-4 mb-4 flex-wrap">
+
+        {{-- === SEARCH BAR === --}}
+        <form method="GET" action="{{ route('companies.index') }}" class="d-flex align-items-end gap-2">
+            <div>
+                <label class="form-label mb-1">Search:</label>
+                <input type="text" name="search" 
+                    value="{{ request('search') }}"
+                    placeholder="Search company, email, etc..."
+                    class="form-control"
+                    style="padding: 6px; width: 220px;">
+            </div>
+
+            <button class="btn btn-secondary px-3 mt-3">Search</button>
+        </form>
+
+
+        {{-- === FILTER STAFF UNTUK PRINT === --}}
+        @if(auth()->user()->role === 'admin')
+            <form method="GET" action="{{ route('companies.print') }}" class="d-flex align-items-end gap-2">
+                <div>
+                    <label class="form-label mb-1" style="font-size: 13px;">Staff:</label>
+                    <select name="staff_id" id="staff_id" onchange="this.form.submit()" 
+                            class="form-control" style="padding: 6px; font-size: 13px; width: 150px;">
+                        <option value="">All Staff</option>
+                        @foreach($staffs as $staff)
+                            <option value="{{ $staff->id }}" 
+                                    {{ request('staff_id') == $staff->id ? 'selected' : '' }}>
+                                {{ $staff->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+            </form>
+        @endif
+
+
+        {{-- === FILTER TANGGAL UNTUK DASHBOARD === --}}
+        <form method="GET" action="{{ route('companies.index') }}" class="d-flex align-items-end gap-3">
+            <div>
+                <label class="form-label mb-1">Dari:</label>
+                <input type="date" name="start_date" value="{{ request('start_date') }}"
+                    class="form-control" style="padding: 6px;">
+            </div>
+
+            <div>
+                <label class="form-label mb-1">Sampai:</label>
+                <input type="date" name="end_date" value="{{ request('end_date') }}"
+                    class="form-control" style="padding: 6px;">
+            </div>
+
+            <button type="submit" class="btn btn-primary px-4 mt-3">
+                Filter
+            </button>
+        </form>
+
+    </div>
+
     <!-- === TABLE === -->
     <div class="table-responsive">
         <table class="custom-table">
