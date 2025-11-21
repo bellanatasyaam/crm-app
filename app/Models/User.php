@@ -15,6 +15,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
+        'is_marketing',
     ];
 
     protected $hidden = [
@@ -26,6 +28,18 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    /**
+     * Otomatis set is_marketing = 1 kalau role = staff
+     */
+    protected static function booted()
+    {
+        static::creating(function ($user) {
+            if ($user->role === 'staff') {
+                $user->is_marketing = 1;
+            }
+        });
+    }
 
     /**
      * Cek apakah user ini admin.
@@ -41,7 +55,7 @@ class User extends Authenticatable
         return in_array($this->email, $adminEmails);
     }
 
-        public function marketings()
+    public function marketings()
     {
         return $this->hasMany(Marketing::class, 'staff_id');
     }
@@ -50,5 +64,4 @@ class User extends Authenticatable
     {
         return $this->hasMany(Company::class, 'assigned_staff_id');
     }
-
 }

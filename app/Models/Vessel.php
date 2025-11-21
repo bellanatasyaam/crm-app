@@ -23,12 +23,13 @@ class Vessel extends Model
         'year_built',
         'status',
         'created_by',
-        'assigned_staff_id', // ← tambahkan ini
+        'assigned_staff_id',
+        'next_followup_date',
     ];
 
     public function company()
     {
-        return $this->belongsTo(Company::class, 'company_id');
+        return $this->belongsTo(Company::class);
     }
 
     public function descriptionLogs()

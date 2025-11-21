@@ -21,6 +21,11 @@ class Company extends Model
         'country' => 'Indonesia',
         'customer_tier' => 'regular',
         'status' => 'active',
+    ];  
+
+    protected $casts = [
+    'last_followup_date' => 'date',
+    'next_followup_date' => 'date',
     ];
 
     protected static function booted()
@@ -51,7 +56,7 @@ class Company extends Model
 
     public function vessels()
     {
-        return $this->hasMany(Vessel::class, 'company_id');
+        return $this->hasMany(Vessel::class);
     }
 
     public function assignedStaff()
