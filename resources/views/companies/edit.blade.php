@@ -181,27 +181,31 @@
 
         {{-- SECTION 4 --}}
         <div class="form-section">
-            <h4 class="section-title">🗒️ Additional Info</h4>
+            <h4 class="section-title"> Additional Info</h4>
             <div class="row g-3">
                 <div class="col-md-6">
                     <label class="form-label">Assigned Staff</label>
                     <input type="text" name="assigned_staff" class="form-control"
-                           value="{{ old('assigned_staff', $company->assigned_staff ?? auth()->user()->name) }}">
+                        value="{{ old('assigned_staff', $company->assignedStaff->name ?? '') }}">
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Assigned Staff Email</label>
                     <input type="email" name="assigned_staff_email" class="form-control"
-                           value="{{ old('assigned_staff_email', $company->assigned_staff_email ?? auth()->user()->email) }}">
+                        value="{{ old('assigned_staff_email', $company->assignedStaff->email ?? '') }}">
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Last Follow Up Date</label>
-                    <input type="date" name="last_followup_date" class="form-control"
-                           value="{{ old('last_followup_date', optional($company->last_followup_date)->format('Y-m-d')) }}">
+                    <input type="date"
+                            name="last_followup_date"
+                            class="form-control"
+                            value="{{ old('last_followup_date', $company->last_followup_date ? $company->last_followup_date->format('Y-m-d') : '') }}">
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Next Follow Up Date</label>
-                    <input type="date" name="next_followup_date" class="form-control"
-                           value="{{ old('next_followup_date', optional($company->next_followup_date)->format('Y-m-d')) }}">
+                    <input type="date"
+                            name="next_followup_date"
+                            class="form-control"
+                            value="{{ old('next_followup_date', $company->next_followup_date ? $company->next_followup_date->format('Y-m-d') : '') }}">
                 </div>
                 <div class="col-12">
                     <label class="form-label">Remark</label>
@@ -215,7 +219,7 @@
             <a href="{{ route('companies.index') }}" class="btn btn-secondary px-4">
                 <i class="fas fa-arrow-left me-1"></i> Cancel
             </a>
-            <a href="{{ route('customers_vessels.index', $company->id) }}" class="btn btn-info px-4">
+            <a href="{{ route('vessels.index', $company->id) }}" class="btn btn-info px-4">
                 <i class="fas fa-ship me-1"></i> View Vessels
             </a>
             <button type="submit" class="btn btn-primary px-4">
