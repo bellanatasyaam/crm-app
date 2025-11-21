@@ -8,24 +8,42 @@ use App\Models\Marketing;
 
 class MarketingController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $statusOptions = ['Follow up', 'On going', 'On progress', 'Quotation send'];
+        $statusOptions = [
+            'Follow up',
+            'On progress',
+            'Request',
+            'Waiting approval',
+            'Approve',
+            'On going',
+            'Quotation send',
+            'Done / Closing',
+        ];
 
-        // ✅ Hanya ambil staff marketing
         $staffOptions = User::where('role', 'staff')
                             ->where('is_marketing', 1)
                             ->pluck('name', 'id');
 
-        // ✅ Marketing Profiles (staff marketing)
         $marketingProfiles = User::where('role', 'staff')
-                                ->where('is_marketing', 1)
-                                ->get();
+                            ->where('is_marketing', 1)
+                            ->get();
 
-        // ✅ Tabel Marketing + relasi staff
+        // === SEARCH ===
+        $search = $request->search;
+
         $marketingData = Marketing::with('staff')
-                                ->orderBy('created_at', 'desc')
-                                ->paginate(10);
+            ->when($search, function ($q) use ($search) {
+                $q->where('description', 'like', "%$search%")
+                ->orWhere('client_name', 'like', "%$search%")
+                ->orWhere('email', 'like', "%$search%")
+                ->orWhere('phone', 'like', "%$search%")
+                ->orWhereHas('staff', function ($s) use ($search) {
+                    $s->where('name', 'like', "%$search%");
+                });
+            })
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
 
         return view('marketing.index', compact(
             'statusOptions',
@@ -37,12 +55,20 @@ class MarketingController extends Controller
 
     public function create()
     {
-        // ✅ hanya staff marketing yang bisa dipilih
         $staffOptions = User::where('role', 'staff')
                             ->where('is_marketing', 1)
                             ->pluck('name', 'id');
 
-        $statusOptions = ['Follow up', 'On going', 'On progress', 'Quotation send'];
+        $statusOptions = [
+            'Follow up',
+            'On progress',
+            'Request',
+            'Waiting approval',
+            'Approve',
+            'On going',
+            'Quotation send',
+            'Done / Closing',
+        ];
 
         return view('marketing.create', compact('staffOptions', 'statusOptions'));
     }
@@ -85,7 +111,16 @@ class MarketingController extends Controller
                             ->where('is_marketing', 1)
                             ->pluck('name', 'id');
 
-        $statusOptions = ['Follow up', 'On going', 'On progress', 'Quotation send'];
+        $statusOptions = [
+            'Follow up',
+            'On progress',
+            'Request',
+            'Waiting approval',
+            'Approve',
+            'On going',
+            'Quotation send',
+            'Done / Closing',
+        ];
 
         return view('marketing.edit', compact('marketing', 'staffOptions', 'statusOptions'));
     }

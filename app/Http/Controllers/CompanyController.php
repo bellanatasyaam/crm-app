@@ -9,7 +9,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
-use PDF;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class CompanyController extends Controller
 {
@@ -21,15 +21,30 @@ class CompanyController extends Controller
         $query = Company::query();
 
         if ($request->filled('search')) {
-            $query->where(function ($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->search . '%')
-                  ->orWhere('code', 'like', '%' . $request->search . '%')
-                  ->orWhere('email', 'like', '%' . $request->search . '%');
+            $search = $request->search;
+
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%$search%")
+                ->orWhere('email', 'like', "%$search%")
+                ->orWhere('phone', 'like', "%$search%")
+                ->orWhere('website', 'like', "%$search%")
+                ->orWhere('tax_id', 'like', "%$search%")
+                ->orWhere('type', 'like', "%$search%")
+                ->orWhere('industry', 'like', "%$search%")
+                ->orWhere('customer_tier', 'like', "%$search%")
+                ->orWhere('status', 'like', "%$search%")
+                ->orWhere('address', 'like', "%$search%")
+                ->orWhere('city', 'like', "%$search%")
+                ->orWhere('country', 'like', "%$search%");
             });
         }
 
         if ($request->filled('status')) {
             $query->where('status', $request->status);
+        }
+
+        if ($request->filled('staff_id') && auth()->user()->role === 'admin') {
+            $query->where('assigned_staff_id', $request->staff_id);
         }
 
         $companies = $query->with('vessels')
@@ -55,8 +70,17 @@ class CompanyController extends Controller
             ->get()
             ->mapWithKeys(fn($c) => [$c->assignedStaff->name ?? 'Unassigned' => $c->total])
             ->toArray();
+        
+            $staffs = User::where('role', 'staff')->get();
 
-        return view('companies.index', compact('companies', 'summary', 'stats', 'staff_stats'));
+        return view('companies.index', compact(
+            'companies',
+            'summary',
+            'stats',
+            'staff_stats',
+            'staffs'
+        ));
+
     }
 
     /**
@@ -143,6 +167,7 @@ class CompanyController extends Controller
     public function edit(Company $company)
     {
         $this->authorize('update', $company);
+
         $staffs = User::where('role', 'staff')->pluck('name', 'id');
 
         return view('companies.edit', compact('company', 'staffs'));
@@ -203,24 +228,34 @@ class CompanyController extends Controller
     /**
      * Print all companies to PDF.
      */
-    public function print()
-    {
-        $companies = Company::all();
+    public function print(Request $request)
+{
+    $query = Company::with('assignedStaff');
 
-        Log::create([
-            'company_id' => null,
-            'user_id' => auth()->id(),
-            'activity' => 'Printed all companies list',
-            'activity_type' => 'print',
-            'activity_detail' => 'Exported companies list to PDF',
-        ]);
-
-        $pdf = PDF::loadView('companies.print', compact('companies'))
-            ->setPaper('A4', 'landscape');
-
-        return $pdf->stream('companies.pdf');
+    // Filter staff (only admin sees all)
+    if ($request->staff_id && auth()->user()->role === 'admin') {
+        $query->where('assigned_staff_id', $request->staff_id);
     }
 
+    // Staff only sees their own data
+    if (auth()->user()->role !== 'admin') {
+        $query->where('assigned_staff_id', auth()->user()->id);
+    }
+
+    $companies = $query->get();
+
+    $staffs = User::where('role', 'staff')->get();
+
+    // 🔥 Generate PDF dari blade
+    $pdf = Pdf::loadView('companies.print', [
+        'companies' => $companies,
+        'staffs' => $staffs
+    ])->setPaper('A4', 'portrait');
+
+    // 🔥 TAMPILKAN SEPERTI VIEWER (bukan download)
+    return $pdf->stream('customer-report.pdf');
+}
+ 
     /**
      * Print single company profile to PDF.
      */
