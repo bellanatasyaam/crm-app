@@ -33,9 +33,9 @@
 
     {{-- HEADER --}}
     <div class="dashboard-header d-flex justify-content-between align-items-center mb-3">
-        <h2 class="mb-0">Customer Dashboard</h2>
+        <h2 class="mb-0">Vessel List</h2>
         <div class="d-flex gap-2">
-            <a href="{{ route('customers_vessels.create') }}" class="btn btn-light btn-sm text-primary fw-semibold">+ New Customer</a>
+            <a href="{{ route('customers_vessels.create') }}" class="btn btn-light btn-sm text-primary fw-semibold">+ New Vessel</a>
             <a href="{{ route('dashboard') }}" class="btn btn-outline-light btn-sm">Back to Master Menu</a>
         </div>
     </div>
@@ -105,13 +105,12 @@
                         {{-- ACTION --}}
                         <td class="table-actions">
                             {{-- Semua bisa lihat detail --}}
-                            <a href="{{ route('customers.show', $customer->id) }}" class="btn btn-sm btn-info">Detail</a>
+                            <a href="{{ route('customers_vessels.show', $customer->id) }}" class="btn btn-sm btn-info">Detail</a>
 
                             {{-- Hanya assigned staff & super_admin yang bisa edit/delete --}}
                             @if(auth()->user()->role === 'super_admin' || $customer->assigned_staff_id === auth()->id())
-                                <a href="{{ route('customers.edit', $customer->id) }}" class="btn btn-sm btn-primary">Edit</a>
-
-                                <form action="{{ route('customers.destroy', $customer->id) }}" method="POST" style="display:inline;">
+                                <a href="{{ route('customers_vessels.edit', $customer->id) }}" class="btn btn-sm btn-primary">Edit</a>
+                                <form action="{{ route('customers_vessels.destroy', $customer->id) }}" method="POST" style="display:inline;">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</button>
