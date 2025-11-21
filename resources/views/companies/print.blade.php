@@ -98,33 +98,39 @@
         </tbody>
     </table>
 
-    <div class="signature-boxes">
-        <div class="signature">
-            <p>Prepared by:</p>
-            <div class="line"></div>
-            <p><strong>Admin</strong></p>
-        </div>
-        <div class="signature">
-            <p>Reviewed by:</p>
-            <div class="line"></div>
-            <p><strong>Marketing</strong></p>
-        </div>
-        <div class="signature">
-            <p>Reviewed by:</p>
-            <div class="line"></div>
-            <p><strong>Finance</strong></p>
-        </div>
-        <div class="signature">
-            <p>Acknowledged by:</p>
-            <div class="line"></div>
-            <p><strong>Manager</strong></p>
-        </div>
-        <div class="signature">
-            <p>Approved by:</p>
-            <div class="line"></div>
-            <p><strong>Director</strong></p>
-        </div>
-    </div>
+    <table style="width: 100%; margin-top: 60px; text-align:center; border: none;">
+        <tr>
+            <td style="width: 20%; border: none;">
+                <p>Prepared by:</p>
+                <div style="border-bottom: 1px solid #000; margin: 40px 20px 5px 20px;"></div>
+                <strong>Admin</strong>
+            </td>
+
+            <td style="width: 20%; border: none;">
+                <p>Reviewed by:</p>
+                <div style="border-bottom: 1px solid #000; margin: 40px 20px 5px 20px;"></div>
+                <strong>Marketing</strong>
+            </td>
+
+            <td style="width: 20%; border: none;">
+                <p>Reviewed by:</p>
+                <div style="border-bottom: 1px solid #000; margin: 40px 20px 5px 20px;"></div>
+                <strong>Finance</strong>
+            </td>
+
+            <td style="width: 20%; border: none;">
+                <p>Acknowledged by:</p>
+                <div style="border-bottom: 1px solid #000; margin: 40px 20px 5px 20px;"></div>
+                <strong>Manager</strong>
+            </td>
+
+            <td style="width: 20%; border: none;">
+                <p>Approved by:</p>
+                <div style="border-bottom: 1px solid #000; margin: 40px 20px 5px 20px;"></div>
+                <strong>Director</strong>
+            </td>
+        </tr>
+    </table>
 
 </body>
 </html>
