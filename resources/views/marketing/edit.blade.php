@@ -96,12 +96,12 @@
 
             <div class="col-md-6 mb-3">
                 <label for="status" class="form-label">Status</label>
-                <select name="status" id="status" class="form-select">
-                    <option value="">-- Select Status --</option>
-                    <option value="Follow up" {{ old('status', $marketing->status) == 'Follow up' ? 'selected' : '' }}>Follow up</option>
-                    <option value="On going" {{ old('status', $marketing->status) == 'On going' ? 'selected' : '' }}>On going</option>
-                    <option value="On progress" {{ old('status', $marketing->status) == 'On progress' ? 'selected' : '' }}>On progress</option>
-                    <option value="Quotation send" {{ old('status', $marketing->status) == 'Quotation send' ? 'selected' : '' }}>Quotation send</option>
+                <select name="status" class="form-control">
+                    @foreach($statusOptions as $status)
+                        <option value="{{ $status }}" {{ old('status', $marketing->status ?? '') == $status ? 'selected' : '' }}>
+                            {{ $status }}
+                        </option>
+                    @endforeach
                 </select>
             </div>
 

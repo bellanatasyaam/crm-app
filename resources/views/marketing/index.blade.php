@@ -263,6 +263,49 @@
         }
     </style>
 
+    {{-- === FILTER BAR COMBINED === --}}
+    <div class="d-flex justify-content-between align-items-end mb-3 flex-wrap gap-3">
+
+        {{-- SEARCH --}}
+        <form method="GET" action="{{ route('marketing.index') }}" class="d-flex gap-2">
+            <input type="text" name="search"
+                class="form-control"
+                style="max-width: 220px; padding: 6px;"
+                placeholder="Search description..."
+                value="{{ request('search') }}">
+
+            <button type="submit" class="btn btn-primary">
+                Search
+            </button>
+
+            @if(request('search'))
+                <a href="{{ route('marketing.index') }}" class="btn btn-secondary">
+                    Reset
+                </a>
+            @endif
+        </form>
+
+        {{-- DATE FILTER --}}
+        <form method="GET" action="{{ route('marketing.index') }}" class="d-flex align-items-end gap-2">
+            <div>
+                <label class="form-label mb-1">Dari</label>
+                <input type="date" name="start_date" value="{{ request('start_date') }}"
+                    class="form-control" style="padding: 6px;">
+            </div>
+
+            <div>
+                <label class="form-label mb-1">Sampai</label>
+                <input type="date" name="end_date" value="{{ request('end_date') }}"
+                    class="form-control" style="padding: 6px;">
+            </div>
+
+            <button type="submit" class="btn btn-primary px-4 mb-1">
+                Filter
+            </button>
+        </form>
+
+    </div>
+
     {{-- TABEL --}}
     <div class="table-responsive mt-4">
         <table class="custom-table">
@@ -301,10 +344,14 @@
                         <td>
                             @php
                                 $statusColors = [
-                                    'Follow up' => 'primary',
-                                    'On going' => 'dark',
-                                    'On progress' => 'info',
-                                    'Quotation send' => 'secondary',
+                                    'Follow up'        => 'primary',
+                                    'On progress'      => 'info',
+                                    'Request'          => 'warning',
+                                    'Waiting approval' => 'secondary',
+                                    'Approve'          => 'success',
+                                    'On going'         => 'dark',
+                                    'Quotation send'   => 'purple',
+                                    'Done / Closing'   => 'success',
                                 ];
                                 $color = $statusColors[$m->status ?? ''] ?? 'light';
                             @endphp
@@ -321,7 +368,7 @@
                         </td>
                         <td>
                             <div class="table-actions">
-                                <a href="{{ route('marketing.profile', $m->id) }}" class="btn btn-info btn-sm">Detail</a>
+                                <a href="{{ route('marketing.show', $m->id) }}" class="btn btn-info btn-sm">Detail</a>
 
                                 {{-- Edit & Delete hanya muncul kalau:
                                     - user admin, atau
