@@ -10,7 +10,6 @@
             max-width: 100% !important;
         }
 
-        /* === HEADER === */
         .dashboard-header {
             background: linear-gradient(90deg, #0ea5e9 0%, #0284c7 100%);
             color: #fff;
@@ -26,7 +25,6 @@
             margin: 0;
         }
 
-        /* === FORM === */
         .form-label {
             font-weight: 600;
         }
@@ -60,23 +58,33 @@
         @csrf
         <div class="row">
             <div class="col-md-6 mb-3">
-                <label for="client_name" class="form-label">Client Name</label>
-                <input type="text" name="client_name" id="client_name" class="form-control" required>
+                <label class="form-label">Client Name</label>
+                    <select name="client_id" id="client_id" class="form-select" required>
+                        <option value="">-- Select Client --</option>
+                        @foreach($companies as $c)
+                            <option 
+                                value="{{ $c->id }}"
+                                data-vessel="{{ $c->vessel_name ?? '' }}"
+                            >
+                                {{ $c->name }}
+                            </option>
+                        @endforeach
+                    </select>
             </div>
 
             <div class="col-md-6 mb-3">
-                <label for="email" class="form-label">Email</label>
+                <label class="form-label">Email</label>
                 <input type="email" name="email" id="email" class="form-control">
             </div>
 
             <div class="col-md-6 mb-3">
-                <label for="phone" class="form-label">Phone</label>
+                <label class="form-label">Phone</label>
                 <input type="text" name="phone" id="phone" class="form-control">
             </div>
 
             <div class="col-md-6 mb-3">
-                <label for="staff_id" class="form-label">Assigned Staff</label>
-                <select name="staff_id" id="staff_id" class="form-select">
+                <label class="form-label">Assigned Staff</label>
+                <select name="staff_id" class="form-select">
                     <option value="">-- Select Staff --</option>
                     @foreach($staffOptions as $id => $name)
                         <option value="{{ $id }}" {{ old('staff_id') == $id ? 'selected' : '' }}>
@@ -86,21 +94,38 @@
                 </select>
             </div>
 
+            {{-- FIXED DATE FIELDS --}}
             <div class="col-md-6 mb-3">
-                <label for="last_contact" class="form-label">Last Contact</label>
-                <input type="date" name="last_contact" id="last_contact" class="form-control">
+                <label class="form-label">Last Contact</label>
+                <input 
+                    type="text"
+                    name="last_contact"
+                    id="last_contact"
+                    class="form-control"
+                    placeholder="dd/mm/yyyy"
+                    value="{{ old('last_contact') }}"
+                    autocomplete="off"
+                >
             </div>
 
             <div class="col-md-6 mb-3">
-                <label for="next_follow_up" class="form-label">Next Follow Up</label>
-                <input type="date" name="next_follow_up" id="next_follow_up" class="form-control">
+                <label class="form-label">Next Follow Up</label>
+                <input 
+                    type="text"
+                    name="next_follow_up"
+                    id="next_follow_up"
+                    class="form-control"
+                    placeholder="dd/mm/yyyy"
+                    value="{{ old('next_follow_up') }}"
+                    autocomplete="off"
+                >
             </div>
 
             <div class="col-md-6 mb-3">
-                <label for="status" class="form-label">Status</label>
+                <label class="form-label">Status</label>
                 <select name="status" class="form-control">
                     @foreach($statusOptions as $status)
-                        <option value="{{ $status }}" {{ old('status', $marketing->status ?? '') == $status ? 'selected' : '' }}>
+                        <option value="{{ $status }}" {{ old('status') == $status ? 'selected' : '' }}>
                             {{ $status }}
                         </option>
                     @endforeach
@@ -108,38 +133,66 @@
             </div>
 
             <div class="col-md-6 mb-3">
-                <label for="revenue" class="form-label">Revenue</label>
+                <label class="form-label">Revenue</label>
                 <div class="input-group">
-                    <select name="currency" id="currency" class="form-select" style="max-width: 100px;">
+                    <select name="currency" class="form-select" style="max-width: 100px;">
                         <option value="IDR">IDR</option>
                         <option value="USD" selected>USD</option>
                         <option value="SGD">SGD</option>
                         <option value="MYR">MYR</option>
                     </select>
-                    <input type="text" name="revenue" id="revenue" class="form-control" placeholder="e.g. 20,000">
+                    <input type="text" name="revenue" class="form-control" placeholder="e.g. 20,000">
                 </div>
             </div>
 
             <div class="col-md-6 mb-3">
-                <label for="vessel_name" class="form-label">Vessel Name</label>
-                <input type="text" name="vessel_name" id="vessel_name" class="form-control">
+                <label class="form-label">Vessel Name</label>
+                <input type="text" name="vessel_name" id="vessel_name" class="form-control" readonly>
             </div>
 
             <div class="col-md-12 mb-3">
-                <label for="description" class="form-label">Description</label>
-                <textarea name="description" id="description" class="form-control" rows="3"></textarea>
+                <label class="form-label">Description</label>
+                <textarea name="description" class="form-control" rows="3"></textarea>
             </div>
 
             <div class="col-md-12 mb-3">
-                <label for="remark" class="form-label">Remark</label>
-                <textarea name="remark" id="remark" class="form-control" rows="3"></textarea>
+                <label class="form-label">Remark</label>
+                <textarea name="remark" class="form-control" rows="3"></textarea>
             </div>
         </div>
 
         <div class="text-end">
-            <button type="submit" class="btn btn-primary px-4">Save</button>
+            <button class="btn btn-primary px-4">Save</button>
             <a href="{{ route('marketing.index') }}" class="btn btn-secondary px-4">Cancel</a>
         </div>
     </form>
 </div>
+
+{{-- DATEPICKER FIX --}}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+<script>
+document.getElementById('client_id').addEventListener('change', function () {
+    let id = this.value;
+    if (!id) return;
+
+    fetch(`/marketing/get-customer/${id}`)
+        .then(response => response.json())
+        .then(data => {
+            
+            document.getElementById('email').value = data.customer.email ?? '';
+            document.getElementById('phone').value = data.customer.phone ?? '';
+
+            if (data.vessels.length > 0) {
+                document.getElementById('vessel_name').value = data.vessels[0].name ?? '';
+            } else {
+                document.getElementById('vessel_name').value = '-';
+            }
+        })
+        .catch(err => console.error(err));
+});
+</script>
+
+
 @endsection

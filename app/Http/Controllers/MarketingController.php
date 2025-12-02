@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Marketing;
+use App\Models\Company;
+use App\Models\CustomerVessel;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class MarketingController extends Controller
 {
@@ -29,7 +32,6 @@ class MarketingController extends Controller
                             ->where('is_marketing', 1)
                             ->get();
 
-        // === SEARCH ===
         $search = $request->search;
 
         $marketingData = Marketing::with('staff')
@@ -45,32 +47,42 @@ class MarketingController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
+        $staffList = User::where('role', 'staff')->get();
+        $companies = Company::all();
+
         return view('marketing.index', compact(
             'statusOptions',
             'staffOptions',
             'marketingProfiles',
-            'marketingData'
+            'marketingData',
+            'staffList',
+            'companies',
         ));
     }
 
     public function create()
     {
         $staffOptions = User::where('role', 'staff')
-                            ->where('is_marketing', 1)
-                            ->pluck('name', 'id');
+            ->where('is_marketing', 1)
+            ->pluck('name', 'id');
+
+        $companies = Company::with('customerVessels')->get();
 
         $statusOptions = [
-            'Follow up',
-            'On progress',
-            'Request',
-            'Waiting approval',
-            'Approve',
-            'On going',
-            'Quotation send',
-            'Done / Closing',
+            "Follow up",
+            "Request",
+            "Quotation send",
+            "Waiting approval",
+            "Approve",
+            "On progress",
+            "On going",
+            "On process",
+            "On review",
+            "Finish",
+            "Done / Closing"
         ];
 
-        return view('marketing.create', compact('staffOptions', 'statusOptions'));
+        return view('marketing.create', compact('staffOptions', 'companies', 'statusOptions'));
     }
 
     public function store(Request $request)
@@ -81,17 +93,30 @@ class MarketingController extends Controller
             'email' => 'nullable|email|max:255',
             'phone' => 'nullable|string|max:50',
             'staff_id' => 'nullable|exists:users,id',
-            'last_contact' => 'nullable|date',
-            'next_follow_up' => 'nullable|date',
+
+            // Tanggal dd/mm/yyyy
+            'last_contact' => 'nullable|date_format:d/m/Y',
+            'next_follow_up' => 'nullable|date_format:d/m/Y',
+
             'status' => 'nullable|string|max:50',
             'revenue' => 'nullable|string|max:100',
             'vessel_name' => 'nullable|string|max:255',
             'remark' => 'nullable|string',
         ]);
 
+        // Convert dd/mm/yyyy → Y-m-d
+        $lastContact = $request->last_contact
+            ? Carbon\Carbon::createFromFormat('d/m/Y', $request->last_contact)->format('Y-m-d')
+            : null;
+
+        $nextFollowUp = $request->next_follow_up
+            ? Carbon\Carbon::createFromFormat('d/m/Y', $request->next_follow_up)->format('Y-m-d')
+            : null;
+
         Marketing::create([
             ...$validated,
-            'staff_id' => $request->staff_id,
+            'last_contact' => $lastContact,
+            'next_follow_up' => $nextFollowUp,
         ]);
 
         return redirect()->route('marketing.index')->with('success', 'Marketing berhasil ditambahkan!');
@@ -158,10 +183,27 @@ class MarketingController extends Controller
         return redirect()->route('marketing.index')->with('success', 'Marketing berhasil dihapus!');
     }
 
-    public function print()
+    public function print(Request $request)
     {
-        $marketingData = Marketing::with('staff')->get();
-        return view('marketing.print', compact('marketingData'));
+        $staffId = $request->staff_id;
+
+        if (!$staffId) {
+            return redirect()->back()->with('error', 'Pilih staff terlebih dahulu.');
+        }
+
+        $staff = User::findOrFail($staffId);
+
+        $data = Marketing::where('staff_id', $staffId)
+            ->with('staff')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('marketing.print', [
+            'data' => $data,
+            'staff' => $staff
+        ])->setPaper('A4', 'landscape');
+
+        return $pdf->stream('marketing_report_' . $staff->name . '.pdf');
     }
 
     public function showAll()
@@ -176,6 +218,27 @@ class MarketingController extends Controller
         $profile = User::findOrFail($id);
 
         return view('marketing.profile', compact('profile'));
+    }
+
+    public function getCustomerData($companyId)
+    {
+        $company = Company::with('vessels')->find($companyId);
+
+        if (!$company) {
+            return response()->json(['error' => 'Company not found'], 404);
+        }
+
+        return response()->json([
+            'customer' => [
+                'email' => $company->email,
+                'phone' => $company->phone,
+            ],
+            'vessels' => $company->vessels->map(function($v){
+                return [
+                    'name' => $v->name,
+                ];
+            }),
+        ]);
     }
 
 }

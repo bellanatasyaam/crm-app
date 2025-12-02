@@ -165,7 +165,7 @@
     <div class="dashboard-header d-flex justify-content-between align-items-center">
         <h2>📈 Daftar Marketing</h2>
         <div class="d-flex gap-2">
-            <a href="{{ route('marketing.create') }}" class="btn btn-primary btn-sm">+ Add Laporan</a>
+            <a href="{{ route('marketing.create') }}" class="btn btn-primary btn-sm">+ Add Report</a>
             <button id="showProfilesBtn" class="btn btn-info btn-sm">Show Marketing Profiles</button>
             <a href="{{ route('dashboard') }}" class="btn btn-light btn-sm">Back to Master Menu</a>
         </div>
@@ -288,20 +288,49 @@
         {{-- DATE FILTER --}}
         <form method="GET" action="{{ route('marketing.index') }}" class="d-flex align-items-end gap-2">
             <div>
-                <label class="form-label mb-1">Dari</label>
-                <input type="date" name="start_date" value="{{ request('start_date') }}"
-                    class="form-control" style="padding: 6px;">
+                <label class="form-label mb-1">From</label>
+                <input 
+                    type="text" 
+                    id="start_date"
+                    name="start_date"
+                    class="form-control"
+                    style="padding: 6px;"
+                    placeholder="dd-mm-yyyy"
+                    value="{{ request('start_date') ? \Carbon\Carbon::parse(request('start_date'))->format('d-m-Y') : '' }}">
             </div>
 
             <div>
-                <label class="form-label mb-1">Sampai</label>
-                <input type="date" name="end_date" value="{{ request('end_date') }}"
-                    class="form-control" style="padding: 6px;">
+                <label class="form-label mb-1">To</label>
+                <input 
+                    type="text" 
+                    id="end_date"
+                    name="end_date"
+                    class="form-control"
+                    style="padding: 6px;"
+                    placeholder="dd-mm-yyyy"
+                    value="{{ request('end_date') ? \Carbon\Carbon::parse(request('end_date'))->format('d-m-Y') : '' }}">
             </div>
 
             <button type="submit" class="btn btn-primary px-4 mb-1">
                 Filter
             </button>
+        </form>
+
+        <form method="GET" 
+            action="{{ route('marketing.print') }}" 
+            class="d-flex gap-2"
+            target="_blank">
+
+            <select name="staff_id" class="form-control" style="max-width: 200px;">
+                <option value="">-- Pilih Staff --</option>
+                @foreach($staffList as $s)
+                    <option value="{{ $s->id }}">{{ $s->name }}</option>
+                @endforeach
+            </select>
+
+<button type="button" class="btn btn-danger" onclick="openPrintTab()">
+    Print Out
+</button>
         </form>
 
     </div>
@@ -310,6 +339,9 @@
     <div class="table-responsive mt-4">
         <table class="custom-table">
             <thead>
+                <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+                <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
                 <tr>
                     <th>Description</th>
                     <th>Name</th>
@@ -339,8 +371,13 @@
                         <td>{{ $m->email ?? '-' }}</td>
                         <td>{{ $m->phone ?? '-' }}</td>
                         <td>{{ $m->staff?->name ?? '-' }}</td>
-                        <td>{{ $m->last_contact ?? '-' }}</td>
-                        <td>{{ $m->next_follow_up ?? '-' }}</td>
+                        <td>
+                            {{ $m->last_contact ? \Carbon\Carbon::parse($m->last_contact)->format('d-m-Y') : '-' }}
+                        </td>
+
+                        <td>
+                            {{ $m->next_follow_up ? \Carbon\Carbon::parse($m->next_follow_up)->format('d-m-Y') : '-' }}
+                        </td>
                         <td>
                             @php
                                 $statusColors = [
@@ -439,4 +476,31 @@
         });
     });
 </script>
+
+<script>
+    flatpickr("#start_date", {
+        dateFormat: "d-m-Y"
+    });
+
+    flatpickr("#end_date", {
+        dateFormat: "d-m-Y"
+    });
+</script>
+
+<script>
+function openPrintTab() {
+    let staffId = document.querySelector('select[name="staff_id"]').value;
+    let url = "{{ route('marketing.print') }}";
+
+    // tambahkan parameter staff_id
+    if (staffId) {
+        url += "?staff_id=" + staffId;
+    }
+
+    // paksa buka tab baru
+    window.open(url, '_blank');
+}
+</script>
+
+
 @endsection

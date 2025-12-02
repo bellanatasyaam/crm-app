@@ -53,8 +53,15 @@
         <div class="row">
             <div class="col-md-6 mb-3">
                 <label for="client_name" class="form-label">Client Name</label>
-                <input type="text" name="client_name" id="client_name"
-                    value="{{ old('client_name', $marketing->client_name) }}" class="form-control" required>
+                <select name="client_id" id="client_id" class="form-select" required>
+                    <option value="">-- Select Client --</option>
+                    @foreach($customers as $c)
+                        <option value="{{ $c->id }}"
+                            {{ old('client_id', $marketing->client_id) == $c->id ? 'selected' : '' }}>
+                            {{ $c->name }}
+                        </option>
+                    @endforeach
+                </select>
             </div>
 
             <div class="col-md-6 mb-3">
@@ -122,7 +129,8 @@
             <div class="col-md-6 mb-3">
                 <label for="vessel_name" class="form-label">Vessel Name</label>
                 <input type="text" name="vessel_name" id="vessel_name"
-                    value="{{ old('vessel_name', $marketing->vessel_name) }}" class="form-control">
+                    value="{{ old('vessel_name', $marketing->vessel_name) }}"
+                    class="form-control" readonly>
             </div>
 
             <div class="col-md-12 mb-3">
@@ -142,4 +150,32 @@
         </div>
     </form>
 </div>
+
+<script>
+function loadVessel(id) {
+    if (!id) {
+        document.getElementById('vessel_name').value = "";
+        return;
+    }
+
+    fetch(`/api/customer/${id}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.customer_vessels.length > 0) {
+                document.getElementById('vessel_name').value =
+                    data.customer_vessels[0].vessel_name;
+            } else {
+                document.getElementById('vessel_name').value = "-";
+            }
+        });
+}
+
+document.getElementById('client_id').addEventListener('change', function () {
+    loadVessel(this.value);
+});
+
+// AUTOLOAD SAAT HALAMAN EDIT DIBUKA
+loadVessel(document.getElementById('client_id').value);
+</script>
+
 @endsection
