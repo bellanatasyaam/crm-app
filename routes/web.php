@@ -82,6 +82,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             'update'  => 'customers_vessels.update',
             'destroy' => 'customers_vessels.destroy',
         ]);
+    Route::get('/api/customer/{id}', [CustomerController::class, 'getCustomer']);
 
     /**
      * ======================
@@ -100,13 +101,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/vessels/{vessel}', [CustomerVesselController::class, 'destroy'])->name('companies.vessels.destroy');
     });
 
-    /**
+   /**
      * ======================
      * MARKETING
      * ======================
      */
-    Route::get('/marketing/profile/{id}', [MarketingController::class, 'profile'])->name('marketing.profile');
 
+    Route::get('/marketing/profile/{id}', [MarketingController::class, 'profile'])->name('marketing.profile');
+    Route::get('/marketing/show-all', [MarketingController::class, 'showAll'])->name('marketing.showAll');
+    Route::get('/marketing/print', [MarketingController::class, 'print'])->name('marketing.print');
+
+    // ⬅ Tambahkan ini!
+    Route::get('/marketing/get-customer/{id}', [MarketingController::class, 'getCustomerData'])
+        ->name('marketing.getCustomer');
+
+    // resource
     Route::resource('marketing', MarketingController::class)
         ->parameters(['marketing' => 'company'])
         ->names([
@@ -118,9 +127,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
             'update'  => 'marketing.update',
             'destroy' => 'marketing.destroy',
         ]);
-
-    Route::get('/marketing/show-all', [MarketingController::class, 'showAll'])->name('marketing.showAll');
-    Route::get('/marketing/print', [MarketingController::class, 'print'])->name('marketing.print');
 
     /**
      * ======================
