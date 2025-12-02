@@ -224,4 +224,12 @@ class CustomerController extends Controller
         $vessels = Vessel::where('customer_id', $id)->get();
         return response()->json($vessels);
     }
+
+    public function getCustomer($id)
+    {
+        $customer = Customer::with('customerVessels')->findOrFail($id);
+
+        return response()->json($customer);
+    }
+
 }
