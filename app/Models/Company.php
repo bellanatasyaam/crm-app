@@ -64,7 +64,6 @@ class Company extends Model
         return $this->belongsTo(User::class, 'assigned_staff_id');
     }
     
-    // App\Models\Customer.php
     public function logs()
     {
         return $this->hasMany(Log::class, 'company_id');
@@ -74,6 +73,10 @@ class Company extends Model
     {
         return $this->hasMany(CustomerVessel::class, 'company_id');
     }
-
+ 
+    public function marketing()
+    {
+        return $this->hasMany(Marketing::class, 'company_id');
+    }
 
 }
