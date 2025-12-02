@@ -11,7 +11,6 @@
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
-    <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="font-sans antialiased bg-gradient-to-br from-indigo-50 to-purple-100 
@@ -20,13 +19,11 @@
     <div class="min-h-screen flex items-center justify-center px-4">
         <div class="w-full max-w-md bg-white dark:bg-gray-900 shadow-lg rounded-2xl p-8">
             
-            <!-- Logo -->
             <div class="flex justify-center mb-6">
                 <a href="/">
                 </a>
             </div>
 
-            <!-- Content -->
             <div>
                 {{ $slot }}
             </div>
