@@ -47,6 +47,17 @@ class CompanyController extends Controller
             $query->where('assigned_staff_id', $request->staff_id);
         }
 
+        if ($request->filled('search_date')) {
+            try {
+                $date = \Carbon\Carbon::createFromFormat('d/m/Y', $request->search_date)
+                    ->format('Y-m-d');
+
+                $query->whereDate('created_at', $date);
+
+            } catch (\Exception $e) {
+            }
+        }
+
         $companies = $query->with('vessels')
             ->orderBy('created_at', 'desc')
             ->paginate(10);

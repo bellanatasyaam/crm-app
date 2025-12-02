@@ -3,6 +3,10 @@
 @section('content')
 <div class="container py-4">
 
+    <!-- === FLATPICKR (Tambahkan di awal) === -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
     <style>
         .container { max-width: 100% !important; }
 
@@ -39,16 +43,6 @@
 
         .table-actions { display: flex; gap: 3px; justify-content: center; }
         .table-actions .btn { font-size: 11px; padding: 2px 5px; }
-
-        .truncate-text {
-            display: inline-block;
-            max-width: 200px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            vertical-align: bottom;
-        }
-        .more-link { cursor: pointer; color: #0d6efd; font-size: 11px; margin-left: 5px; user-select: none; }
 
         /* === Dashboard Summary === */
         .summary-cards {
@@ -101,11 +95,18 @@
 
     {{-- === Dashboard Summary === --}}
     <div class="summary-cards mb-3">
-        <div class="summary-card"><h4>{{ $summary['total_customers'] ?? 0 }}</h4><span>Total Customers</span></div>
-        <div class="summary-card"><h4>{{ $stats['quotation_sent'] ?? 0 }}</h4><span>Quotation Sent</span></div>
-        <div class="summary-card"><h4>{{ $stats['follow_up'] ?? 0 }}</h4><span>Follow Up</span></div>
-        <div class="summary-card"><h4>{{ $stats['on_progress'] ?? 0 }}</h4><span>On Progress</span></div>
-        <div class="summary-card"><h4>{{ $stats['done'] ?? 0 }}</h4><span>Done / Closing</span></div>
+        <div class="summary-card">
+            <h4>{{ $stats['total'] ?? 0 }}</h4>
+            <span>Total Customers</span>
+        </div>
+        <div class="summary-card">
+            <h4>{{ $stats['active'] ?? 0 }}</h4>
+            <span>Active Customers</span>
+        </div>
+        <div class="summary-card">
+            <h4>{{ $stats['inactive'] ?? 0 }}</h4>
+            <span>Inactive Customers</span>
+        </div>
     </div>
 
     {{-- === Chart Section === --}}
@@ -136,8 +137,7 @@
             <button class="btn btn-secondary px-3 mt-3">Search</button>
         </form>
 
-
-        {{-- === FILTER STAFF UNTUK PRINT === --}}
+        {{-- === FILTER STAFF PRINT === --}}
         @if(auth()->user()->role === 'admin')
             <form method="GET" action="{{ route('companies.print') }}" class="d-flex align-items-end gap-2">
                 <div>
@@ -156,19 +156,29 @@
             </form>
         @endif
 
-
-        {{-- === FILTER TANGGAL UNTUK DASHBOARD === --}}
+        {{-- === FILTER TANGGAL BARU (FLATPICKR) === --}}
         <form method="GET" action="{{ route('companies.index') }}" class="d-flex align-items-end gap-3">
+
             <div>
                 <label class="form-label mb-1">Dari:</label>
-                <input type="date" name="start_date" value="{{ request('start_date') }}"
-                    class="form-control" style="padding: 6px;">
+                <input type="text" 
+                    id="date_from"
+                    name="date_from"
+                    value="{{ request('date_from') }}"
+                    placeholder="dd/mm/yyyy"
+                    class="form-control"
+                    style="padding: 6px; width: 140px;">
             </div>
 
             <div>
                 <label class="form-label mb-1">Sampai:</label>
-                <input type="date" name="end_date" value="{{ request('end_date') }}"
-                    class="form-control" style="padding: 6px;">
+                <input type="text" 
+                    id="date_to"
+                    name="date_to"
+                    value="{{ request('date_to') }}"
+                    placeholder="dd/mm/yyyy"
+                    class="form-control"
+                    style="padding: 6px; width: 140px;">
             </div>
 
             <button type="submit" class="btn btn-primary px-4 mt-3">
@@ -245,7 +255,20 @@
 
 </div>
 
-{{-- === CHARTS JS === --}}
+{{-- === DATE PICKER INIT === --}}
+<script>
+flatpickr("#date_from", {
+    dateFormat: "d/m/Y",
+    allowInput: true
+});
+
+flatpickr("#date_to", {
+    dateFormat: "d/m/Y",
+    allowInput: true
+});
+</script>
+
+{{-- === CHARTS === --}}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
