@@ -79,10 +79,10 @@
 </style>
 
 <div class="dashboard-header d-flex justify-content-between align-items-center">
-    <h2 class="mb-0">🚢 Daftar Vessels</h2>
+    <h2 class="mb-0">🚢 Vessels List</h2>
     <div class="d-flex gap-2">
-        <a href="{{ route('vessels.create') }}" class="btn btn-light btn-sm text-primary fw-semibold">+ Tambah Vessel</a>
-        <a href="{{ route('dashboard') }}" class="btn btn-outline-light btn-sm">Kembali</a>
+        <a href="{{ route('vessels.create') }}" class="btn btn-light btn-sm text-primary fw-semibold">+ Add Vessel</a>
+        <a href="{{ route('dashboard') }}" class="btn btn-outline-light btn-sm">Back</a>
     </div>
 </div>
 
@@ -142,7 +142,7 @@
                     </span>
                 </td>
                 <td>
-                    <a href="{{ route('vessels.show', $vessel->id) }}" class="btn btn-sm btn-info text-white">Detail</a>
+                    <a href="{{ route('vessels.show', $vessel->id) }}" class="btn btn-sm btn-info text-white">More</a>
 
                     {{-- Tombol EDIT: muncul untuk admin, pembuat, dan staff yang di-assign --}}
                     @if(

@@ -186,11 +186,11 @@
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Last Follow Up Date</label>
-                    <input type="date" name="last_followup_date" class="form-control" value="{{ old('last_followup_date') }}">
+                    <input type="text" id="last_followup_date" name="last_followup_date" class="form-control" value="{{ old('last_followup_date') }}">
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Next Follow Up Date</label>
-                    <input type="date" name="next_followup_date" class="form-control" value="{{ old('next_followup_date') }}">
+                    <input type="text" id="next_followup_date" name="next_followup_date" class="form-control" value="{{ old('next_followup_date') }}">
                 </div>
                 <div class="col-12">
                     <label class="form-label">Remark</label>
@@ -210,4 +210,21 @@
         </div>
     </form>
 </div>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+<script>
+flatpickr("#last_followup_date", {
+    dateFormat: "d/m/Y",
+    allowInput: true
+});
+
+flatpickr("#next_followup_date", {
+    dateFormat: "d/m/Y",
+    allowInput: true
+});
+</script>
+
+
 @endsection
