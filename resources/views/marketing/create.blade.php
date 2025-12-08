@@ -194,5 +194,16 @@ document.getElementById('client_id').addEventListener('change', function () {
 });
 </script>
 
+<script>
+flatpickr("#last_contact", {
+    dateFormat: "d/m/Y",
+    allowInput: true
+});
+
+flatpickr("#next_follow_up", {
+    dateFormat: "d/m/Y",
+    allowInput: true
+});
+</script>
 
 @endsection

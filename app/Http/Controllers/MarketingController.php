@@ -8,6 +8,7 @@ use App\Models\Marketing;
 use App\Models\Company;
 use App\Models\CustomerVessel;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
 
 class MarketingController extends Controller
 {
@@ -89,14 +90,13 @@ class MarketingController extends Controller
     {
         $validated = $request->validate([
             'description' => 'nullable|string',
-            'client_name' => 'required|string|max:255',
+            'client_id' => 'required|exists:companies,id',
             'email' => 'nullable|email|max:255',
             'phone' => 'nullable|string|max:50',
             'staff_id' => 'nullable|exists:users,id',
 
-            // Tanggal dd/mm/yyyy
-            'last_contact' => 'nullable|date_format:d/m/Y',
-            'next_follow_up' => 'nullable|date_format:d/m/Y',
+            'last_contact' => 'nullable|sometimes',
+            'next_follow_up' => 'nullable|sometimes',
 
             'status' => 'nullable|string|max:50',
             'revenue' => 'nullable|string|max:100',
@@ -106,15 +106,16 @@ class MarketingController extends Controller
 
         // Convert dd/mm/yyyy → Y-m-d
         $lastContact = $request->last_contact
-            ? Carbon\Carbon::createFromFormat('d/m/Y', $request->last_contact)->format('Y-m-d')
+            ? Carbon::createFromFormat(...)('d/m/Y', $request->last_contact)->format('Y-m-d')
             : null;
 
         $nextFollowUp = $request->next_follow_up
-            ? Carbon\Carbon::createFromFormat('d/m/Y', $request->next_follow_up)->format('Y-m-d')
+            ? Carbon::createFromFormat(...)('d/m/Y', $request->next_follow_up)->format('Y-m-d')
             : null;
 
         Marketing::create([
             ...$validated,
+            'client_name' => Company::find($request->client_id)->name ?? null,
             'last_contact' => $lastContact,
             'next_follow_up' => $nextFollowUp,
         ]);
